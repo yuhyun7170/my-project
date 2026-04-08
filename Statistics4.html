@@ -1,0 +1,1801 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+		
+    
+
+
+    
+    
+    
+
+
+<!doctype html>
+<html lang="kr">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>사업관리>사업계획>예산계획</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta content="" name="description" />
+	<meta content="Coderthemes" name="" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+	
+
+
+
+
+
+
+
+
+
+
+
+	<script>
+	    var BASE_URL_ADMIN = '/wkwhrma';
+	    window.__JSP_FILE_PATH__ = "/WEB-INF/jsp/content/recpt/SettleAccounts_Report.jsp";
+	    window.__CONTROLLER_CLASS__ = "AdminController";
+	    window.__CONTROLLER_METHOD__ = "getAcademyStatistics1";
+	</script>
+	<script src="http://자조금.kr/js/jquery-3.7.1.js"></script>
+	<script src="http://자조금.kr/js/jquery.form.min.js"></script>
+	<script src="http://자조금.kr/js/ajax.js?v=1.0.4"></script>
+	<script src="http://자조금.kr/js/fn.common.js?v=1.0.11"></script>
+	<script src="http://자조금.kr/js/fn.print_path.js?v=1.0.3"></script>
+	<script src="http://자조금.kr/js/common.js?v=1.0.2"></script>
+	<script src="http://자조금.kr/js/jquery.bpopup.min.js" type="text/javascript"></script>
+	<script src="http://자조금.kr/js/jquery-confirm.min.js"></script>   <!-- confirm js-->
+	<script src="http://자조금.kr/js/jquery.toast.js" type="text/javascript"></script>
+	<script type="text/javascript" src="http://자조금.kr/js/jquery.cookie.js"></script>		
+	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+	
+	
+        
+        
+            <!-- DEBUG 환경일 경우 -->
+            <script src="http://자조금.kr/js/fn.console.log.dev.js?v=1.0.3"></script>
+        
+    
+	
+
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+	
+
+<link href="http://자조금.kr/css/common.css?ver=1.0.2" rel="stylesheet" type="text/css" />
+<link href="http://자조금.kr/css/premium.css?ver=1.0.3" rel="stylesheet" type="text/css" />
+<link href="http://자조금.kr/css/menu.css?ver=1.0.5" rel="stylesheet" type="text/css" />
+<link href="http://자조금.kr/css/alert.css?ver=1.0.0" rel="stylesheet" type="text/css" />
+
+<script src="http://자조금.kr/js/fn.menu.js?v=1.0.2"></script>
+<script src="http://자조금.kr/Library/js/premiun_Script.js?v=1.0.2"></script>
+
+
+<script>
+const pBranchID = "2028";
+const pMhighcode = "48";
+const PGubun1Code = "";
+const PGubun2Code = "";
+
+const selectedSido = "";
+const selectedSigungu = "";
+const selectedDong = "";
+
+const CONST_SIDO = "1";
+const CONST_SIGUNGU = "2";
+</script>
+
+
+<script src="http://자조금.kr/js/fn.set_gubun.js?v=1.0.2"></script>
+
+
+
+<script src="http://자조금.kr/js/fn.search_addr.js?v=1.0.2"></script>
+
+
+<script>
+
+function fn_searchFormSubmit() {
+	const currentUrl = window.location.href;
+	submitForm(currentUrl, '_self', fn_setSearchInput());
+}
+function fn_setSearchInput() {
+    // 폼에 추가할 파라미터를 객체로 수집
+    const params = {
+    		sidoCode: $('#p_sh_sido').val(),
+    		sigunguCode: $('#p_sh_sigungu').val(),
+        sigunguAll: $("input[name='sigunguAll']:checked").val() || ""
+    };
+
+    // Gubun1의 체크된 값을 콤마로 구분하여 수집
+    const gubun1Values = [];
+    $("input[name='Gubun1']:checked").each(function() {
+        gubun1Values.push($(this).val());
+    });
+    params.p_gubun1_code = gubun1Values.join(',');
+
+    // Gubun2의 체크된 값을 콤마로 구분하여 수집
+    const gubun2Values = [];
+    $("input[name='Gubun2']:checked").each(function() {
+        gubun2Values.push($(this).val());
+    });
+    params.p_gubun2_code = gubun2Values.join(',');
+
+    params.searchYear = $("#search_year").val();
+    params.searchYear2 = $("#search_year2").val();
+
+    return params;
+}
+</script>
+</head>
+<style>
+li a {
+    white-space: nowrap; /* 텍스트가 잘리지 않고 한 줄로 나오게 강제 */
+}
+</style>
+<body>
+
+<div id="wrap">
+
+	<!-- header_container -->
+	<!-- header -->
+	
+		
+		
+	
+	
+		
+	
+	
+
+
+
+<script>
+    var frmData;
+    $(document).ready(function() {
+        // 로그아웃 버튼 클릭 시 로그아웃 처리 함수 호출
+        $("#logoutBtn").click(function(event) {
+            logoutExcute();
+        });
+        // 원격지원 버튼 클릭 시 원격지원 페이지로 이동
+        $(".remote").click(function(event) {
+            goRemote();
+        });
+    });
+    // 로그아웃 실행 함수
+    function logoutExcute() {
+        if (confirm("로그아웃 하시겠습니까?")) {
+            callAjax("/wkwhrma/logoutExcute", "completeLogout");
+        }
+    }
+    // 로그아웃 완료 시 처리 함수
+    function completeLogout(data) {
+        alertMessage("로그아웃 되었습니다.");
+        location.href = "/wkwhrma";
+    }
+</script>
+
+<div id="header">
+    <div>
+        <div class="t_menu dWidth">
+            <div class="bntLeft"></div>
+            <h1><a href="/wkwhrma"><img id="topLogo" src="" style="width: 100%;" alt="홈으로" onerror="this.src='https://자조금.kr/image/top_logo.png'"/></a></h1>
+            <ul class="btnRight">
+                <!--<li><button class="btnLink btnBlueGr" onclick="window.open('/manual_v1.7.pdf', '_blank')">매뉴얼</button></li>//-->
+                <li><a href="javascript:" class="remote"><i class="fa fa-headphones fa-lg"></i><b>02-6677-5533 [원격지원]</b></a></li>
+                <li><i class="fa fa-user fa-lg"></i><strong>테스트002</strong>님</li>
+                <li><button class="btn" id="logoutBtn">로그아웃</button></li>
+            </ul>
+        </div>
+        <div class="nav-menu">
+            <ul class="dWidth">   
+                <!-- 메인 메뉴 렌더링 -->
+
+				        <li class="">
+				            <a href="/wkwhrma/in.do">회원관리</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu1 sub-menu" style="display:none">
+				                <ul>
+				                    <li class="">
+				                        <a href="/wkwhrma/in.do">재회원</a>
+				                    </li>
+				                    <li class="">
+				                    	<a href="/wkwhrma/withdrawalList.do">퇴회원</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/suspendedList.do">휴회원</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/all.do">전체회원</a>
+				                    </li> 
+				                </ul>
+				            </div>
+				        </li>
+
+				        <li class="">
+				            <a href="/wkwhrma/academyPriceList.do">경영관리</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu2 sub-menu" style="display:none">
+				                <ul>
+				                	<li class="">
+				                        <a href="/wkwhrma/academyPriceList.do">수납관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/academyPriceReceiptList.do">수납현황</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/academyPriceNoReceiptList.do">미납현황</a>
+				                    </li>                   
+				                    <li class="">
+				                        <a href="/wkwhrma/serviceInfo.do">승인내역</a>
+				                    </li>
+		                            <li class="">
+				                        <a href="/wkwhrma/getAcademyStatistics1.do">통계</a>
+				                    </li>
+				                </ul>
+				            </div>
+				        </li>
+				    
+				        <li class="">
+				            <a href="/wkwhrma/viewConsult.do">상담관리</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu3 sub-menu" style="display:none">
+				                <ul>
+				                    <li class="">
+				                        <a href="/wkwhrma/viewConsult.do">상담보기</a>
+				                    </li>    
+				                    <li class="">
+				                        <a href="/wkwhrma/consultStatistics.do">통계</a>
+				                    </li>
+				                </ul>
+				            </div>
+				        </li>
+
+				        <li class="">
+				            <a href="/wkwhrma/smsInput.do">SMS</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu4 sub-menu" style="display:none">
+				                <ul>                  
+				                    <li class="">
+				                        <a href="/wkwhrma/smsInput.do">SMS보내기</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/smsTranslist.do">SMS전송내역</a>
+				                    </li>
+		                            <li class="">
+				                        <a href="/wkwhrma/smsSetting.do">SMS설정</a>
+				                    </li>
+				                </ul>
+				            </div>
+				        </li>
+				    
+				        <li class="">
+				            <a href="/wkwhrma/farmReport.do">경작신고</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu5 sub-menu" style="display:none">
+				                <ul>
+				                    <li class="">
+				                        <a href="/wkwhrma/farmReport.do">경작신고</a>
+				                    </li>
+									<li class="">
+				                        <a href="/wkwhrma/fieldSearch.do">현장조사</a>
+				                    </li> 
+				                </ul>
+				            </div>
+				        </li>
+
+				        <li class="">
+				            <a href="/wkwhrma/acainfo.do">단체관리</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu6 sub-menu" style="display:none">
+				                <ul>
+				                    <li class="">
+				                        <a href="/wkwhrma/acainfo.do">설정관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/registadmin.do">직원관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/approvalList.do">결재관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/workInfo.do">근태관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/businessPlanList.do">사업계획서</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/viewContractInfo.do">계약정보</a>
+				                    </li>  
+				                </ul>
+				            </div>
+				        </li>
+
+						<li class="active">
+				            <a href="/wkwhrma/acainfo.do">사업관리</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu6 sub-menu" style="display:none">
+				                <ul>
+				                    <li class="on">
+				                        <a href="/Statistics4.html">사업계획</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/Statistics3.html">지출관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/budgetItemManageTab.html">항목관리</a>
+				                    </li>
+				                </ul>
+				            </div>
+				        </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+<!-- //header -->
+
+	<!-- // header_container -->		
+    
+    <!-- content -->
+    <div id="content">
+    	<div class="pageTitle">
+        	<h2>사업계획</h2>
+            <p><img src="https://자조금.kr/image/ico_home.png" alt="home"/>  > 사업관리 > 사업계획 > <strong>수입계획</strong></p>
+        </div>
+        <div class="pageTabMenu flxspw">
+        	<ul class="tabMenuList">
+				<li class="active"><a href="/Statistics4.html">수입계획</a></li>
+				<li><a href="/Statistics5.html">지출계획</a></li>
+				<li><a href="/Statistics6.html">총괄표</a></li>
+			</ul>
+        </div>
+		<script>
+			function goBudgetItemManageTab() {
+				var sy = document.getElementById("search_year");
+				var year = sy ? sy.value : "";
+				var url = "budgetItemManageTab.html";
+				if (year) url += "?year=" + encodeURIComponent(year);
+				window.location.href = url;
+			}
+		</script>
+        <div class="tableListWrap">
+            <div class="table_list active">
+				<div style="width:100%;">
+				<div class="searchWrap" style="display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-bottom: 0;">
+					<!-- Container for 구분1 and 구분2 positioned on top -->
+					<div class="mb5" style="display:flex; width:100%; align-items:flex-start; justify-content:space-between; gap:12px; align-items: end;">
+						<div class="filterLeft" style="display:flex; flex-direction:row; align-items:flex-start; gap:12px;">
+							<div class="select-container">
+								<select id="search_year" name="searchYear" class="select01" onchange="fn_searchFormSubmit();">
+									<option value="2026" selected>2026</option>
+									<option value="2025" >2025</option>
+									<option value="2024" >2024</option>
+									<option value="2023" >2023</option>
+									<option value="2022" >2022</option>
+									<option value="2021" >2021</option>
+									<option value="2020" >2020</option>
+									<option value="2019" >2019</option>
+								</select>
+								<a class="btnLink btnGrayBg" href="javascript:openExpenseRegPopup();">입력</a>
+							</div>
+						</div>
+						<a href="javascript:exceldown();" class="btnLink btnBlueGr">엑셀 <i class="fa fa-download"></i></a>
+					</div>
+				</div>
+
+				<!-- 예산통계 -->
+				<style>
+					#budgetStatsMatrixLikeWrap { overflow-x: auto; margin-top: 10px; }
+					#budgetStatsMatrixLikeTable { width: 100%; border-collapse: collapse; table-layout: fixed; }
+					#budgetStatsMatrixLikeTable th, #budgetStatsMatrixLikeTable td {
+						border: 1px solid #9a9a9a;
+						padding: 6px 6px;
+						font-size: 12px;
+						text-align: center;
+						vertical-align: middle;
+					}
+					#budgetStatsMatrixLikeTable thead th { background: #f3f3f3; }
+						#budgetStatsMatrixLikeTable .left { text-align: center; }
+				</style>
+				<div id="budgetStatsMatrixLikeWrap">
+					<table id="budgetStatsMatrixLikeTable">
+						<colgroup>
+							<col style="width:140px" />   <!-- 항 -->
+							<col style="width:140px" />  <!-- 목 -->
+							<col style="width:210px" />  <!-- 세목 -->
+							<col style="width:140px" />  <!-- 예산 -->
+							<col style="width:auto" />   <!-- 세부사업 -->
+							<col style="width:120px" />  <!-- 예산편성(A) -->
+							<col style="width:120px" />  <!-- 집행(B) -->
+							<col style="width:120px" />  <!-- 잔액(A-B) -->
+							<col style="width:120px" />  <!-- 비고 -->
+						</colgroup>
+						<thead>
+							<tr>
+								<th colspan="3">예산 (단위: 원)</th>
+								<th rowspan="2">비고</th>
+							</tr>
+							<tr>
+								<th>예산현황 (A)</th>
+								<th>집행 (B)</th>
+								<th>잔액 (A-B)</th>
+							</tr>
+						</thead>
+						<tbody id="budgetStatsMatrixLikeTbody"></tbody>
+					</table>
+				</div>
+						font-weight: 600;
+
+				<script>
+					(function () {
+						var STORAGE_KEY = "budgetTreeItems_v2";
+						var tbody = document.getElementById("budgetStatsMatrixLikeTbody");
+						if (!tbody) return;
+
+						// 기존(월/비용) 예산통계 테이블은 완전히 무시
+						try {
+							Array.from(document.querySelectorAll("#content table")).forEach(function (t) {
+								if (t && t.id !== "budgetStatsMatrixLikeTable") t.style.display = "none";
+							});
+						} catch (e) {}
+
+						function depthFromId(id) {
+							return id ? String(id).trim().split("-").length : 0;
+						}
+						function parentDepth1FromDepth4(id) {
+							return String(id).split("-")[0] || "";
+						}
+						function parentDepth2FromDepth4(id) {
+							var p = String(id).split("-");
+							return p.length >= 2 ? p[0] + "-" + p[1] : "";
+						}
+						function parentDepth3FromDepth4(id) {
+							var p = String(id).split("-");
+							return p.length >= 3 ? p[0] + "-" + p[1] + "-" + p[2] : "";
+						}
+						function sortIdByNumbers(a, b) {
+							var pa = String(a).split("-").map(function (x) { return parseInt(x, 10); });
+							var pb = String(b).split("-").map(function (x) { return parseInt(x, 10); });
+							for (var i = 0; i < 4; i++) {
+								var da = isNaN(pa[i]) ? 0 : pa[i];
+								var db = isNaN(pb[i]) ? 0 : pb[i];
+								if (da !== db) return da - db;
+							}
+							return 0;
+						}
+
+						var year = "";
+						try {
+							var ys = document.getElementById("search_year");
+							year = ys && ys.value ? String(ys.value) : "";
+						} catch (e2) {}
+						if (!year) year = String(new Date().getFullYear());
+
+						var payload = null;
+						try {
+							var raw = localStorage.getItem(STORAGE_KEY);
+							if (raw) {
+								var root = JSON.parse(raw);
+								var yd = root && root.years ? root.years[year] : null;
+								payload = yd || (root && root.years ? root.years[Object.keys(root.years)[0]] : null);
+							}
+						} catch (e3) {}
+
+						var items = (payload && payload.items) || {};
+						var deleted = (payload && payload.deleted) || [];
+						var deletedSet = new Set(deleted);
+
+						// 스크린샷과 동일한 구조를 위해 localStorage 데이터 무시하고 seed로 강제 렌더
+						{
+							var CSV_SEED_TEXT = `,,,
+구분1,구분2,구분3,구분4
+,,,
+소비홍보,광고,품질향상,현수막 제작 및 게첨
+,,소비촉진,
+
+수급안정,가격안정,수급조절사업,'25년산 가격안정 행사
+,,,주산지 포도축제 행사
+,,,포도데이 행사 등
+,,,과일산업대전 행사
+,,,연말 수급조절 행사
+
+,,,문자 발송
+,,,영농일지 등 제작
+,,홈페이지 관리?운영 등,수납관리시스템관리
+,,,홈페이지유지관리
+,,,인스타그램 운영
+수납위탁 수수료,수납기관 수수료,수납지원,수납기관 수수료(가상계좌)
+운영관리,인건비,급여 및 퇴직연금,급여 및 퇴직연금
+,,법정부담금,법정부담금(4대보험)
+,경비,대의원회,임차료
+,,,"참석수당(대면, 서면)"
+,,,인쇄비 등
+,,,기타(참석자 식대 등)
+,,"회의비(이사회, 관리위원회 등)",임차료
+,,,"참석수당(대면, 서면)"
+,,,인쇄비 등
+,,,기타(참석자 식대 등)
+,,수용비,사무국 운영비 등
+,,,의무자조금단체 연회비
+,,,해직자 고발 건 대응 노무사비 등
+,,제수수료,\"외부회계감사, 세무기장료, 등기 등\"
+,,업무추진비,업무추진비
+,,직무수행비,회장
+,,여비,출장여비 등
+,,통신비,전화요금 및 우편료 등
+,,임차료,\"임차료(사무실 임차료, 렌터카 등)\"
+,자산취득비,자산취득비,중요재산`;
+
+							function parseCsv4(text) {
+								var rows = [];
+								var row = [];
+								var field = "";
+								var inQuotes = false;
+								for (var i = 0; i < text.length; i++) {
+									var ch = text[i];
+									if (ch === '\"') {
+										if (inQuotes && text[i + 1] === '\"') {
+											field += '\"';
+											i++;
+										} else {
+											inQuotes = !inQuotes;
+										}
+										continue;
+									}
+									if (ch === "," && !inQuotes) {
+										row.push(field);
+										field = "";
+										continue;
+									}
+									if ((ch === "\n" || ch === "\r") && !inQuotes) {
+										if (ch === "\r" && text[i + 1] === "\n") i++;
+										row.push(field);
+										field = "";
+										while (row.length < 4) row.push("");
+										rows.push(row.slice(0, 4));
+										row = [];
+										continue;
+									}
+									field += ch;
+								}
+								if (field.length || row.length) {
+									row.push(field);
+									while (row.length < 4) row.push("");
+									rows.push(row.slice(0, 4));
+								}
+								return rows;
+							}
+
+							function buildItemsFromSeedCsv4(csvText) {
+								var rows = parseCsv4(csvText);
+								var current = ["", "", "", ""];
+								var mapKey = {};
+								var childrenCount = {};
+								var itemsLocal = {};
+
+								function getId(depth, parentId, name) {
+									if (!name) return null;
+									var key = depth + "|" + parentId + "|" + name;
+									if (mapKey[key]) return mapKey[key];
+									var ck = depth + "|" + parentId;
+									var idx = (childrenCount[ck] || 0) + 1;
+									childrenCount[ck] = idx;
+									var id = depth === 1 ? String(idx) : parentId + "-" + String(idx);
+									mapKey[key] = id;
+									itemsLocal[id] = { name: name, alloc: "", spent: "", note: "", active: true };
+									return id;
+								}
+
+								for (var r = 0; r < rows.length; r++) {
+									var cols = rows[r].map(function (c) {
+										return (c == null ? "" : String(c)).trim();
+									});
+									if (cols.every(function (c) { return !c; })) continue;
+									if (cols.some(function (c) { return c.indexOf("구분") !== -1; })) continue;
+
+									var deepest = 0;
+									for (var d0 = 0; d0 < 4; d0++) {
+										if (cols[d0] !== "") deepest = d0 + 1;
+									}
+									if (deepest === 0) continue;
+
+									for (var d1 = 0; d1 < deepest; d1++) {
+										if (cols[d1] !== "") {
+											current[d1] = cols[d1];
+											for (var e = d1 + 1; e < 4; e++) current[e] = "";
+										}
+									}
+
+									var parent = "";
+									for (var d2 = 1; d2 <= deepest; d2++) {
+										var nm = current[d2 - 1];
+										if (!nm) break;
+										parent = getId(d2, parent, nm) || parent;
+									}
+								}
+
+								return itemsLocal;
+							}
+
+							items = buildItemsFromSeedCsv4(CSV_SEED_TEXT);
+							deletedSet = new Set();
+						}
+
+						var leaves = [];
+						Object.keys(items).forEach(function (id) {
+							if (!id) return;
+							if (deletedSet.has(id)) return;
+							var d = depthFromId(id);
+							// 스크린샷의 "세부사업"에는 3뎁스/4뎁스가 함께 표시되는 구조로 맞춤
+							if (d !== 3 && d !== 4) return;
+							leaves.push(id);
+						});
+						leaves.sort(sortIdByNumbers);
+
+						var byP1 = {}; // p1 => { name, leaves, byP2 }
+						leaves.forEach(function (leafId) {
+							var p1 = parentDepth1FromDepth4(leafId);
+							var p2 = parentDepth2FromDepth4(leafId);
+							if (!byP1[p1]) byP1[p1] = { name: items[p1] ? (items[p1].name || "") : "", leaves: [], byP2: {} };
+							byP1[p1].leaves.push(leafId);
+							if (!byP1[p1].byP2[p2]) byP1[p1].byP2[p2] = { name: items[p2] ? (items[p2].name || "") : "", leaves: [] };
+							byP1[p1].byP2[p2].leaves.push(leafId);
+						});
+
+						var p1Ids = Object.keys(byP1);
+						p1Ids.sort(function (a, b) { return parseInt(a, 10) - parseInt(b, 10); });
+
+						p1Ids.forEach(function (p1) {
+							var g1 = byP1[p1];
+							var p2Ids = Object.keys(g1.byP2);
+							p2Ids.sort(function (a, b) {
+								var aa = parseInt(String(a).split("-")[1] || "0", 10);
+								var bb = parseInt(String(b).split("-")[1] || "0", 10);
+								return aa - bb;
+							});
+
+							var totalLeavesUnderP1 = g1.leaves.length || 0;
+							var p1RowSpan = totalLeavesUnderP1 + p2Ids.length + 1; // p2 소계 + p1 소계
+							var p1Rendered = false;
+
+							p2Ids.forEach(function (p2) {
+								var g2 = g1.byP2[p2];
+								var p2RowSpan = (g2.leaves.length || 0) + 1; // 마지막에 p2 소계 1행
+								var p2Rendered = false;
+
+								g2.leaves.forEach(function (leafId) {
+									var tr = document.createElement("tr");
+
+									if (!p1Rendered) {
+										var td1 = document.createElement("td");
+										td1.rowSpan = p1RowSpan;
+										td1.className = "left";
+										td1.textContent = g1.name || "";
+										tr.appendChild(td1);
+										p1Rendered = true;
+									}
+						border: 1px solid rgb(124, 196, 255);
+						color: rgb(124, 196, 255);
+						background: rgb(236, 250, 255);
+
+									if (!p2Rendered) {
+										var td2 = document.createElement("td");
+										td2.rowSpan = Math.max(1, p2RowSpan - 1);
+										td2.className = "left";
+										td2.textContent = g2.name || "";
+										tr.appendChild(td2);
+										p2Rendered = true;
+									}
+
+									var td3 = document.createElement("td");
+									td3.className = "left";
+									td3.textContent = items[leafId] ? (items[leafId].name || "") : "";
+									tr.appendChild(td3);
+
+									// 예산현황(A/B/A-B), 비고: 데이터 계산 없이 구조만 표시
+									var tdA = document.createElement("td");
+									tdA.textContent = "";
+									tr.appendChild(tdA);
+									var tdB = document.createElement("td");
+									tdB.textContent = "";
+									tr.appendChild(tdB);
+									var tdAB = document.createElement("td");
+									tdAB.textContent = "";
+									tr.appendChild(tdAB);
+
+									var tdNote = document.createElement("td");
+									tdNote.textContent = "";
+									tr.appendChild(tdNote);
+
+									tbody.appendChild(tr);
+								});
+
+								// p2 소계(세부 열: 소계)
+								var trSub = document.createElement("tr");
+								var td3Sub = document.createElement("td");
+								td3Sub.textContent = "소계";
+								trSub.appendChild(td3Sub);
+
+								// 예산현황(A/B/A-B)
+								var tdA0 = document.createElement("td");
+								tdA0.textContent = "";
+								trSub.appendChild(tdA0);
+								var tdB0 = document.createElement("td");
+								tdB0.textContent = "";
+								trSub.appendChild(tdB0);
+								var tdAB0 = document.createElement("td");
+								tdAB0.textContent = "";
+								trSub.appendChild(tdAB0);
+
+								// 비고
+								var tdNoteSub = document.createElement("td");
+								tdNoteSub.textContent = "";
+								trSub.appendChild(tdNoteSub);
+
+								tbody.appendChild(trSub);
+							});
+
+						// p1 소계(세부 열: 소계)
+						var trP1Sub = document.createElement("tr");
+						// p1 소계는 목(rowspan)이 끝난 다음에 나와서, 목 컬럼 td를 비워둬야 칸이 맞습니다.
+						var td2P1Sub = document.createElement("td");
+						td2P1Sub.textContent = "";
+						trP1Sub.appendChild(td2P1Sub);
+						var td3P1Sub = document.createElement("td");
+						td3P1Sub.textContent = "소계";
+						trP1Sub.appendChild(td3P1Sub);
+
+						var tdA1 = document.createElement("td");
+						tdA1.textContent = "";
+						trP1Sub.appendChild(tdA1);
+						var tdB1 = document.createElement("td");
+						tdB1.textContent = "";
+						trP1Sub.appendChild(tdB1);
+						var tdAB1 = document.createElement("td");
+						tdAB1.textContent = "";
+						trP1Sub.appendChild(tdAB1);
+
+						var tdNoteP1Sub = document.createElement("td");
+						tdNoteP1Sub.textContent = "";
+						trP1Sub.appendChild(tdNoteP1Sub);
+
+						tbody.appendChild(trP1Sub);
+						});
+					})();
+				</script>
+
+				<!-- 예산통계 스크린샷 구조 오버라이드(항/목/세목/예산/세부사업 + 예산현황(A/B/A-B) + 비고) -->
+				<script>
+					(function () {
+						var tbody = document.getElementById("budgetStatsMatrixLikeTbody");
+						var table = document.getElementById("budgetStatsMatrixLikeTable");
+						if (!tbody || !table) return;
+
+						function depthFromId(id) {
+							return id ? String(id).trim().split("-").length : 0;
+						}
+						function parentDepth1FromDepth4(id) {
+							return String(id).split("-")[0] || "";
+						}
+						function parentDepth2FromDepth4(id) {
+							var p = String(id).split("-");
+							return p.length >= 2 ? p[0] + "-" + p[1] : "";
+						}
+						function parentDepth3FromDepth4(id) {
+							var p = String(id).split("-");
+							return p.length >= 3 ? p[0] + "-" + p[1] + "-" + p[2] : "";
+						}
+						function sortIdByNumbers(a, b) {
+							var pa = String(a).split("-").map(function (x) { return parseInt(x, 10); });
+							var pb = String(b).split("-").map(function (x) { return parseInt(x, 10); });
+							for (var i = 0; i < 4; i++) {
+								var da = isNaN(pa[i]) ? 0 : pa[i];
+								var db = isNaN(pb[i]) ? 0 : pb[i];
+								if (da !== db) return da - db;
+							}
+							return 0;
+						}
+
+						// localStorage read + fallback(seed)
+						var STORAGE_KEY = "budgetTreeItems_v2";
+						function parseCsv4(text) {
+							var rows = [];
+							var row = [];
+							var field = "";
+							var inQuotes = false;
+							for (var i = 0; i < text.length; i++) {
+								var ch = text[i];
+								if (ch === '"') {
+									if (inQuotes && text[i + 1] === '"') {
+										field += '"';
+										i++;
+									} else {
+										inQuotes = !inQuotes;
+									}
+									continue;
+								}
+								if (ch === "," && !inQuotes) {
+									row.push(field);
+									field = "";
+									continue;
+								}
+								if ((ch === "\n" || ch === "\r") && !inQuotes) {
+									if (ch === "\r" && text[i + 1] === "\n") i++;
+									row.push(field);
+									field = "";
+									while (row.length < 4) row.push("");
+									rows.push(row.slice(0, 4));
+									row = [];
+									continue;
+								}
+								field += ch;
+							}
+							if (field.length || row.length) {
+								row.push(field);
+								while (row.length < 4) row.push("");
+								rows.push(row.slice(0, 4));
+							}
+							return rows;
+						}
+
+						function buildItemsFromSeedCsv4(csvText) {
+							var rows = parseCsv4(csvText);
+							var current = ["", "", "", ""];
+							var mapKey = {};
+							var childrenCount = {};
+							var itemsLocal = {};
+
+							function getId(depth, parentId, name) {
+								if (!name) return null;
+								var key = depth + "|" + parentId + "|" + name;
+								if (mapKey[key]) return mapKey[key];
+								var ck = depth + "|" + parentId;
+								var idx = (childrenCount[ck] || 0) + 1;
+								childrenCount[ck] = idx;
+								var id = depth === 1 ? String(idx) : parentId + "-" + String(idx);
+								mapKey[key] = id;
+								itemsLocal[id] = { name: name, alloc: "", spent: "", note: "", active: true };
+								return id;
+							}
+
+							for (var r = 0; r < rows.length; r++) {
+								var cols = rows[r].map(function (c) { return (c == null ? "" : String(c)).trim(); });
+								if (cols.every(function (c) { return !c; })) continue;
+								if (cols.some(function (c) { return c.indexOf("구분") !== -1; })) continue;
+
+								var deepest = 0;
+								for (var d0 = 0; d0 < 4; d0++) {
+									if (cols[d0] !== "") deepest = d0 + 1;
+								}
+								if (deepest === 0) continue;
+
+								for (var d1 = 0; d1 < deepest; d1++) {
+									if (cols[d1] !== "") {
+										current[d1] = cols[d1];
+										for (var e = d1 + 1; e < 4; e++) current[e] = "";
+									}
+								}
+
+								var parent = "";
+								for (var d2 = 1; d2 <= deepest; d2++) {
+									var nm = current[d2 - 1];
+									if (!nm) break;
+									parent = getId(d2, parent, nm) || parent;
+								}
+							}
+							return itemsLocal;
+						}
+
+						var payload = null;
+						try {
+							var ys = document.getElementById("search_year");
+							var year = ys && ys.value ? String(ys.value) : String(new Date().getFullYear());
+							var raw = localStorage.getItem(STORAGE_KEY);
+							if (raw) {
+								var root = JSON.parse(raw);
+								payload = (root && root.years && root.years[year]) || null;
+								if (!payload && root && root.years) payload = root.years[Object.keys(root.years)[0]] || null;
+							}
+						} catch (e) {}
+
+						var items = (payload && payload.items) || {};
+						var deleted = (payload && payload.deleted) || [];
+
+						// 스크린샷과 동일한 구조를 위해 localStorage 데이터와 무관하게 seed로 렌더(강제)
+						{
+							var CSV_SEED_TEXT = `,,,
+구분1,구분2,구분3,구분4
+,,,
+소비홍보,광고,품질향상,현수막 제작 및 게첨
+,,소비촉진,TV광고(PPL)
+수급안정,가격안정,수급조절사업,'25년산 가격안정 행사
+,,,주산지 포도축제 행사
+,,,포도데이 행사 등
+,,,과일산업대전 행사
+,,,연말 수급조절 행사
+,,,판촉홍보물 제작 등
+,수급안정 예비비,수급안정 예비비,농업수입안정보험 등 지원사업(보류)
+경쟁력제고,품질향상,교육자료 발간 등,재배기술 책자 발간 등
+,,,영상자료 링크
+,,,담당자 교육
+,생산성향상,샤인머스켓 이외 품종 삽목묘 구입비 지원,삽목묘 구입비 지원
+교육 및 정보제공,교육,거출률광고,버스외부광고
+,,사무국 주관 농가교육,사무국 주관 교육
+,,회원농협 주관 농가교육,회원농협 주관 교육
+,정보제공,거출금 고지 등,거출금 고지
+,,,문자 발송
+,,,영농일지 등 제작
+,,홈페이지 관리?운영 등,수납관리시스템관리
+,,,홈페이지유지관리
+,,,인스타그램 운영
+수납위탁 수수료,수납기관 수수료,수납지원,수납기관 수수료(가상계좌)
+운영관리,인건비,급여 및 퇴직연금,급여 및 퇴직연금
+,,법정부담금,법정부담금(4대보험)
+,경비,대의원회,임차료
+,,,"참석수당(대면, 서면)",임차료
+,,,인쇄비 등
+,,,기타(참석자 식대 등)
+,,"회의비(이사회, 관리위원회 등)",임차료
+,,,"참석수당(대면, 서면)"
+,,,인쇄비 등
+,,,기타(참석자 식대 등)
+,,수용비,사무국 운영비 등
+,,,의무자조금단체 연회비
+,,,해직자 고발 건 대응 노무사비 등
+,,제수수료,\"외부회계감사, 세무기장료, 등기 등\"
+,,업무추진비,업무추진비
+,,직무수행비,회장
+,,여비,출장여비 등
+,,통신비,전화요금 및 우편료 등
+,,임차료,\"임차료(사무실 임차료, 렌터카 등)\"
+,자산취득비,자산취득비,중요재산`;
+							items = buildItemsFromSeedCsv4(CSV_SEED_TEXT);
+							deleted = [];
+						}
+
+						var deletedSet = new Set(deleted);
+
+						// leaf(depth4)만 사용: 세부사업(세부사업) 목록
+						var leafIds = [];
+						Object.keys(items).forEach(function (id) {
+							if (!id) return;
+							if (deletedSet.has(id)) return;
+							if (depthFromId(id) !== 4) return;
+							leafIds.push(id);
+						});
+						leafIds.sort(sortIdByNumbers);
+
+						// by[p1][p2][p3] = {name, leaves[]}
+						var by = {};
+						leafIds.forEach(function (leafId) {
+							var p1 = parentDepth1FromDepth4(leafId);
+							var p2 = parentDepth2FromDepth4(leafId);
+							var p3 = parentDepth3FromDepth4(leafId);
+							if (!by[p1]) by[p1] = { name: items[p1] ? (items[p1].name || "") : "", p2: {} };
+							if (!by[p1].p2[p2]) by[p1].p2[p2] = { name: items[p2] ? (items[p2].name || "") : "", p3: {} };
+							if (!by[p1].p2[p2].p3[p3]) by[p1].p2[p2].p3[p3] = { name: items[p3] ? (items[p3].name || "") : "", leaves: [] };
+							by[p1].p2[p2].p3[p3].leaves.push(leafId);
+						});
+
+						function sortBySecondLevelId(a, b) {
+							var aa = parseInt(String(a).split("-")[1] || "0", 10);
+							var bb = parseInt(String(b).split("-")[1] || "0", 10);
+							return aa - bb;
+						}
+						function sortByThirdLevelId(a, b) {
+							var aa = parseInt(String(a).split("-")[2] || "0", 10);
+							var bb = parseInt(String(b).split("-")[2] || "0", 10);
+							return aa - bb;
+						}
+
+						// render
+						tbody.innerHTML = "";
+
+						var p1Ids = Object.keys(by).sort(function (a, b) {
+							return parseInt(a, 10) - parseInt(b, 10);
+						});
+
+						p1Ids.forEach(function (p1) {
+							var g1 = by[p1];
+							var p2Ids = Object.keys(g1.p2).sort(sortBySecondLevelId);
+
+						var computeRowSpanP2 = function (p2) {
+								var g2 = g1.p2[p2];
+								var p3IdsLocal = Object.keys(g2.p3).sort(sortByThirdLevelId);
+								var sum = 0;
+								p3IdsLocal.forEach(function (p3) {
+									var g3 = g2.p3[p3];
+									// 세목 소계는 넣지 않고 leaf 개수만 합산
+									sum += g3.leaves.length;
+								});
+							// p2 소계 1행 추가
+							return (sum || 0) + 1;
+							};
+
+							var p1RowSpan = 0;
+							p2Ids.forEach(function (p2) { p1RowSpan += computeRowSpanP2(p2); });
+							if (!p1RowSpan) p1RowSpan = 1;
+
+							var p1TdDone = false;
+
+							p2Ids.forEach(function (p2) {
+								var g2 = g1.p2[p2];
+								var p3Ids = Object.keys(g2.p3).sort(sortByThirdLevelId);
+								var p2RowSpan = computeRowSpanP2(p2);
+								var p2TdDone = false;
+
+								p3Ids.forEach(function (p3) {
+									var g3 = g2.p3[p3];
+									// 세목은 leaf만큼만 rowSpan (소계는 목(p2) 끝에 1행만 추가)
+									var p3RowSpan = g3.leaves.length || 1;
+									var p3TdDone = false;
+
+									// leaf rows
+									g3.leaves.forEach(function (leafId) {
+										var tr = document.createElement("tr");
+
+										if (!p1TdDone) {
+											var td1 = document.createElement("td");
+											td1.rowSpan = p1RowSpan;
+											td1.className = "left";
+											td1.textContent = g1.name || "";
+											tr.appendChild(td1);
+											p1TdDone = true;
+										}
+										if (!p2TdDone) {
+											var td2 = document.createElement("td");
+											td2.rowSpan = Math.max(1, p2RowSpan - 1);
+											td2.className = "left";
+											td2.textContent = g2.name || "";
+											tr.appendChild(td2);
+											p2TdDone = true;
+										}
+										if (!p3TdDone) {
+											var td3 = document.createElement("td");
+											td3.rowSpan = p3RowSpan;
+											td3.className = "left";
+											td3.textContent = g3.name || "";
+											tr.appendChild(td3);
+											p3TdDone = true;
+										}
+
+										// 예산(leaf)
+										var tdBudget = document.createElement("td");
+										tdBudget.textContent = "";
+										tr.appendChild(tdBudget);
+
+										// 세부사업(leaf)
+										var tdDetail = document.createElement("td");
+										tdDetail.textContent = items[leafId] ? (items[leafId].name || "") : "";
+										tr.appendChild(tdDetail);
+
+										// 예산현황(A/B/A-B)
+										["", "", ""].forEach(function (v) {
+											var td = document.createElement("td");
+											td.textContent = v;
+											tr.appendChild(td);
+										});
+
+										// 비고
+										var tdNote = document.createElement("td");
+										tdNote.textContent = "";
+										tr.appendChild(tdNote);
+
+										tbody.appendChild(tr);
+									});
+
+									// 세목(p3) 아래 소계 행은 넣지 않음
+								});
+
+								// p2 소계(목 아래 소계): 세부사업 열에는 공백, 세목(세부사업) 열에 소계 표시
+								var trP2Sub = document.createElement("tr");
+								// 목+세목 2칸 병합: merged cell = 소계
+								var tdMergedSub = document.createElement("td");
+								tdMergedSub.colSpan = "2";
+								tdMergedSub.textContent = "소계";
+								tdMergedSub.style.fontWeight = "";
+								tdMergedSub.style.background = "rgb(247, 247, 247)";
+								trP2Sub.appendChild(tdMergedSub);
+
+								// 예산 칸(빈칸)
+								var tdBudgetP2Sub2 = document.createElement("td");
+								tdBudgetP2Sub2.textContent = "";
+								trP2Sub.appendChild(tdBudgetP2Sub2);
+
+								// 세부사업 칸(소계)
+								var tdDetailP2Sub2 = document.createElement("td");
+								tdDetailP2Sub2.textContent = "소계";
+								tdDetailP2Sub2.style.background = "rgb(247, 247, 247)";
+								trP2Sub.appendChild(tdDetailP2Sub2);
+
+								// 예산현황(A/B/A-B) + 비고
+								["", "", ""].forEach(function (v) {
+									var td = document.createElement("td");
+									td.textContent = v;
+									trP2Sub.appendChild(td);
+								});
+
+								// 비고
+								var tdNoteP2Sub2 = document.createElement("td");
+								tdNoteP2Sub2.textContent = "";
+								trP2Sub.appendChild(tdNoteP2Sub2);
+
+								tbody.appendChild(trP2Sub);
+							});
+						});
+					})();
+				</script>
+
+				<div style="overflow-x:auto;">
+                <table>
+                    <colgroup>
+                        <col style="width:100px">
+						<col style="width:100px">
+						<col style="width:100px">
+                        <col style="width:auto">
+                        <col style="width:auto">
+                        <col style="width:auto">
+                        <col style="width:auto">
+                        <col style="width:auto">
+                        <col style="width:auto">
+                        <col style="width:auto">
+						<col style="width:auto">
+						<col style="width:auto">
+
+
+                    </colgroup>
+
+
+
+				</div>
+				</div>
+				<script>
+					(function () {
+						if (document.getElementById("budgetStatsMatrixLikeTable")) return;
+						// 분기별 월 매핑 (사용자 요청 기준)
+						const QUARTER_TO_MONTHS = {
+							"1분기": ["01", "02", "03"],
+							"2분기": ["04", "05", "06"],
+							"3분기": ["07", "08", "09"],
+							"4분기": ["10", "11", "12"]
+						};
+					
+						// select의 option value가 분기를 의미하지 않는 경우 대비(현재 화면 값은 2026~2023 형태)
+						const VALUE_TO_QUARTER = {
+							"2026": "1분기",
+							"2025": "2분기",
+							"2024": "3분기",
+							"2023": "4분기"
+						};
+
+						// 월/비용 셀 값 파싱(예: "12,345", "0.0%")
+						function parseNumber(text) {
+							if (text === null || text === undefined) return 0;
+							const cleaned = String(text)
+								.replace(/,/g, '')
+								.replace(/%/g, '')
+								.trim();
+							const n = Number(cleaned);
+							return Number.isFinite(n) ? n : 0;
+						}
+
+						function formatNumber(n) {
+							if (!Number.isFinite(n)) return "0";
+							const sign = n < 0 ? "-" : "";
+							const abs = Math.abs(Math.round(n));
+							return sign + abs.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+						}
+
+						const COST_COL_COUNT = 11; // 소비홍보~예비비 (총 11개)
+						const MONTH_TOTAL_TD_INDEX = 2 + COST_COL_COUNT; // tds[13]
+						const MONTH_TD_MONTH_INDEX = 1; // tds[1] = 월(01~12 또는 예산)
+						const ALL_MONTHS = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+
+						function getBudgetAndMonthRows() {
+							const tbody = document.querySelector("#content table tbody");
+							if (!tbody) return null;
+
+							const rows = Array.from(tbody.querySelectorAll("tr"));
+
+							// 예산 row 찾기: (년도) td 다음이 "예산"이고, 총 14개 셀(년도+월+비용11+합계)이 있는 행
+							const budgetRow = rows.find((tr) => {
+								const tds = tr.querySelectorAll("td");
+								if (!tds || tds.length < (2 + COST_COL_COUNT + 1)) return false;
+								return (tds[MONTH_TD_MONTH_INDEX].textContent || "").trim() === "예산";
+							});
+
+							// 월 row 찾기: 월 td가 2자리 숫자(01~12)
+							const monthRows = {};
+							rows.forEach((tr) => {
+								const tds = tr.querySelectorAll("td");
+								if (!tds || tds.length < (2 + COST_COL_COUNT + 1)) return;
+								const m = (tds[MONTH_TD_MONTH_INDEX].textContent || "").trim();
+								if (/^(0[1-9]|1[0-2])$/.test(m)) {
+									monthRows[m] = tr;
+								}
+							});
+
+							// 잔액 row 찾기
+							const balanceRow = rows.find((tr) => {
+								return !!(tr.querySelector('td[colspan="2"]') && tr.textContent.includes("잔액"));
+							}) || null;
+
+							if (!budgetRow) return null;
+
+							const budgetTds = budgetRow.querySelectorAll("td");
+							const budgetCategories = Array.from({ length: COST_COL_COUNT }, (_, i) => {
+								return parseNumber(budgetTds[2 + i].textContent);
+							});
+							const budgetTotal = parseNumber(budgetTds[MONTH_TOTAL_TD_INDEX].textContent);
+
+							return { tbody, rows, budgetRow, budgetCategories, budgetTotal, monthRows, balanceRow };
+						}
+
+						function setDummyData01To03() {
+							const ctx = getBudgetAndMonthRows();
+							if (!ctx) return;
+
+							const { budgetCategories, monthRows } = ctx;
+							const ratios = {
+								// 아래 값들은 "임의 데이터"지만, 예산의 일부(합계가 예산을 넘지 않도록)로 구성
+								"01": [0.12, 0.08, 0.05, 0.10, 0.06, 0.09, 0.04, 0.03, 0.07, 0.02, 0.11],
+								"02": [0.07, 0.11, 0.08, 0.03, 0.09, 0.06, 0.05, 0.04, 0.10, 0.06, 0.02],
+								"03": [0.05, 0.03, 0.10, 0.07, 0.04, 0.08, 0.03, 0.06, 0.02, 0.09, 0.05]
+							};
+
+							const targetMonths = ["01", "02", "03"];
+
+							targetMonths.forEach((month) => {
+								const tr = monthRows[month];
+								if (!tr) return;
+								const tds = tr.querySelectorAll("td");
+
+								for (let i = 0; i < COST_COL_COUNT; i++) {
+									const budget = budgetCategories[i] || 0;
+									const mRatio = ratios[month][i];
+									const value = Math.floor(budget * mRatio);
+									// 기본 입력(나중에 예산 초과가 있으면 비율 재조정)
+									tds[2 + i].textContent = formatNumber(value);
+								}
+							});
+
+							// 반올림 오차로 인해 카테고리별 합이 예산을 넘는 경우를 방지하기 위해, 01~03 합을 예산에 맞춰 보정
+							for (let i = 0; i < COST_COL_COUNT; i++) {
+								const budget = budgetCategories[i] || 0;
+								const v01 = parseNumber(monthRows["01"]?.querySelectorAll("td")[2 + i]?.textContent);
+								const v02 = parseNumber(monthRows["02"]?.querySelectorAll("td")[2 + i]?.textContent);
+								const v03tds = monthRows["03"] ? monthRows["03"].querySelectorAll("td") : null;
+								let v03 = v03tds ? parseNumber(v03tds[2 + i].textContent) : 0;
+
+								let sum = v01 + v02 + v03;
+								if (budget > 0 && sum > budget) {
+									// v03를 우선 조정(나머지는 유지)
+									v03 = Math.max(0, budget - (v01 + v02));
+									if (v03tds && v03tds.length >= 2 + i + 1) {
+										v03tds[2 + i].textContent = formatNumber(v03);
+									}
+								}
+							}
+						}
+
+						function recalcMonthTotalsAndBalance() {
+							const ctx = getBudgetAndMonthRows();
+							if (!ctx) return;
+
+							const { budgetCategories, budgetTotal, monthRows, balanceRow } = ctx;
+
+							// 월 합계(각 월의 11개 비용 합)
+							Object.keys(monthRows).sort().forEach((month) => {
+								const tr = monthRows[month];
+								const tds = tr.querySelectorAll("td");
+								if (tds.length <= MONTH_TOTAL_TD_INDEX) return;
+
+								let sum = 0;
+								for (let i = 0; i < COST_COL_COUNT; i++) {
+									sum += parseNumber(tds[2 + i].textContent);
+								}
+								tds[MONTH_TOTAL_TD_INDEX].textContent = formatNumber(sum);
+							});
+
+							// 잔액: 예산 - (월별 지출 합)
+							if (balanceRow) {
+								const spent = Array.from({ length: COST_COL_COUNT }, () => 0);
+								let spentTotal = 0;
+
+								Object.keys(monthRows).sort().forEach((month) => {
+									const tr = monthRows[month];
+									const tds = tr.querySelectorAll("td");
+									for (let i = 0; i < COST_COL_COUNT; i++) {
+										const v = parseNumber(tds[2 + i].textContent);
+										spent[i] += v;
+									}
+								});
+
+								spentTotal = spent.reduce((acc, v) => acc + v, 0);
+
+								const balanceTds = balanceRow.querySelectorAll("td");
+								// 잔액 row: [td(colspan=2)] + (비용11개 + 합계1개) = 총 13개 셀
+								for (let i = 0; i < COST_COL_COUNT; i++) {
+									const remaining = (budgetCategories[i] || 0) - (spent[i] || 0);
+									if (balanceTds[1 + i]) {
+										balanceTds[1 + i].textContent = formatNumber(remaining);
+										// 잔액(계산된 값) 강조
+										balanceTds[1 + i].style.fontWeight = "700";
+									}
+								}
+
+								const totalRemaining = (budgetTotal || 0) - spentTotal;
+								if (balanceTds[1 + COST_COL_COUNT]) {
+									balanceTds[1 + COST_COL_COUNT].textContent = formatNumber(totalRemaining);
+									// 잔액(계산된 값) 강조
+									balanceTds[1 + COST_COL_COUNT].style.fontWeight = "700";
+								}
+							}
+						}
+
+						function getSelectedQuarterText() {
+							const sel = document.getElementById("search_year2");
+							if (!sel || !sel.options || sel.selectedIndex < 0) return "전체";
+							const opt = sel.options[sel.selectedIndex];
+							const text = (opt && (opt.textContent || opt.innerText) ? (opt.textContent || opt.innerText) : "").trim();
+							return text || "전체";
+						}
+
+						function getAllowedMonthsForQuickBox() {
+							const qText = getSelectedQuarterText();
+							return QUARTER_TO_MONTHS[qText] || ALL_MONTHS;
+						}
+
+						function updateQuickSummaryBox() {
+							const box = document.getElementById("quickSummaryBox");
+							if (!box) return;
+
+							const ctx = getBudgetAndMonthRows();
+							if (!ctx) return;
+
+							const yearSel = document.getElementById("search_year");
+							const year = yearSel ? String(yearSel.value || "").trim() : "";
+							const qText = getSelectedQuarterText();
+
+							const allowedMonths = getAllowedMonthsForQuickBox();
+							let costSum = 0;
+							allowedMonths.forEach((m) => {
+								const tr = ctx.monthRows[m];
+								if (!tr) return;
+								const tds = tr.querySelectorAll("td");
+								if (!tds || tds.length <= MONTH_TOTAL_TD_INDEX) return;
+								costSum += parseNumber(tds[MONTH_TOTAL_TD_INDEX].textContent);
+							});
+
+							const budget = ctx.budgetTotal || 0;
+							const balance = budget - costSum;
+
+							const budgetEl = document.getElementById("qs_budget");
+							const costEl = document.getElementById("qs_cost");
+							const balanceEl = document.getElementById("qs_balance");
+
+							if (budgetEl) budgetEl.textContent = formatNumber(budget);
+							if (costEl) costEl.textContent = formatNumber(costSum);
+							if (balanceEl) balanceEl.textContent = formatNumber(balance);
+						}
+
+						function getSelectedQuarterLabel() {
+							const sel = document.getElementById("search_year2");
+							if (sel && sel.options && sel.selectedIndex >= 0) {
+								const opt = sel.options[sel.selectedIndex];
+								const text = (opt && (opt.textContent || opt.innerText) ? (opt.textContent || opt.innerText) : "").trim();
+								if (QUARTER_TO_MONTHS[text]) return text;
+
+								const val = (opt && opt.value ? String(opt.value) : "").trim();
+								if (VALUE_TO_QUARTER[val]) return VALUE_TO_QUARTER[val];
+							}
+
+							// 혹시라도 URL 파라미터로 들어온 경우(서버/페이지 상태에 따라 selected 속성이 달라질 수 있음)
+							try {
+								const params = new URLSearchParams(window.location.search);
+								const v = params.get("searchYear2");
+								if (v && VALUE_TO_QUARTER[String(v).trim()]) return VALUE_TO_QUARTER[String(v).trim()];
+							} catch (e) {}
+
+							return null;
+						}
+
+						function applyQuarterFilter() {
+							const quarterLabel = getSelectedQuarterLabel();
+							if (!quarterLabel) return;
+
+							const allowedMonths = QUARTER_TO_MONTHS[quarterLabel];
+							const tbody = document.querySelector("#content table tbody");
+							if (!tbody || !allowedMonths) return;
+
+							// tbody의 각 tr을 순회하면서 “월(2번째 td)”가 분기 월 범위에 포함되면 표시
+							const rows = Array.from(tbody.querySelectorAll("tr"));
+							rows.forEach((tr) => {
+								// "잔액" row는 월 데이터가 아니지만, 사용자가 요청한 값이므로 항상 표시
+								if (tr.querySelector('td[colspan="2"]') && tr.textContent.includes("잔액")) {
+									tr.style.display = "";
+									return;
+								}
+
+								const tds = tr.querySelectorAll("td");
+								if (!tds || tds.length < 2) {
+									tr.style.display = "none";
+									return;
+								}
+								const monthText = (tds[1].textContent || "").trim();
+								const isAllowed = allowedMonths.includes(monthText);
+								tr.style.display = isAllowed ? "" : "none";
+							});
+						}
+
+						function openMonthlyCostDetailPopup(year, monthText, categoryName) {
+							// monthText: "01" ~ "12"
+							const paymentMonth = `${year}-${monthText}`;
+							const w = 1300;
+							const h = 350;
+							const sw = window.screen ? window.screen.availWidth : w;
+							const sh = window.screen ? window.screen.availHeight : h;
+							const left = Math.max(0, Math.round((sw - w) / 2));
+							const top = Math.max(0, Math.round((sh - h) / 2));
+							const params = new URLSearchParams();
+							params.set("paymentMonth", paymentMonth);
+							params.set("category", categoryName || "");
+							window.open(
+								"PriceInput.html?" + params.toString(),
+								"PriceInput",
+								`width=${w},height=${h},left=${left},top=${top},scrollbars=yes,resizable=yes,status=no,menubar=no,toolbar=no,location=no`
+							);
+						}
+
+						function bindMonthlyCostCellClicks() {
+							const table = document.querySelector("#content table");
+							if (!table) return;
+							const tbody = table.querySelector("tbody");
+							if (!tbody) return;
+
+							let categoryThs = Array.from(table.querySelectorAll("thead tr:nth-child(2) th"));
+							if (!categoryThs.length) {
+								categoryThs = Array.from(table.querySelectorAll("thead tr:last-child th"));
+							}
+
+							const categoryNames = categoryThs.map((th) => (th.textContent || "").trim());
+							const rows = Array.from(tbody.querySelectorAll("tr"));
+
+							rows.forEach((tr) => {
+								const tds = tr.querySelectorAll("td");
+								if (!tds || tds.length < 14) return;
+
+								const yearText = (tds[0].querySelector("span")?.textContent || tds[0].textContent || "").trim();
+								const monthText = (tds[1].textContent || "").trim();
+
+								// 예산 행 제외: monthText가 "예산"인 경우가 있음
+								if (!/^\d{2}$/.test(monthText)) return;
+
+								for (let i = 0; i < 11; i++) {
+									const td = tds[2 + i];
+									if (!td) continue;
+									if (td.dataset.priceInputBound === "1") continue;
+									td.dataset.priceInputBound = "1";
+
+									const categoryName = categoryNames[i] || "";
+									td.style.cursor = "pointer";
+
+									td.addEventListener("click", function () {
+										openMonthlyCostDetailPopup(yearText, monthText, categoryName);
+									});
+								}
+							});
+						}
+
+						// 로드 후 1회 적용 + 분기 변경 시 즉시 반영(페이지 리로드가 발생하더라도, 최종 상태에서 잘 적용됨)
+						function init() {
+							// 01~03월에 더미 데이터 입력 + 합계/잔액 자동 계산
+							setDummyData01To03();
+							recalcMonthTotalsAndBalance();
+
+							applyQuarterFilter();
+							updateQuickSummaryBox();
+							bindMonthlyCostCellClicks();
+							const sel = document.getElementById("search_year2");
+							if (sel) {
+								sel.addEventListener("change", function () {
+									applyQuarterFilter();
+									updateQuickSummaryBox();
+								});
+							}
+						}
+
+						if (document.readyState === "loading") {
+							document.addEventListener("DOMContentLoaded", init);
+						} else {
+							init();
+						}
+					})();
+				</script>
+            </div>
+
+
+
+
+        </div>
+
+        <!-- 에듀페이 모달 -->
+		<!--
+		<div class="modal_bg"></div>
+		<div class="pop_modal">
+			<div class="modalbox">
+				<ul class="flx">
+					<li><img src="https://자조금.kr/image/pop_main.png"></li>
+					<li><img src="https://자조금.kr/image/pop_text(smart).png"></li>
+				</ul>
+				<button class="pop_close">X</a></button>
+				<a href="/content/acadm/acainfo.html" class="apply_link"><img src="https://자조금.kr/image/btn-request(smart).png"></a>
+			</div>
+		</div>
+		//-->
+    </div>
+    <!-- //content -->
+
+       
+    <!-- footer -->
+
+
+
+
+<!-- footer -->
+<div id="footer">
+	자조금통합지원센터<br/>
+	서울시 서대문구 통일로 81, 농협생명 서관 20층 TEL 1577-0345<br/>
+	copyrightⓒ 자조금통합지원센터. all rights reserved.
+</div>
+<div id="loading-msg" style="
+display:none;
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+padding:20px 32px;
+background:#ffffff;
+color: #0056b3;        /* 진한 파란색 */
+font-size: 22px;       /* 글자 크기 확대 (기존 16px) */
+border-radius:12px;
+z-index:999999;
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+">
+  데이터를 처리 중입니다. 잠시만 기다려 주세요…
+</div>
+
+<script>
+/*
+(function () {
+  const msg = document.getElementById('loading-msg');
+  const show = () => { if (msg) msg.style.display = 'block'; };
+
+  // a 태그 클릭(메뉴 이동 포함)
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a');
+    if (!a) return;
+
+
+
+    if (a.target === '_blank') return;
+    if (a.hasAttribute('download')) return;
+    if (!a.href || a.href.startsWith('javascript:')) return;
+
+    show();
+  });
+
+  // form submit
+  document.addEventListener('submit', () => show());
+
+  // 새로고침/닫기 등
+  window.addEventListener('beforeunload', () => show());
+})();
+*/
+(function () {
+  const msg = document.getElementById('loading-msg');
+  const show = () => { if (msg) msg.style.display = 'block'; };
+
+  document.addEventListener('click', (e) => {
+    // 1. 클릭된 요소로부터 가장 가까운 a 태그를 찾음
+    const a = e.target.closest('a');
+    if (!a) return;
+
+    // 2. href 속성 값을 직접 가져옴 (a.href는 전체 URL을 반환하므로 getAttribute 권장)
+    const href = a.getAttribute('href');
+
+    // 3. 예외 처리 (이 부분이 미납현황을 걸러내고 있을 수 있음)
+    if (a.target === '_blank') return;
+    if (a.hasAttribute('download')) return;
+    
+    // href가 없거나, #으로만 시작하거나, javascript인 경우 제외
+    if (!href || href === '#' || href.startsWith('javascript:')) return;
+
+    // 4. .do나 .php 등 실제 페이지 이동이 명확한 경로인지 확인 (선택 사항)
+    // 현재 "미납현황"은 .do로 끝나므로 아래 조건이 없어도 위 조건을 통과하면 작동해야 함
+    show();
+  });
+
+  // 폼 전송 시 로딩바 표시
+  document.addEventListener('submit', (e) => {
+    if (e.target.target && e.target.target !== '_self') return;
+    show();
+  });
+
+  window.addEventListener('beforeunload', () => show());
+})();
+</script>
+
+
+
+    <!-- //footer -->
+
+
+</div>
+
+
+
+
+<script>
+	$('.price_crit form').hide();
+	$('.price_crit form').first().show();
+	$(".price_tab input[type='radio']").click(function(){
+		$('.price_crit form').hide();
+		$('.price_crit form').eq($("input[type='radio']").index(this)).show();
+	});
+
+	/*
+	$('.modal_bg,.pop_modal').hide();
+	$('.pop_open').click(function(){
+		$('.modal_bg,.pop_modal').stop().show();
+	});
+	$('.pop_close').click(function(){
+		$('.modal_bg,.pop_modal').stop().hide();
+	});
+	*/
+</script>
+
+<script>
+function exceldown() {
+    // 엑셀 다운로드를 위한 폼 제출
+    submitForm('/wkwhrma/getAcademyStatistics1Excel.do', 'ifrm01', fn_setSearchInput());
+}
+
+/* 구분 1, 2 */
+function multiSelect1() {
+    const dropdown = document.getElementById('selMulti1');
+    
+    if (dropdown.style.visibility === 'visible') {
+        dropdown.style.visibility = 'hidden';
+    } else {
+        // 드롭다운의 위치를 고정된 값으로 설정
+        dropdown.style.top = `20px`;  // 드롭다운이 셀렉트 박스 아래로 약간 떨어지게 설정
+        dropdown.style.visibility = 'visible';
+        dropdown.style.width = `130px`;
+        dropdown.style.zIndex = '1000';  // 드롭다운이 다른 요소 위에 표시되도록 설정
+    }
+}
+
+function multiSelect2() {
+    const dropdown = document.getElementById('selMulti2');
+    
+    if (dropdown.style.visibility === 'visible') {
+        dropdown.style.visibility = 'hidden';
+    } else {
+        // 드롭다운의 위치를 고정된 값으로 설정
+        dropdown.style.top = `20px`;  // 드롭다운이 셀렉트 박스 아래로 약간 떨어지게 설정
+        dropdown.style.left = `151px`;   // 드롭다운이 셀렉트 박스의 왼쪽에 맞춰서 나타나게 설정
+        dropdown.style.visibility = 'visible';
+        dropdown.style.width = `130px`;
+        dropdown.style.zIndex = '1000';  // 드롭다운이 다른 요소 위에 표시되도록 설정
+    }
+}
+
+
+function fnGetComboAjax(parm,val1,val2){
+	var strv = DoCallbackCommon("https://selfhelp.edu-ok.co.kr/common/ajaxTwoSelectComboNoSession.asp?Combo="+parm+"&ComboVal1="+val1+"&ComboVal2="+val2);
+	document.getElementById("Combo"+parm).innerHTML = strv;					
+	
+}
+
+function fnGetComboAjax2(parm,val1,val2){
+	var strv = DoCallbackCommon("https://selfhelp.edu-ok.co.kr/common/ajaxTwoSelectComboNoSession.asp?Combo="+parm+"&ComboVal1="+val1+"&ComboVal2="+val2);	
+	document.getElementById("Combo"+parm).innerHTML += strv;					
+	
+}
+//콤보박스만 리스레쉬하도록 처리하는 함수
+
+function fnChgSelectCombo(val){
+	$("input:checkbox[id='gubunAll1']").prop('checked',false); //radio reset
+	$("input:checkbox[id='gubunAll2']").prop('checked',false); //radio reset
+	
+	$('#ComboGubun2').empty(); // 모든 자식 요소 제거 (li 태그 포함)
+
+	$('input:checkbox').each(function() { //[name=??] 로특정 체크박스만 불러오기가능
+	 if(this.checked)
+		fnGetComboAjax2("Gubun2",this.value,'');
+	});
+}  
+
+function checkReset(){
+	$("input:checkbox[id='Gubun1']").prop('checked',false); //checkbox reset
+	$("input:checkbox[id='Gubun2']").prop('checked',false); //checkbox reset
+}
+
+function gubunAllReset(){
+	$("input:checkbox[id='gubunAll1']").prop('checked',false); //checkbox reset
+	$("input:checkbox[id='gubunAll2']").prop('checked',false); //checkbox reset
+}
+
+function checkOnlyOneGubun1() {
+	$(document).ready(function() {
+		$('input[type="checkbox"][id="gubunAll1"]').click(function(){
+			if($(this).prop('checked')){
+				$('input[type="checkbox"][id="gubunAll1"]').prop('checked',false);
+				$(this).prop('checked',true);
+			}
+		});
+	});
+}
+
+function checkOnlyOneGubun2() {
+	$(document).ready(function() {
+		$('input[type="checkbox"][id="gubunAll2"]').click(function(){
+			if($(this).prop('checked')){
+				$('input[type="checkbox"][id="gubunAll2"]').prop('checked',false);
+				$(this).prop('checked',true);
+			}
+		});
+	});
+}
+
+//검색후 로드되었을때 구분1있음,구분1없음 중복체크 방지
+$(document).ready(function() {
+	$('input[type="checkbox"][id="gubunAll1"]').click(function(){
+		if($(this).prop('checked')){
+			$('input[type="checkbox"][id="gubunAll1"]').prop('checked',false);
+			$(this).prop('checked',true);
+		}
+	});
+});
+
+//검색후 로드되었을때 구분2있음,구분2없음 중복체크 방지
+$(document).ready(function() {
+	$('input[type="checkbox"][id="gubunAll2"]').click(function(){
+		if($(this).prop('checked')){
+			$('input[type="checkbox"][id="gubunAll2"]').prop('checked',false);
+			$(this).prop('checked',true);
+		}
+	});
+});
+</script>
+</body>
+</html>

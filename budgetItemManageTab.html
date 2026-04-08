@@ -1,0 +1,665 @@
+<!doctype html>
+<!-- 항목관리 트리: 저장 버튼으로만 반영 · 미저장 시 페이지 이탈/항목 이동 시 확인 · localStorage: budgetItemManageTree_v1 -->
+<html lang="kr">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>사업관리>항목관리</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+	<script>
+	    var BASE_URL_ADMIN = '/wkwhrma';
+	    window.__JSP_FILE_PATH__ = "/WEB-INF/jsp/content/recpt/SettleAccounts_Report.jsp";
+	    window.__CONTROLLER_CLASS__ = "AdminController";
+	    window.__CONTROLLER_METHOD__ = "getAcademyStatistics1";
+	</script>
+	<script src="http://자조금.kr/js/jquery-3.7.1.js"></script>
+	<script src="http://자조금.kr/js/jquery.form.min.js"></script>
+	<script src="http://자조금.kr/js/ajax.js?v=1.0.4"></script>
+	<script src="http://자조금.kr/js/fn.common.js?v=1.0.11"></script>
+	<script src="http://자조금.kr/js/fn.print_path.js?v=1.0.3"></script>
+	<script src="http://자조금.kr/js/common.js?v=1.0.2"></script>
+	<script src="http://자조금.kr/js/jquery.bpopup.min.js" type="text/javascript"></script>
+	<script src="http://자조금.kr/js/jquery-confirm.min.js"></script>
+	<script src="http://자조금.kr/js/jquery.toast.js" type="text/javascript"></script>
+	<script type="text/javascript" src="http://자조금.kr/js/jquery.cookie.js"></script>
+	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+	<script src="http://자조금.kr/js/fn.console.log.dev.js?v=1.0.3"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+	<link href="http://자조금.kr/css/common.css?ver=1.0.2" rel="stylesheet" type="text/css" />
+	<link href="http://자조금.kr/css/premium.css?ver=1.0.3" rel="stylesheet" type="text/css" />
+	<link href="http://자조금.kr/css/menu.css?ver=1.0.5" rel="stylesheet" type="text/css" />
+	<link href="http://자조금.kr/css/alert.css?ver=1.0.0" rel="stylesheet" type="text/css" />
+	<script src="http://자조금.kr/js/fn.menu.js?v=1.0.2"></script>
+	<script src="http://자조금.kr/Library/js/premiun_Script.js?v=1.0.2"></script>
+	<script>
+	const pBranchID = "2028";
+	const pMhighcode = "48";
+	const PGubun1Code = "";
+	const PGubun2Code = "";
+	const selectedSido = "";
+	const selectedSigungu = "";
+	const selectedDong = "";
+	const CONST_SIDO = "1";
+	const CONST_SIGUNGU = "2";
+	</script>
+	<script src="http://자조금.kr/js/fn.set_gubun.js?v=1.0.2"></script>
+	<script src="http://자조금.kr/js/fn.search_addr.js?v=1.0.2"></script>
+	<script>
+	function fn_searchFormSubmit() {
+		const currentUrl = window.location.href;
+		submitForm(currentUrl, '_self', fn_setSearchInput());
+	}
+	function fn_setSearchInput() {
+		const params = { sidoCode: $('#p_sh_sido').val(), sigunguCode: $('#p_sh_sigungu').val(), sigunguAll: $("input[name='sigunguAll']:checked").val() || "" };
+		const gubun1Values = [];
+		$("input[name='Gubun1']:checked").each(function() { gubun1Values.push($(this).val()); });
+		params.p_gubun1_code = gubun1Values.join(',');
+		const gubun2Values = [];
+		$("input[name='Gubun2']:checked").each(function() { gubun2Values.push($(this).val()); });
+		params.p_gubun2_code = gubun2Values.join(',');
+		params.searchYear = $("#search_year").val();
+		params.searchYear2 = $("#search_year2").val();
+		return params;
+	}
+	</script>
+</head>
+<style>
+li a { white-space: nowrap; }
+.bim-manage { font-family: "Malgun Gothic","맑은 고딕",sans-serif; font-size: 13px; color: #1a1a1a; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; max-width: 1400px; margin-top: 16px; }
+.bim-manage .bim-pane { border: 1px solid #d8d8d8; background: #fff; border-radius: 2px; box-sizing: border-box; }
+.bim-manage .bim-pane-tree { flex: 1 1 420px; min-width: 300px; min-height: calc(100vh - 250px); max-height: calc(100vh - 250px); display: flex; flex-direction: column; padding: 14px 16px 18px; }
+.bim-manage .bim-tree-pane-title { margin: 0 0 12px; padding: 0; font-size: 15px; font-weight: 700; color: #111; letter-spacing: -0.02em; }
+.bim-manage .bim-pane-detail { flex: 1 1 280px; min-width: 300px; padding: 18px 22px 24px; }
+.bim-manage .bim-tree-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.bim-manage .bim-tree-toolbar-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.bim-manage #bimBtnAddRoot { padding: 6px 14px; font-size: 12px; font-weight: 600; border: 1px solid #5a5a5a; border-radius: 2px; background: #4a4a4a; color: #fff; cursor: pointer; }
+.bim-manage #bimBtnAddRoot:hover { background: #3d3d3d; }
+.bim-manage .btn-bim-fold { padding: 5px 12px; margin: 0; font-size: 12px; font-weight: 600; border: 1px solid #b5b5b5; border-radius: 2px; background: #fff; color: #222; cursor: pointer; }
+.bim-manage .btn-bim-fold:hover { background: #f5f5f5; }
+.bim-manage .btn-bim-fold:disabled { opacity: 0.45; cursor: not-allowed; }
+.bim-manage .btn-bim-save-toolbar {
+	padding: 5px 14px;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.3;
+	border-radius: 2px;
+	border: none;
+	background: #1e4f9e;
+	color: #fff;
+	cursor: pointer;
+}
+.bim-manage .btn-bim-save-toolbar:hover { background: #1a4588; }
+.bim-manage .bim-tree-wrap { flex: 1 1 auto; min-height: 220px; overflow: auto; padding: 4px 2px 8px 0; margin: 0 -4px; }
+.bim-manage .bim-tree { list-style: none; margin: 0; padding: 0; }
+.bim-manage .bim-tree li > ul { list-style: none; margin: 0; padding: 4px 0 2px 0; position: relative; }
+.bim-manage .bim-tree li > ul > li { position: relative; padding-left: 22px; }
+.bim-manage .bim-tree li > ul > li::before {
+	content: "";
+	position: absolute;
+	left: 8px;
+	top: 0;
+	bottom: 0;
+	width: 0;
+	border-left: 1px dotted #aeb6c4;
+	pointer-events: none;
+}
+.bim-manage .bim-tree li > ul > li:last-child::before { bottom: 50%; }
+.bim-manage .bim-tree li > ul > li::after {
+	content: "";
+	position: absolute;
+	left: 8px;
+	top: 50%;
+	width: 12px;
+	margin-top: -0.5px;
+	border-top: 1px dotted #aeb6c4;
+	pointer-events: none;
+}
+.bim-manage .bim-tree-row {
+	width: 100%;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 28px;
+	padding: 3px 8px 3px 4px;
+	margin: 0 2px;
+	border-radius: 2px;
+	cursor: pointer;
+	position: relative;
+	z-index: 1;
+}
+.bim-manage .bim-tree-row:hover { background: #f0f4fa; }
+.bim-manage .bim-tree-row.is-row-selected { background: #d9e8f7; }
+.bim-manage .bim-tree-row.is-row-selected:hover { background: #d0e3f5; }
+.bim-manage .tree-toggle { flex: 0 0 20px; width: 20px; height: 20px; padding: 0; border: 1px solid #9a9a9a; background: #fff; border-radius: 1px; cursor: pointer; font-size: 13px; line-height: 18px; color: #222; }
+.bim-manage .tree-toggle:disabled { opacity: 0.4; cursor: default; color: #888; }
+.bim-manage .bim-tree-label-wrap { display: flex; align-items: center; gap: 10px; flex: 1 1 auto; min-width: 0; justify-content: space-between; }
+.bim-manage .tree-label { cursor: pointer; font-size: 13px; color: #111; word-break: keep-all; flex: 1 1 auto; min-width: 0; }
+.bim-manage .bim-tree-row.is-row-selected .tree-label { color: #111; font-weight: 400; }
+.bim-manage .btn-bim-add-child { flex: 0 0 auto; padding: 2px 10px; font-size: 11px; border: 1px solid #6b9bd1; background: #fff; color: #2563b8; border-radius: 2px; cursor: pointer; font-weight: 600; }
+.bim-manage .btn-bim-add-child:hover { background: #f2f7fd; }
+.bim-manage .bim-form-table { width: 100%; border-collapse: collapse; }
+.bim-manage .bim-form-table th { width: 100px; text-align: left; padding: 8px 10px 8px 0; vertical-align: top; font-weight: 600; color: #333; }
+.bim-manage .bim-form-table td { padding: 8px 0; vertical-align: top; }
+.bim-manage .bim-form-table input[type="text"], .bim-manage .bim-form-table textarea { width: 100%; max-width: 420px; box-sizing: border-box; padding: 6px 8px; border: 1px solid #ccc; border-radius: 2px; font-size: 13px; }
+.bim-manage .bim-form-table textarea { resize: vertical; min-height: 72px; }
+.bim-manage .bim-readonly { background: #f7f7f7 !important; color: #555; }
+.bim-manage .bim-form-actions { margin-top: 22px; padding-top: 8px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.bim-manage .btn-bim-delete { padding: 10px 28px; background: #c67b4e; color: #fff; border: none; border-radius: 2px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.bim-manage .bim-empty-hint { color: #666; padding: 24px 8px; text-align: center; line-height: 1.6; }
+.bim-manage .bim-radio-group label { margin-right: 18px; cursor: pointer; font-weight: normal; }
+</style>
+<body>
+<div id="wrap">
+<script>
+    $(document).ready(function() {
+        $("#logoutBtn").click(function() { if (confirm("로그아웃 하시겠습니까?")) callAjax("/wkwhrma/logoutExcute", "completeLogout"); });
+        $(".remote").click(function() { goRemote(); });
+    });
+    function completeLogout(data) { alertMessage("로그아웃 되었습니다."); location.href = "/wkwhrma"; }
+</script>
+<div id="header">
+    <div>
+        <div class="t_menu dWidth">
+            <div class="bntLeft"></div>
+            <h1><a href="/wkwhrma"><img id="topLogo" src="" style="width: 100%;" alt="홈으로" onerror="this.src='https://자조금.kr/image/top_logo.png'"/></a></h1>
+            <ul class="btnRight">
+                <li><a href="javascript:" class="remote"><i class="fa fa-headphones fa-lg"></i><b>02-6677-5533 [원격지원]</b></a></li>
+                <li><i class="fa fa-user fa-lg"></i><strong>테스트002</strong>님</li>
+                <li><button class="btn" id="logoutBtn">로그아웃</button></li>
+            </ul>
+        </div>
+        <div class="nav-menu">
+            <ul class="dWidth">
+                <li class=""><a href="/wkwhrma/in.do">회원관리</a><div class="sub-menu1 sub-menu" style="display:none"><ul>
+                    <li><a href="/wkwhrma/in.do">재회원</a></li><li><a href="/wkwhrma/withdrawalList.do">퇴회원</a></li>
+                    <li><a href="/wkwhrma/suspendedList.do">휴회원</a></li><li><a href="/wkwhrma/all.do">전체회원</a></li>
+                </ul></div></li>
+                <li class=""><a href="/wkwhrma/academyPriceList.do">경영관리</a><div class="sub-menu2 sub-menu" style="display:none"><ul>
+                    <li><a href="/wkwhrma/academyPriceList.do">수납관리</a></li><li><a href="/wkwhrma/academyPriceReceiptList.do">수납현황</a></li>
+                    <li><a href="/wkwhrma/academyPriceNoReceiptList.do">미납현황</a></li><li><a href="/wkwhrma/serviceInfo.do">승인내역</a></li>
+                    <li><a href="/wkwhrma/getAcademyStatistics1.do">통계</a></li>
+                </ul></div></li>
+                <li class=""><a href="/wkwhrma/viewConsult.do">상담관리</a><div class="sub-menu3 sub-menu" style="display:none"><ul>
+                    <li><a href="/wkwhrma/viewConsult.do">상담보기</a></li><li><a href="/wkwhrma/consultStatistics.do">통계</a></li>
+                </ul></div></li>
+                <li class=""><a href="/wkwhrma/smsInput.do">SMS</a><div class="sub-menu4 sub-menu" style="display:none"><ul>
+                    <li><a href="/wkwhrma/smsInput.do">SMS보내기</a></li><li><a href="/wkwhrma/smsTranslist.do">SMS전송내역</a></li>
+                    <li><a href="/wkwhrma/smsSetting.do">SMS설정</a></li>
+                </ul></div></li>
+                <li class=""><a href="/wkwhrma/farmReport.do">경작신고</a><div class="sub-menu5 sub-menu" style="display:none"><ul>
+                    <li><a href="/wkwhrma/farmReport.do">경작신고</a></li><li><a href="/wkwhrma/fieldSearch.do">현장조사</a></li>
+                </ul></div></li>
+                <li class=""><a href="/wkwhrma/acainfo.do">단체관리</a><div class="sub-menu6 sub-menu" style="display:none"><ul>
+                    <li><a href="/wkwhrma/acainfo.do">설정관리</a></li><li><a href="/wkwhrma/registadmin.do">직원관리</a></li>
+                    <li><a href="/wkwhrma/approvalList.do">결재관리</a></li><li><a href="/wkwhrma/workInfo.do">근태관리</a></li>
+                    <li><a href="/wkwhrma/businessPlanList.do">사업계획서</a></li><li><a href="/wkwhrma/viewContractInfo.do">계약정보</a></li>
+                </ul></div></li>
+                <li class="active"><a href="/wkwhrma/acainfo.do">사업관리</a><div class="sub-menu6 sub-menu" style="display:none"><ul>
+                    <li><a href="/Statistics4.html">사업계획</a></li>
+                    <li><a href="/Statistics3.html">지출관리</a></li>
+                    <li class="on"><a href="/budgetItemManageTab.html">항목관리</a></li>
+                </ul></div></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="search_year" value="2026" />
+<input type="hidden" id="search_year2" value="" />
+
+<div id="content">
+	<div class="pageTitle">
+		<h2>항목관리</h2>
+		<p><img src="https://자조금.kr/image/ico_home.png" alt="home" /> &gt; 사업관리 &gt; <strong>항목관리</strong></p>
+	</div>
+	<script>
+	function goBudgetItemManageTab() {
+		var sy = document.getElementById("search_year");
+		var year = sy ? sy.value : "";
+		var url = "budgetItemManageTab.html";
+		if (year) url += "?year=" + encodeURIComponent(year);
+		window.location.href = url;
+	}
+	</script>
+
+	<div class="bim-manage" id="bimManage">
+		<div class="bim-pane bim-pane-tree">
+			<h3 class="bim-tree-pane-title">항목관리</h3>
+			<div class="bim-tree-toolbar">
+				<button type="button" id="bimBtnAddRoot">새그룹</button>
+				<div class="bim-tree-toolbar-right">
+					<button type="button" class="btn-bim-save-toolbar" id="bimBtnSave">저장</button>
+					<button type="button" class="btn-bim-fold" id="bimBtnToggleFold">접기</button>
+				</div>
+			</div>
+			<div class="bim-tree-wrap" id="bimTreeRoot" aria-label="항목 목록"></div>
+		</div>
+		<div class="bim-pane bim-pane-detail">
+			<h3>항목 정보</h3>
+			<div id="bimDetailEmpty" class="bim-empty-hint">왼쪽 목록에서 항목을 선택하거나<br />「새그룹」으로 항목을 등록하세요.</div>
+			<form id="bimDetailForm" style="display:none;">
+				<table class="bim-form-table" summary="항목 정보">
+					<tbody>
+						<tr><th scope="row">항목 단위</th><td><input type="text" id="bimUnit" class="bim-readonly" readonly value="" /></td></tr>
+						<tr id="bimRowParent"><th scope="row">상위</th><td><input type="text" id="bimParentPath" class="bim-readonly" readonly value="" /></td></tr>
+						<tr><th scope="row">항목명</th><td><input type="text" id="bimName" maxlength="200" autocomplete="off" /></td></tr>
+						<tr><th scope="row">사용여부</th><td class="bim-radio-group">
+							<label><input type="radio" name="bimUsed" value="1" checked /> 사용</label>
+							<label><input type="radio" name="bimUsed" value="0" /> 미사용</label>
+						</td></tr>
+						<tr><th scope="row">비고</th><td><textarea id="bimRemark" rows="3" maxlength="2000"></textarea></td></tr>
+					</tbody>
+				</table>
+				<div class="bim-form-actions">
+					<button type="button" class="btn-bim-delete" id="bimBtnDelete">항목 삭제</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script>
+(function () {
+	var STORAGE_KEY = "budgetItemManageTree_v1";
+	var BIM_MAX_DEPTH = 4;
+	var DEFAULT_SELECT_ID = "bim_root_1";
+	function uid() { return "bim_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8); }
+
+	var DEFAULT_TREE = [
+		{ id: "bim_root_1", name: "소비홍보", used: true, remark: "", expanded: true, children: [
+			{ id: "bim_n2", name: "광고", used: true, remark: "", expanded: true, children: [
+				{ id: "bim_n3", name: "품질향상", used: true, remark: "", expanded: true, children: [
+					{ id: "bim_n4", name: "현수막 제작 및 게점", used: true, remark: "", expanded: true, children: [] }
+				]},
+				{ id: "bim_n5a", name: "소비촉진", used: true, remark: "", expanded: true, children: [
+					{ id: "bim_n6", name: "TV광고(PPL)", used: true, remark: "", expanded: true, children: [] }
+				]}
+			]}
+		]},
+		{ id: "bim_root_2", name: "수급안정", used: true, remark: "", expanded: true, children: [
+			{ id: "bim_n8", name: "가격안정", used: true, remark: "", expanded: true, children: [
+				{ id: "bim_n9", name: "수급조절사업", used: true, remark: "", expanded: true, children: [
+					{ id: "bim_n10", name: "주산지포도축제행사", used: true, remark: "", expanded: true, children: [] },
+					{ id: "bim_n11", name: "포도데이행사등", used: true, remark: "", expanded: true, children: [] },
+					{ id: "bim_n12", name: "과일산업대전행사", used: true, remark: "", expanded: true, children: [] }
+				]}
+			]},
+			{ id: "bim_n13", name: "수급안정예비비", used: true, remark: "", expanded: true, children: [
+				{ id: "bim_n14", name: "새항목", used: true, remark: "", expanded: true, children: [] }
+			]}
+		]}
+	];
+
+	var tree = [];
+	var selectedId = null;
+	var lastPersistedJson = "";
+
+	function persistSnapshot() {
+		lastPersistedJson = JSON.stringify(tree);
+	}
+
+	function getFormState() {
+		return {
+			name: (document.getElementById("bimName").value || "").trim() || "새 항목",
+			used: document.querySelector('input[name="bimUsed"]:checked').value === "1",
+			remark: document.getElementById("bimRemark").value || ""
+		};
+	}
+
+	function formMatchesNode(node) {
+		if (!node) return true;
+		var s = getFormState();
+		return s.name === node.name && s.used === !!node.used && (s.remark || "") === (node.remark || "");
+	}
+
+	function isDirty() {
+		if (JSON.stringify(tree) !== lastPersistedJson) return true;
+		if (!selectedId) return false;
+		var f = findNode(selectedId);
+		return f && !formMatchesNode(f.node);
+	}
+
+	function revertTreeToPersisted() {
+		if (JSON.stringify(tree) !== lastPersistedJson) {
+			try { tree = JSON.parse(lastPersistedJson); } catch (e) {}
+		}
+	}
+
+	function ensureValidSelection() {
+		if (selectedId && !findNode(selectedId)) selectedId = tree.length ? tree[0].id : null;
+	}
+
+	function updateTreeLabelForNode(id, name) {
+		var el = treeRootEl.querySelector('.tree-label[data-id="' + id + '"]');
+		if (el) el.textContent = name;
+	}
+
+	function flushFormToTree() {
+		if (!selectedId) return;
+		var found = findNode(selectedId);
+		if (!found) return;
+		readFormIntoNode(found.node);
+		saveTree();
+		updateTreeLabelForNode(selectedId, found.node.name);
+	}
+
+	function unitLabelByDepth(depth) {
+		if (depth <= 1) return "항";
+		if (depth === 2) return "목";
+		if (depth === 3) return "세목";
+		return "세부사업";
+	}
+	function loadTree() {
+		try {
+			var raw = localStorage.getItem(STORAGE_KEY);
+			if (raw) {
+				var parsed = JSON.parse(raw);
+				if (parsed && Array.isArray(parsed) && parsed.length) return parsed;
+			}
+			var v2 = localStorage.getItem("budgetItemManageTree_v2");
+			if (v2) {
+				var p2 = JSON.parse(v2);
+				if (p2 && Array.isArray(p2) && p2.length) return p2;
+			}
+		} catch (e) {}
+		return JSON.parse(JSON.stringify(DEFAULT_TREE));
+	}
+	function saveTree() {
+		try { localStorage.setItem(STORAGE_KEY, JSON.stringify(tree)); } catch (e) {}
+	}
+	function findNode(id, nodes, parent) {
+		if (!nodes) nodes = tree;
+		for (var i = 0; i < nodes.length; i++) {
+			if (nodes[i].id === id) return { node: nodes[i], parent: parent, index: i, siblings: nodes };
+			var r = findNode(id, nodes[i].children || [], nodes[i]);
+			if (r) return r;
+		}
+		return null;
+	}
+	function removeNodeById(id) {
+		var found = findNode(id);
+		if (!found || !found.parent) return false;
+		found.parent.children.splice(found.index, 1);
+		return true;
+	}
+	function removeRootById(id) {
+		for (var i = 0; i < tree.length; i++) {
+			if (tree[i].id === id) { tree.splice(i, 1); return true; }
+		}
+		return false;
+	}
+	function parentPathString(node, parent) {
+		var names = [], cur = parent;
+		while (cur) {
+			names.unshift(cur.name);
+			var f = findNode(cur.id);
+			cur = f && f.parent;
+		}
+		return names.join(" > ");
+	}
+	function depthOf(node, nodes, d) {
+		if (!nodes) nodes = tree;
+		if (d == null) d = 1;
+		for (var i = 0; i < nodes.length; i++) {
+			if (nodes[i].id === node.id) return d;
+			var kids = nodes[i].children || [];
+			var sub = depthOf(node, kids, d + 1);
+			if (sub) return sub;
+		}
+		return 0;
+	}
+
+	var treeRootEl = document.getElementById("bimTreeRoot");
+	var formEl = document.getElementById("bimDetailForm");
+	var emptyEl = document.getElementById("bimDetailEmpty");
+
+	function renderTree() {
+		treeRootEl.innerHTML = "";
+		var ul = document.createElement("ul");
+		ul.className = "bim-tree";
+		tree.forEach(function (n) {
+			var li = renderNodeLi(n, null, 1);
+			li.classList.add("bim-root-item");
+			ul.appendChild(li);
+		});
+		treeRootEl.appendChild(ul);
+		syncFoldButton();
+	}
+
+	function renderNodeLi(node, parent, depth) {
+		var li = document.createElement("li");
+		li.setAttribute("data-depth", String(depth));
+		var row = document.createElement("div");
+		row.className = "bim-tree-row" + (selectedId === node.id ? " is-row-selected" : "");
+		row.setAttribute("data-node-id", node.id);
+		row.addEventListener("click", function (e) {
+			if (e.target.closest && e.target.closest(".tree-toggle")) return;
+			if (e.target.closest && e.target.closest(".btn-bim-add-child")) return;
+			selectId(node.id);
+		});
+
+		var hasKids = node.children && node.children.length > 0;
+
+		var label = document.createElement("span");
+		label.className = "tree-label";
+		label.textContent = node.name;
+		label.setAttribute("data-id", node.id);
+		label.setAttribute("role", "presentation");
+		label.addEventListener("keydown", function (ev) {
+			if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectId(node.id); }
+		});
+		label.tabIndex = -1;
+
+		var toggle = document.createElement("button");
+		toggle.type = "button";
+		toggle.className = "tree-toggle";
+		toggle.setAttribute("aria-expanded", hasKids && node.expanded !== false ? "true" : "false");
+		if (!hasKids) {
+			toggle.disabled = true;
+			toggle.textContent = "+";
+		} else {
+			toggle.textContent = node.expanded === false ? "+" : "−";
+			toggle.addEventListener("click", function (e) {
+				e.stopPropagation();
+				node.expanded = node.expanded === false;
+				renderTree();
+			});
+		}
+		row.appendChild(toggle);
+		var labelWrap = document.createElement("div");
+		labelWrap.className = "bim-tree-label-wrap";
+		if (depth < BIM_MAX_DEPTH) {
+			labelWrap.classList.add("bim-tree-label-wrap--with-add");
+			var addBtn = document.createElement("button");
+			addBtn.type = "button";
+			addBtn.className = "btn-bim-add-child";
+			addBtn.textContent = "추가";
+			addBtn.addEventListener("click", function (e) {
+				e.stopPropagation();
+				addChild(node);
+			});
+			labelWrap.appendChild(label);
+			labelWrap.appendChild(addBtn);
+		} else {
+			labelWrap.appendChild(label);
+		}
+		row.appendChild(labelWrap);
+		li.appendChild(row);
+
+		if (hasKids && node.expanded !== false) {
+			var cul = document.createElement("ul");
+			node.children.forEach(function (c) { cul.appendChild(renderNodeLi(c, node, depth + 1)); });
+			li.appendChild(cul);
+		}
+		return li;
+	}
+
+	function selectId(id, skipDirtyCheck) {
+		if (id === selectedId) return;
+		if (!skipDirtyCheck && isDirty()) {
+			if (!confirm("저장하지 않은 내용이 있습니다. 이동하면 반영되지 않습니다. 계속하시겠습니까?")) return;
+			revertTreeToPersisted();
+			ensureValidSelection();
+		}
+		if (id != null && !findNode(id)) {
+			if (!tree.length) { selectedId = null; renderTree(); syncFormFromSelection(); return; }
+			id = tree[0].id;
+		}
+		selectedId = id;
+		renderTree();
+		syncFormFromSelection();
+	}
+
+	function syncFormFromSelection() {
+		if (!selectedId) { formEl.style.display = "none"; emptyEl.style.display = "block"; return; }
+		var found = findNode(selectedId);
+		if (!found) { selectedId = null; formEl.style.display = "none"; emptyEl.style.display = "block"; return; }
+		var node = found.node, parent = found.parent, depth = depthOf(node);
+		emptyEl.style.display = "none";
+		formEl.style.display = "block";
+		document.getElementById("bimUnit").value = unitLabelByDepth(depth);
+		var rowParent = document.getElementById("bimRowParent");
+		if (depth <= 1) rowParent.style.display = "none";
+		else { rowParent.style.display = ""; document.getElementById("bimParentPath").value = parentPathString(node, parent); }
+		document.getElementById("bimName").value = node.name;
+		document.querySelector('input[name="bimUsed"][value="' + (node.used ? "1" : "0") + '"]').checked = true;
+		document.getElementById("bimRemark").value = node.remark || "";
+	}
+
+	function readFormIntoNode(node) {
+		node.name = (document.getElementById("bimName").value || "").trim() || "새 항목";
+		node.used = document.querySelector('input[name="bimUsed"]:checked').value === "1";
+		node.remark = document.getElementById("bimRemark").value || "";
+	}
+
+	function addRoot() {
+		if (isDirty()) {
+			if (!confirm("저장하지 않은 내용이 있습니다. 이동하면 반영되지 않습니다. 계속하시겠습니까?")) return;
+			revertTreeToPersisted();
+			ensureValidSelection();
+		}
+		var n = { id: uid(), name: "새 항목", used: true, remark: "", expanded: true, children: [] };
+		tree.push(n);
+		renderTree();
+		selectId(n.id, true);
+	}
+
+	function addChild(parentNode) {
+		if (isDirty()) {
+			if (!confirm("저장하지 않은 내용이 있습니다. 이동하면 반영되지 않습니다. 계속하시겠습니까?")) return;
+			revertTreeToPersisted();
+			ensureValidSelection();
+		}
+		var ref = findNode(parentNode.id);
+		if (!ref) return;
+		parentNode = ref.node;
+		if (depthOf(parentNode) >= BIM_MAX_DEPTH) {
+			var msg = "최대 4단계(항·목·세목·세부사업)까지만 등록할 수 있습니다.";
+			if (typeof alertMessage === "function") alertMessage(msg); else alert(msg);
+			return;
+		}
+		var n = { id: uid(), name: "새항목", used: true, remark: "", expanded: true, children: [] };
+		if (!parentNode.children) parentNode.children = [];
+		parentNode.children.push(n);
+		parentNode.expanded = true;
+		renderTree();
+		selectId(n.id, true);
+	}
+
+	function walkTree(nodes, fn) {
+		if (!nodes || !nodes.length) return;
+		for (var i = 0; i < nodes.length; i++) {
+			fn(nodes[i]);
+			walkTree(nodes[i].children || [], fn);
+		}
+	}
+
+	function syncFoldButton() {
+		var btn = document.getElementById("bimBtnToggleFold");
+		if (!btn) return;
+		var hasKids = false, anyExpanded = false;
+		walkTree(tree, function (n) {
+			if (n.children && n.children.length) {
+				hasKids = true;
+				if (n.expanded !== false) anyExpanded = true;
+			}
+		});
+		if (!hasKids) { btn.disabled = true; btn.textContent = "펼치기"; btn.title = "펼칠 하위 항목이 없습니다"; return; }
+		btn.disabled = false;
+		if (anyExpanded) { btn.textContent = "접기"; btn.title = "하위 항목 전체 접기"; }
+		else { btn.textContent = "펼치기"; btn.title = "하위 항목 전체 펼치기"; }
+	}
+
+	function toggleFoldAll() {
+		if (isDirty()) {
+			if (!confirm("저장하지 않은 내용이 있습니다. 이동하면 반영되지 않습니다. 계속하시겠습니까?")) return;
+			revertTreeToPersisted();
+			ensureValidSelection();
+		}
+		var hasKids = false, anyExpanded = false;
+		walkTree(tree, function (n) {
+			if (n.children && n.children.length) { hasKids = true; if (n.expanded !== false) anyExpanded = true; }
+		});
+		if (!hasKids) return;
+		if (anyExpanded) {
+			walkTree(tree, function (n) { if (n.children && n.children.length) n.expanded = false; });
+		} else {
+			walkTree(tree, function (n) { if (n.children && n.children.length) n.expanded = true; });
+		}
+		renderTree();
+		syncFormFromSelection();
+	}
+
+	document.getElementById("bimBtnAddRoot").addEventListener("click", addRoot);
+	document.getElementById("bimBtnSave").addEventListener("click", function () {
+		if (!selectedId) {
+			alert("저장할 항목을 선택하세요.");
+			return;
+		}
+		flushFormToTree();
+		persistSnapshot();
+		renderTree();
+		syncFormFromSelection();
+		if (typeof alertMessage === "function") alertMessage("저장되었습니다.");
+		else alert("저장되었습니다.");
+	});
+	document.getElementById("bimBtnToggleFold").addEventListener("click", toggleFoldAll);
+
+	document.getElementById("bimBtnDelete").addEventListener("click", function () {
+		if (!selectedId) return;
+		if (isDirty()) {
+			if (!confirm("저장하지 않은 내용이 있습니다. 저장하지 않고 삭제를 진행하시겠습니까?")) return;
+			revertTreeToPersisted();
+			ensureValidSelection();
+		}
+		var found = findNode(selectedId);
+		if (!found) return;
+		var hasKids = found.node.children && found.node.children.length > 0;
+		var msg = hasKids ? "선택한 항목과 포함된 모든 하위 항목이 함께 삭제됩니다. 삭제하시겠습니까?" : "선택한 항목을 삭제하시겠습니까?";
+		if (!confirm(msg)) return;
+		var delId = selectedId;
+		if (found.parent) removeNodeById(delId); else removeRootById(delId);
+		selectedId = null;
+		saveTree();
+		persistSnapshot();
+		renderTree();
+		if (tree.length) selectId(tree[0].id, true); else syncFormFromSelection();
+	});
+
+	window.addEventListener("beforeunload", function (e) {
+		if (isDirty()) {
+			e.preventDefault();
+			e.returnValue = "";
+		}
+	});
+
+	tree = loadTree();
+	persistSnapshot();
+	renderTree();
+	if (findNode(DEFAULT_SELECT_ID)) selectId(DEFAULT_SELECT_ID, true);
+	else if (tree.length) selectId(tree[0].id, true);
+	else syncFormFromSelection();
+})();
+</script>
+</body>
+</html>

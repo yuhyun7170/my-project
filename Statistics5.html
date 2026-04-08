@@ -1,0 +1,1210 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+		
+    
+
+
+    
+    
+    
+
+
+<!doctype html>
+<html lang="kr">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>사업관리>사업계획>예산계획</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta content="" name="description" />
+	<meta content="Coderthemes" name="" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+	
+
+
+
+
+
+
+
+
+
+
+
+	<script>
+	    var BASE_URL_ADMIN = '/wkwhrma';
+	    window.__JSP_FILE_PATH__ = "/WEB-INF/jsp/content/recpt/SettleAccounts_Report.jsp";
+	    window.__CONTROLLER_CLASS__ = "AdminController";
+	    window.__CONTROLLER_METHOD__ = "getAcademyStatistics1";
+	</script>
+	<script src="http://자조금.kr/js/jquery-3.7.1.js"></script>
+	<script src="http://자조금.kr/js/jquery.form.min.js"></script>
+	<script src="http://자조금.kr/js/ajax.js?v=1.0.4"></script>
+	<script src="http://자조금.kr/js/fn.common.js?v=1.0.11"></script>
+	<script src="http://자조금.kr/js/fn.print_path.js?v=1.0.3"></script>
+	<script src="http://자조금.kr/js/common.js?v=1.0.2"></script>
+	<script src="http://자조금.kr/js/jquery.bpopup.min.js" type="text/javascript"></script>
+	<script src="http://자조금.kr/js/jquery-confirm.min.js"></script>   <!-- confirm js-->
+	<script src="http://자조금.kr/js/jquery.toast.js" type="text/javascript"></script>
+	<script type="text/javascript" src="http://자조금.kr/js/jquery.cookie.js"></script>		
+	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+	
+	
+        
+        
+            <!-- DEBUG 환경일 경우 -->
+            <script src="http://자조금.kr/js/fn.console.log.dev.js?v=1.0.3"></script>
+        
+    
+	
+
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+	
+
+<link href="http://자조금.kr/css/common.css?ver=1.0.2" rel="stylesheet" type="text/css" />
+<link href="http://자조금.kr/css/premium.css?ver=1.0.3" rel="stylesheet" type="text/css" />
+<link href="http://자조금.kr/css/menu.css?ver=1.0.5" rel="stylesheet" type="text/css" />
+<link href="http://자조금.kr/css/alert.css?ver=1.0.0" rel="stylesheet" type="text/css" />
+
+<script src="http://자조금.kr/js/fn.menu.js?v=1.0.2"></script>
+<script src="http://자조금.kr/Library/js/premiun_Script.js?v=1.0.2"></script>
+
+
+<script>
+const pBranchID = "2028";
+const pMhighcode = "48";
+const PGubun1Code = "";
+const PGubun2Code = "";
+
+const selectedSido = "";
+const selectedSigungu = "";
+const selectedDong = "";
+
+const CONST_SIDO = "1";
+const CONST_SIGUNGU = "2";
+</script>
+
+
+<script src="http://자조금.kr/js/fn.set_gubun.js?v=1.0.2"></script>
+
+
+
+<script src="http://자조금.kr/js/fn.search_addr.js?v=1.0.2"></script>
+
+
+<script>
+
+function fn_searchFormSubmit() {
+	const currentUrl = window.location.href;
+	submitForm(currentUrl, '_self', fn_setSearchInput());
+}
+function fn_setSearchInput() {
+    // 폼에 추가할 파라미터를 객체로 수집
+    const params = {
+    		sidoCode: $('#p_sh_sido').val(),
+    		sigunguCode: $('#p_sh_sigungu').val(),
+        sigunguAll: $("input[name='sigunguAll']:checked").val() || ""
+    };
+
+    // Gubun1의 체크된 값을 콤마로 구분하여 수집
+    const gubun1Values = [];
+    $("input[name='Gubun1']:checked").each(function() {
+        gubun1Values.push($(this).val());
+    });
+    params.p_gubun1_code = gubun1Values.join(',');
+
+    // Gubun2의 체크된 값을 콤마로 구분하여 수집
+    const gubun2Values = [];
+    $("input[name='Gubun2']:checked").each(function() {
+        gubun2Values.push($(this).val());
+    });
+    params.p_gubun2_code = gubun2Values.join(',');
+
+    params.searchYear = $("#search_year").val();
+    params.searchYear2 = $("#search_year2").val();
+
+    return params;
+}
+</script>
+</head>
+<style>
+li a {
+    white-space: nowrap; /* 텍스트가 잘리지 않고 한 줄로 나오게 강제 */
+}
+</style>
+<body>
+
+<div id="wrap">
+
+	<!-- header_container -->
+	<!-- header -->
+	
+		
+		
+	
+	
+		
+	
+	
+
+
+
+<script>
+    var frmData;
+    $(document).ready(function() {
+        // 로그아웃 버튼 클릭 시 로그아웃 처리 함수 호출
+        $("#logoutBtn").click(function(event) {
+            logoutExcute();
+        });
+        // 원격지원 버튼 클릭 시 원격지원 페이지로 이동
+        $(".remote").click(function(event) {
+            goRemote();
+        });
+    });
+    // 로그아웃 실행 함수
+    function logoutExcute() {
+        if (confirm("로그아웃 하시겠습니까?")) {
+            callAjax("/wkwhrma/logoutExcute", "completeLogout");
+        }
+    }
+    // 로그아웃 완료 시 처리 함수
+    function completeLogout(data) {
+        alertMessage("로그아웃 되었습니다.");
+        location.href = "/wkwhrma";
+    }
+</script>
+
+<div id="header">
+    <div>
+        <div class="t_menu dWidth">
+            <div class="bntLeft"></div>
+            <h1><a href="/wkwhrma"><img id="topLogo" src="" style="width: 100%;" alt="홈으로" onerror="this.src='https://자조금.kr/image/top_logo.png'"/></a></h1>
+            <ul class="btnRight">
+                <!--<li><button class="btnLink btnBlueGr" onclick="window.open('/manual_v1.7.pdf', '_blank')">매뉴얼</button></li>//-->
+                <li><a href="javascript:" class="remote"><i class="fa fa-headphones fa-lg"></i><b>02-6677-5533 [원격지원]</b></a></li>
+                <li><i class="fa fa-user fa-lg"></i><strong>테스트002</strong>님</li>
+                <li><button class="btn" id="logoutBtn">로그아웃</button></li>
+            </ul>
+        </div>
+        <div class="nav-menu">
+            <ul class="dWidth">   
+                <!-- 메인 메뉴 렌더링 -->
+
+				        <li class="">
+				            <a href="/wkwhrma/in.do">회원관리</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu1 sub-menu" style="display:none">
+				                <ul>
+				                    <li class="">
+				                        <a href="/wkwhrma/in.do">재회원</a>
+				                    </li>
+				                    <li class="">
+				                    	<a href="/wkwhrma/withdrawalList.do">퇴회원</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/suspendedList.do">휴회원</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/all.do">전체회원</a>
+				                    </li> 
+				                </ul>
+				            </div>
+				        </li>
+
+				        <li class="">
+				            <a href="/wkwhrma/academyPriceList.do">경영관리</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu2 sub-menu" style="display:none">
+				                <ul>
+				                	<li class="">
+				                        <a href="/wkwhrma/academyPriceList.do">수납관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/academyPriceReceiptList.do">수납현황</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/academyPriceNoReceiptList.do">미납현황</a>
+				                    </li>                   
+				                    <li class="">
+				                        <a href="/wkwhrma/serviceInfo.do">승인내역</a>
+				                    </li>
+		                            <li class="">
+				                        <a href="/wkwhrma/getAcademyStatistics1.do">통계</a>
+				                    </li>
+				                </ul>
+				            </div>
+				        </li>
+				    
+				        <li class="">
+				            <a href="/wkwhrma/viewConsult.do">상담관리</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu3 sub-menu" style="display:none">
+				                <ul>
+				                    <li class="">
+				                        <a href="/wkwhrma/viewConsult.do">상담보기</a>
+				                    </li>    
+				                    <li class="">
+				                        <a href="/wkwhrma/consultStatistics.do">통계</a>
+				                    </li>
+				                </ul>
+				            </div>
+				        </li>
+
+				        <li class="">
+				            <a href="/wkwhrma/smsInput.do">SMS</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu4 sub-menu" style="display:none">
+				                <ul>                  
+				                    <li class="">
+				                        <a href="/wkwhrma/smsInput.do">SMS보내기</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/smsTranslist.do">SMS전송내역</a>
+				                    </li>
+		                            <li class="">
+				                        <a href="/wkwhrma/smsSetting.do">SMS설정</a>
+				                    </li>
+				                </ul>
+				            </div>
+				        </li>
+				    
+				        <li class="">
+				            <a href="/wkwhrma/farmReport.do">경작신고</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu5 sub-menu" style="display:none">
+				                <ul>
+				                    <li class="">
+				                        <a href="/wkwhrma/farmReport.do">경작신고</a>
+				                    </li>
+									<li class="">
+				                        <a href="/wkwhrma/fieldSearch.do">현장조사</a>
+				                    </li> 
+				                </ul>
+				            </div>
+				        </li>
+
+				        <li class="">
+				            <a href="/wkwhrma/acainfo.do">단체관리</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu6 sub-menu" style="display:none">
+				                <ul>
+				                    <li class="">
+				                        <a href="/wkwhrma/acainfo.do">설정관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/registadmin.do">직원관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/approvalList.do">결재관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/workInfo.do">근태관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/businessPlanList.do">사업계획서</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/viewContractInfo.do">계약정보</a>
+				                    </li>  
+				                </ul>
+				            </div>
+				        </li>
+
+						<li class="active">
+				            <a href="/wkwhrma/acainfo.do">사업관리</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu6 sub-menu" style="display:none">
+				                <ul>
+				                    <li class="on">
+				                        <a href="/Statistics4.html">사업계획</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/Statistics3.html">지출관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/budgetItemManageTab.html">항목관리</a>
+				                    </li>
+				                </ul>
+				            </div>
+				        </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+<!-- //header -->
+
+	<!-- // header_container -->		
+    
+    <!-- content -->
+    <div id="content">
+    	<div class="pageTitle">
+        	<h2>사업계획</h2>
+            <p><img src="https://자조금.kr/image/ico_home.png" alt="home"/>  > 사업관리 > 사업계획 > <strong>지출계획</strong></p>
+        </div>
+        <div class="pageTabMenu flxspw">
+        	<ul class="tabMenuList">
+				<li class=""><a href="/Statistics4.html">수입계획</a></li>
+				<li class="active"><a href="/Statistics5.html">지출계획</a></li>
+				<li><a href="/Statistics6.html">총괄표</a></li>
+			</ul>
+        </div>
+		<script>
+			function goBudgetItemManageTab() {
+				var sy = document.getElementById("search_year");
+				var year = sy ? sy.value : "";
+				var url = "budgetItemManageTab.html";
+				if (year) url += "?year=" + encodeURIComponent(year);
+				window.location.href = url;
+			}
+		</script>
+        <div class="tableListWrap">
+            <div class="table_list active">
+				<div style="width:100%;">
+				<div class="searchWrap" style="display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-bottom: 0;">
+					<!-- Container for 구분1 and 구분2 positioned on top -->
+					<div class="mb5" style="display:flex; width:100%; align-items:flex-start; justify-content:space-between; gap:12px; align-items: end;">
+						<div class="filterLeft" style="display:flex; flex-direction:row; align-items:flex-start; gap:12px;">
+							<div class="select-container">
+								<select id="search_year" name="searchYear" class="select01" onchange="fn_searchFormSubmit();">
+									<option value="2026" selected>2026</option>
+									<option value="2025" >2025</option>
+									<option value="2024" >2024</option>
+									<option value="2023" >2023</option>
+									<option value="2022" >2022</option>
+									<option value="2021" >2021</option>
+									<option value="2020" >2020</option>
+									<option value="2019" >2019</option>
+								</select>
+								<a class="btnLink btnGrayBg" href="javascript:void(0);" id="btnIncomePlanEdit" role="button">입력</a>
+							</div>
+						</div>
+						<a href="javascript:exceldown();" class="btnLink btnBlueGr">엑셀 <i class="fa fa-download"></i></a>
+					</div>
+				</div>
+
+				<!-- 수입계획 표 -->
+				<style>
+					#incomePlanWrap { overflow-x: auto; max-width: 100%; }
+					#incomePlanTable {
+						width: 100%;
+						max-width: 100%;
+						border-collapse: separate;
+						border-spacing: 0;
+						table-layout: fixed;
+						font-size: 13px;
+						background: #fff;
+						font-weight: 600;
+
+					}
+					#incomePlanTable th,
+					#incomePlanTable td {
+						border-right: 1px solid #dedede;
+						padding: 8px 10px;
+						vertical-align: middle;
+						text-align: center;
+						box-sizing: border-box;
+						min-width: 0;
+					}
+					#incomePlanTable thead th {
+						font-weight: 600;
+					}
+					#incomePlanTable td.ip-fixed-label {
+						text-align: center;
+						padding-left: 10px;
+						padding-right: 10px;
+						vertical-align: middle;
+						overflow: visible;
+						color: #111;
+						font-weight: 600;
+					}
+					#incomePlanTable .col-plan {
+						text-align: right;
+						padding: 6px 10px;
+						font-variant-numeric: tabular-nums;
+						overflow: visible;
+						background: #fff;
+						min-height: 2.75em;
+						border-right: none
+					}
+					#incomePlanTable td.levy-name-cell {
+						overflow: hidden;
+						min-width: 0;
+					}
+
+					#incomePlanTable .cell-vertical {
+						writing-mode: vertical-rl;
+						text-orientation: mixed;
+						letter-spacing: 0.08em;
+						max-width: 2.5em;
+						padding: 12px 6px;
+					}
+					#incomePlanWrap .ip-amt,
+					#incomePlanWrap .ip-levy-name {
+						width: 100%;
+						max-width: 100%;
+						min-width: 0;
+						box-sizing: border-box;
+						font: inherit;
+						text-align: right;
+						border: 1px solid transparent;
+						border-radius: 6px;
+						padding: 6px 8px;
+						background: transparent;
+						color: #111;
+						-webkit-text-fill-color: #111;
+					}
+					#incomePlanWrap .ip-levy-name {
+						text-align: center;
+						color: #111;
+						-webkit-text-fill-color: #111;
+						opacity: 1;
+					}
+					#incomePlanWrap .ip-levy-name::placeholder {
+						color: #888;
+						-webkit-text-fill-color: #888;
+					}
+					#incomePlanWrap:not(.income-plan--edit) .ip-amt,
+					#incomePlanWrap:not(.income-plan--edit) .ip-levy-name {
+						pointer-events: none;
+						border-color: transparent !important;
+						border-width: 0 !important;
+						box-shadow: none;
+						color: #111 !important;
+						-webkit-text-fill-color: #111 !important;
+						opacity: 1 !important;
+						-webkit-appearance: textfield;
+						appearance: textfield;
+						background: transparent !important;
+					}
+					#incomePlanWrap input.ip-amt[readonly] {
+						opacity: 1 !important;
+						color: #111 !important;
+						-webkit-text-fill-color: #111 !important;
+						display: block;
+						width: 100%;
+					}
+					#incomePlanWrap.income-plan--edit .ip-amt:not([readonly]),
+					#incomePlanWrap.income-plan--edit .ip-levy-name:not([readonly]) {
+						border-color: #ccc;
+						background: #fff;
+						pointer-events: auto;
+					}
+					#incomePlanWrap.income-plan--edit .ip-amt[readonly],
+					#incomePlanWrap.income-plan--edit .ip-levy-name[readonly] {
+						color: #111;
+						-webkit-text-fill-color: #111;
+						pointer-events: none;
+					}
+					#incomePlanTable td.col-plan .ip-amt-mirror {
+						display: none;
+						text-align: right;
+						padding: 6px 8px;
+						font-variant-numeric: tabular-nums;
+						color: #111;
+						min-height: 1.4em;
+					}
+					#incomePlanWrap:not(.income-plan--edit) td.col-plan .ip-amt-mirror {
+						display: block;
+					}
+					#incomePlanWrap:not(.income-plan--edit) td.col-plan .ip-amt {
+						display: none !important;
+					}
+					#incomePlanWrap.income-plan--edit td.col-plan .ip-amt-mirror {
+						display: none !important;
+					}
+					#incomePlanWrap.income-plan--edit td.col-plan .ip-amt {
+						display: block !important;
+					}
+					#incomePlanWrap .levy-name-wrap {
+						display: flex;
+						align-items: center;
+						justify-content: center;
+						gap: 6px;
+					}
+					#incomePlanWrap .levy-name-wrap .ip-levy-name {
+						flex: 1;
+						min-width: 0;
+						text-align: center;
+						text-align: center;
+						font-weight: 600;
+					}
+					#incomePlanWrap .btn-levy {
+						flex-shrink: 0;
+						width: 26px;
+						height: 26px;
+						line-height: 22px;
+						padding: 0;
+						border: 1px solid rgb(255, 138, 138);
+						color: rgb(255, 138, 138);
+						background: rgb(255, 236, 236);
+						border-radius: 4px;
+						cursor: pointer;
+						font-weight: bold;
+						font-size: 16px;
+						font-weight: bold;
+						font-size: 16px;
+					}
+					#incomePlanWrap .btn-levy:hover {
+						background: rgb(255, 189, 189);
+					}
+					#incomePlanWrap .btn-levy-add {
+						border: 1px solid rgb(124, 196, 255);
+						color: rgb(124, 196, 255);
+						background: rgb(236, 250, 255);
+					}
+					#incomePlanWrap .btn-levy-add:hover {
+						background: rgb(196, 237, 255);
+					}
+					#incomePlanWrap:not(.income-plan--edit) .levy-tools {
+						display: none;
+					}
+					/* display:none on <tr> removes the row from the table grid and breaks rowspan — use collapse */
+					#incomePlanWrap:not(.income-plan--edit) tr.row-levy-add {
+						visibility: collapse;
+					}
+					#incomePlanWrap:not(.income-plan--edit) tr.row-levy-add td {
+						padding: 0;
+						border-width: 0;
+						line-height: 0;
+						font-size: 0;
+					}
+				</style>
+				<div id="incomePlanWrap">
+					<table id="incomePlanTable">
+						<colgroup>
+							<col style="width: 12%;" />
+							<col style="width: 14%;" />
+							<col style="width: 24%;" />
+							<col style="width: 50%;" />
+						</colgroup>
+						<thead>
+							<tr>
+								<th colspan="3">구분</th>
+								<th style="border-right: none;">계획 (단위: 원)</th>
+							</tr>
+						</thead>
+						<tbody id="incomePlanTbody">
+							<tr id="trCarryover">
+								<td class="cell-vertical" id="tdSelfProcure" rowspan="7" style="background-color: #f3f3f3;">자체조달</td>
+								<td class="ip-fixed-label" colspan="2" >이월금 (A)</td>
+								<td class="col-plan"><span class="ip-amt-mirror">1,000,000</span><input type="text" id="inpIncomeA" class="ip-amt" data-key="a" inputmode="numeric" readonly value="1,000,000" /></td>
+							</tr>
+							<tr class="tr-levy-sub" data-levy-index="0">
+								<td id="tdLevyLabel" rowspan="4" style="background-color: #f3f3f3;">거출금</td>
+								<td class="levy-name-cell">
+									<div class="levy-name-wrap">
+										<input type="text" class="ip-levy-name" data-levy-name readonly value="농업인" />
+										<button type="button" class="btn-levy levy-tools" data-levy-remove title="삭제">−</button>
+									</div>
+								</td>
+								<td class="col-plan"><span class="ip-amt-mirror">5,000,000</span><input type="text" class="ip-amt" data-key="levy-0" inputmode="numeric" readonly value="5,000,000" /></td>
+							</tr>
+							<tr class="tr-levy-sub" data-levy-index="1">
+								<td class="levy-name-cell">
+									<div class="levy-name-wrap">
+										<input type="text" class="ip-levy-name" data-levy-name readonly value="생산자단체" />
+										<button type="button" class="btn-levy levy-tools" data-levy-remove title="삭제">−</button>
+									</div>
+								</td>
+								<td class="col-plan"><span class="ip-amt-mirror">0</span><input type="text" class="ip-amt" data-key="levy-1" inputmode="numeric" readonly value="0" /></td>
+							</tr>
+							
+							<tr class="row-levy-add">
+								<td colspan="2" style="text-align:left; padding-left: 10%;border-right: none;">
+									<button type="button" class="btn-levy btn-levy-add levy-tools" id="btnLevyAdd" title="항목 추가">+</button>
+								</td>
+							</tr>
+							<tr class="row-subtotal" id="trLevyTotal">
+								<td class="ip-fixed-label" style="background-color: #f3f3f3;">거출금 계(B)</td>
+								<td class="col-plan" style="background-color: #f3f3f3;"><span class="ip-amt-mirror">5,000,000</span><input type="text" class="ip-amt" data-key="b" readonly value="5,000,000" /></td>
+							</tr>
+							<tr id="trOther">
+								<td class="ip-fixed-label" colspan="2">기타 (C)</td>
+								<td class="col-plan"><span class="ip-amt-mirror">500,000</span><input type="text" id="inpIncomeC" class="ip-amt" data-key="c" inputmode="numeric" readonly value="500,000" autocomplete="off" /></td>
+							</tr>
+							<tr class="row-subtotal" id="trSelfTotal">
+								<td class="ip-fixed-label" colspan="2" style="background-color: #f3f3f3;">자체조달 계 (D=A+B+C)</td>
+								<td class="col-plan" style="background-color: #f3f3f3;"><span class="ip-amt-mirror" >6,500,000</span><input type="text" class="ip-amt" data-key="d" readonly value="6,500,000" /></td>
+							</tr>
+							<tr id="trSubsidy">
+								<td class="ip-fixed-label" colspan="3">보조금 (E)</td>
+								<td class="col-plan"><span class="ip-amt-mirror">5,000,000</span><input type="text" id="inpIncomeE" class="ip-amt" data-key="e" inputmode="numeric" readonly value="5,000,000" /></td>
+							</tr>
+							<tr class="row-subtotal" id="trGrandTotal">
+								<td class="ip-fixed-label" colspan="3" style="background-color: #f3f3f3;">합계 (F=D+E)</td>
+								<td class="col-plan" style="background-color: #f3f3f3;"><span class="ip-amt-mirror">11,500,000</span><input type="text" class="ip-amt" data-key="f" readonly value="11,500,000" /></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<script>
+				(function () {
+					var wrap = document.getElementById("incomePlanWrap");
+					var tbody = document.getElementById("incomePlanTbody");
+					var btnEdit = document.getElementById("btnIncomePlanEdit");
+					var tdSelf = document.getElementById("tdSelfProcure");
+					var tdLevy = document.getElementById("tdLevyLabel");
+					var editing = false;
+
+					function parseNum(s) {
+						if (s == null || s === "") return 0;
+						var raw = String(s).replace(/[^\d]/g, "");
+						if (raw === "") return 0;
+						var n = parseInt(raw, 10);
+						return isNaN(n) ? 0 : n;
+					}
+					function fmtNum(n) {
+						if (!isFinite(n)) return "0";
+						return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+					}
+
+					function getLevyRows() {
+						return Array.prototype.slice.call(tbody.querySelectorAll("tr.tr-levy-sub"));
+					}
+
+					function updateRowspans() {
+						var subs = getLevyRows();
+						var n = subs.length;
+						var levySpan = n + 2;
+						var selfSpan = n + 5;
+						if (tdSelf) tdSelf.setAttribute("rowspan", String(selfSpan));
+						if (tdLevy) tdLevy.setAttribute("rowspan", String(levySpan));
+					}
+
+					function elAmt(key) {
+						if (key === "a") return document.getElementById("inpIncomeA");
+						if (key === "c") return document.getElementById("inpIncomeC");
+						if (key === "e") return document.getElementById("inpIncomeE");
+						return tbody.querySelector('[data-key="' + key + '"]');
+					}
+
+					function recalc() {
+						var aEl = elAmt("a");
+						var cEl = elAmt("c");
+						var eEl = elAmt("e");
+						var a = aEl ? parseNum(aEl.value) : 0;
+						var c = cEl ? parseNum(cEl.value) : 0;
+						var e = eEl ? parseNum(eEl.value) : 0;
+						var sumLevy = 0;
+						getLevyRows().forEach(function (tr) {
+							var inp = tr.querySelector(".ip-amt[data-key^='levy-']");
+							if (inp) sumLevy += parseNum(inp.value);
+						});
+						var bEl = tbody.querySelector('[data-key="b"]');
+						var dEl = tbody.querySelector('[data-key="d"]');
+						var fEl = tbody.querySelector('[data-key="f"]');
+						var b = sumLevy;
+						var d = a + b + c;
+						var f = d + e;
+						if (bEl) bEl.value = fmtNum(b);
+						if (dEl) dEl.value = fmtNum(d);
+						if (fEl) fEl.value = fmtNum(f);
+						syncAmountMirrors();
+					}
+
+					function syncAmountMirrors() {
+						tbody.querySelectorAll("td.col-plan").forEach(function (td) {
+							var inp = td.querySelector(".ip-amt");
+							var mir = td.querySelector(".ip-amt-mirror");
+							if (inp && mir) mir.textContent = inp.value || "";
+						});
+					}
+
+					function onAmtInput(e) {
+						var t = e.target;
+						if (!t.classList.contains("ip-amt")) return;
+						var k = t.getAttribute("data-key");
+						if (k === "b" || k === "d" || k === "f") return;
+						recalc();
+					}
+
+					function onAmtFocus(e) {
+						var t = e.target;
+						if (!t.classList.contains("ip-amt")) return;
+						var k = t.getAttribute("data-key");
+						if (k === "b" || k === "d" || k === "f") return;
+						t.value = String(t.value).replace(/,/g, "");
+					}
+
+					function onAmtBlur(e) {
+						var t = e.target;
+						if (!t.classList.contains("ip-amt")) return;
+						var k = t.getAttribute("data-key");
+						if (k === "b" || k === "d" || k === "f") return;
+						if (String(t.value).trim() === "") t.value = "0";
+						t.value = fmtNum(parseNum(t.value));
+						recalc();
+					}
+
+					function finalizeEditableAmounts() {
+						var amts = tbody.querySelectorAll(".ip-amt");
+						for (var i = 0; i < amts.length; i++) {
+							var el = amts[i];
+							var k = el.getAttribute("data-key");
+							if (k === "b" || k === "d" || k === "f") continue;
+							if (String(el.value).trim() === "") el.value = "0";
+							el.value = fmtNum(parseNum(el.value));
+						}
+						syncAmountMirrors();
+					}
+
+					var STORAGE_KEY = "statistics4_incomePlan_v1";
+
+					function persistIncomePlan() {
+						try {
+							var levies = getLevyRows().map(function (tr) {
+								var nameInp = tr.querySelector(".ip-levy-name");
+								var amtInp = tr.querySelector(".ip-amt[data-key^='levy-']");
+								return {
+									name: nameInp ? nameInp.value : "",
+									amt: amtInp ? amtInp.value : ""
+								};
+							});
+							var payload = {
+								a: elAmt("a") ? elAmt("a").value : "",
+								c: elAmt("c") ? elAmt("c").value : "",
+								e: elAmt("e") ? elAmt("e").value : "",
+								levies: levies
+							};
+							localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+						} catch (err) {}
+					}
+
+					function loadIncomePlan() {
+						try {
+							var raw = localStorage.getItem(STORAGE_KEY);
+							if (!raw) return;
+							var data = JSON.parse(raw);
+							if (data.a != null && elAmt("a")) elAmt("a").value = data.a;
+							if (data.c != null && elAmt("c")) elAmt("c").value = data.c;
+							if (data.e != null && elAmt("e")) elAmt("e").value = data.e;
+							if (data.levies && data.levies.length && data.levies.length === getLevyRows().length) {
+								getLevyRows().forEach(function (tr, idx) {
+									var row = data.levies[idx];
+									if (!row) return;
+									var nameInp = tr.querySelector(".ip-levy-name");
+									var amtInp = tr.querySelector(".ip-amt[data-key^='levy-']");
+									if (nameInp && row.name != null) nameInp.value = row.name;
+									if (amtInp && row.amt != null) amtInp.value = row.amt;
+								});
+							}
+						} catch (err) {}
+						syncAmountMirrors();
+					}
+
+					function setEditMode(on) {
+						editing = on;
+						if (!wrap) return;
+						if (on) wrap.classList.add("income-plan--edit");
+						else wrap.classList.remove("income-plan--edit");
+						var amts = tbody.querySelectorAll(".ip-amt");
+						for (var i = 0; i < amts.length; i++) {
+							var el = amts[i];
+							var k = el.getAttribute("data-key");
+							if (k === "b" || k === "d" || k === "f") {
+								el.readOnly = true;
+							} else {
+								el.readOnly = !on;
+							}
+						}
+						var names = tbody.querySelectorAll(".ip-levy-name");
+						for (var j = 0; j < names.length; j++) {
+							names[j].readOnly = !on;
+						}
+						if (btnEdit) btnEdit.textContent = on ? "저장" : "입력";
+						syncAmountMirrors();
+					}
+
+					function renumberLevyKeys() {
+						var rows = getLevyRows();
+						rows.forEach(function (tr, idx) {
+							tr.setAttribute("data-levy-index", String(idx));
+							var amt = tr.querySelector(".ip-amt[data-key^='levy-']");
+							if (amt) amt.setAttribute("data-key", "levy-" + idx);
+						});
+					}
+
+					function addLevyRow() {
+						var subs = getLevyRows();
+						if (subs.length === 0) return;
+						var tr = document.createElement("tr");
+						tr.className = "tr-levy-sub";
+						tr.setAttribute("data-levy-index", String(subs.length));
+						tr.innerHTML =
+							'<td class="levy-name-cell">' +
+							'<div class="levy-name-wrap">' +
+							'<input type="text" class="ip-levy-name" data-levy-name ' + (editing ? "" : "readonly ") + 'value="" />' +
+							'<button type="button" class="btn-levy levy-tools" data-levy-remove title="삭제">−</button>' +
+							"</div></td>" +
+							'<td class="col-plan"><span class="ip-amt-mirror">0</span><input type="text" class="ip-amt" data-key="levy-new" inputmode="numeric" ' + (editing ? "" : "readonly ") + 'value="0" /></td>';
+						var addRow = tbody.querySelector(".row-levy-add");
+						tbody.insertBefore(tr, addRow);
+						renumberLevyKeys();
+						var newAmt = tr.querySelector(".ip-amt");
+						if (newAmt) {
+							newAmt.value = fmtNum(0);
+							newAmt.readOnly = !editing;
+						}
+						var newName = tr.querySelector(".ip-levy-name");
+						if (newName) newName.readOnly = !editing;
+						updateRowspans();
+						recalc();
+					}
+
+					function removeLevyRow(tr) {
+						var subs = getLevyRows();
+						if (subs.length <= 1) return;
+						tr.parentNode.removeChild(tr);
+						renumberLevyKeys();
+						updateRowspans();
+						recalc();
+					}
+
+					tbody.addEventListener("input", onAmtInput);
+					tbody.addEventListener("focus", onAmtFocus, true);
+					tbody.addEventListener("blur", onAmtBlur, true);
+					tbody.addEventListener("click", function (e) {
+						if (e.target.id === "btnLevyAdd" || e.target.closest("#btnLevyAdd")) {
+							e.preventDefault();
+							addLevyRow();
+							return;
+						}
+						var rm = e.target.closest("[data-levy-remove]");
+						if (rm && tbody.contains(rm)) {
+							e.preventDefault();
+							removeLevyRow(rm.closest("tr.tr-levy-sub"));
+						}
+					});
+
+					if (btnEdit) {
+						btnEdit.addEventListener("click", function (e) {
+							e.preventDefault();
+							if (!editing) {
+								setEditMode(true);
+								return;
+							}
+							var ae = document.activeElement;
+							if (ae && typeof ae.blur === "function") ae.blur();
+							setTimeout(function () {
+								finalizeEditableAmounts();
+								recalc();
+								persistIncomePlan();
+								setEditMode(false);
+							}, 0);
+						});
+					}
+
+					window.toggleIncomePlanEdit = function () {
+						if (!editing) {
+							setEditMode(true);
+							return;
+						}
+						var ae = document.activeElement;
+						if (ae && typeof ae.blur === "function") ae.blur();
+						setTimeout(function () {
+							finalizeEditableAmounts();
+							recalc();
+							persistIncomePlan();
+							setEditMode(false);
+						}, 0);
+					};
+					window.openExpenseRegPopup = function () {
+						setEditMode(true);
+					};
+
+					loadIncomePlan();
+					finalizeEditableAmounts();
+					updateRowspans();
+					recalc();
+				})();
+				</script>
+
+				</div>
+            </div>
+
+
+
+
+        </div>
+
+        <!-- 에듀페이 모달 -->
+		<!--
+		<div class="modal_bg"></div>
+		<div class="pop_modal">
+			<div class="modalbox">
+				<ul class="flx">
+					<li><img src="https://자조금.kr/image/pop_main.png"></li>
+					<li><img src="https://자조금.kr/image/pop_text(smart).png"></li>
+				</ul>
+				<button class="pop_close">X</a></button>
+				<a href="/content/acadm/acainfo.html" class="apply_link"><img src="https://자조금.kr/image/btn-request(smart).png"></a>
+			</div>
+		</div>
+		//-->
+    </div>
+    <!-- //content -->
+
+       
+    <!-- footer -->
+
+
+
+
+<!-- footer -->
+<div id="footer">
+	자조금통합지원센터<br/>
+	서울시 서대문구 통일로 81, 농협생명 서관 20층 TEL 1577-0345<br/>
+	copyrightⓒ 자조금통합지원센터. all rights reserved.
+</div>
+<div id="loading-msg" style="
+display:none;
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+padding:20px 32px;
+background:#ffffff;
+color: #0056b3;        /* 진한 파란색 */
+font-size: 22px;       /* 글자 크기 확대 (기존 16px) */
+border-radius:12px;
+z-index:999999;
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+">
+  데이터를 처리 중입니다. 잠시만 기다려 주세요…
+</div>
+
+<script>
+/*
+(function () {
+  const msg = document.getElementById('loading-msg');
+  const show = () => { if (msg) msg.style.display = 'block'; };
+
+  // a 태그 클릭(메뉴 이동 포함)
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a');
+    if (!a) return;
+
+
+
+    if (a.target === '_blank') return;
+    if (a.hasAttribute('download')) return;
+    if (!a.href || a.href.startsWith('javascript:')) return;
+
+    show();
+  });
+
+  // form submit
+  document.addEventListener('submit', () => show());
+
+  // 새로고침/닫기 등
+  window.addEventListener('beforeunload', () => show());
+})();
+*/
+(function () {
+  const msg = document.getElementById('loading-msg');
+  const show = () => { if (msg) msg.style.display = 'block'; };
+
+  document.addEventListener('click', (e) => {
+    // 1. 클릭된 요소로부터 가장 가까운 a 태그를 찾음
+    const a = e.target.closest('a');
+    if (!a) return;
+
+    // 2. href 속성 값을 직접 가져옴 (a.href는 전체 URL을 반환하므로 getAttribute 권장)
+    const href = a.getAttribute('href');
+
+    // 3. 예외 처리 (이 부분이 미납현황을 걸러내고 있을 수 있음)
+    if (a.target === '_blank') return;
+    if (a.hasAttribute('download')) return;
+    
+    // href가 없거나, #으로만 시작하거나, javascript인 경우 제외
+    if (!href || href === '#' || href.startsWith('javascript:')) return;
+
+    // 4. .do나 .php 등 실제 페이지 이동이 명확한 경로인지 확인 (선택 사항)
+    // 현재 "미납현황"은 .do로 끝나므로 아래 조건이 없어도 위 조건을 통과하면 작동해야 함
+    show();
+  });
+
+  // 폼 전송 시 로딩바 표시
+  document.addEventListener('submit', (e) => {
+    if (e.target.target && e.target.target !== '_self') return;
+    show();
+  });
+
+  window.addEventListener('beforeunload', () => show());
+})();
+</script>
+
+
+
+    <!-- //footer -->
+
+
+</div>
+
+
+
+
+<script>
+	$('.price_crit form').hide();
+	$('.price_crit form').first().show();
+	$(".price_tab input[type='radio']").click(function(){
+		$('.price_crit form').hide();
+		$('.price_crit form').eq($("input[type='radio']").index(this)).show();
+	});
+
+	/*
+	$('.modal_bg,.pop_modal').hide();
+	$('.pop_open').click(function(){
+		$('.modal_bg,.pop_modal').stop().show();
+	});
+	$('.pop_close').click(function(){
+		$('.modal_bg,.pop_modal').stop().hide();
+	});
+	*/
+</script>
+
+<script>
+function exceldown() {
+    // 엑셀 다운로드를 위한 폼 제출
+    submitForm('/wkwhrma/getAcademyStatistics1Excel.do', 'ifrm01', fn_setSearchInput());
+}
+
+/* 구분 1, 2 */
+function multiSelect1() {
+    const dropdown = document.getElementById('selMulti1');
+    
+    if (dropdown.style.visibility === 'visible') {
+        dropdown.style.visibility = 'hidden';
+    } else {
+        // 드롭다운의 위치를 고정된 값으로 설정
+        dropdown.style.top = `20px`;  // 드롭다운이 셀렉트 박스 아래로 약간 떨어지게 설정
+        dropdown.style.visibility = 'visible';
+        dropdown.style.width = `130px`;
+        dropdown.style.zIndex = '1000';  // 드롭다운이 다른 요소 위에 표시되도록 설정
+    }
+}
+
+function multiSelect2() {
+    const dropdown = document.getElementById('selMulti2');
+    
+    if (dropdown.style.visibility === 'visible') {
+        dropdown.style.visibility = 'hidden';
+    } else {
+        // 드롭다운의 위치를 고정된 값으로 설정
+        dropdown.style.top = `20px`;  // 드롭다운이 셀렉트 박스 아래로 약간 떨어지게 설정
+        dropdown.style.left = `151px`;   // 드롭다운이 셀렉트 박스의 왼쪽에 맞춰서 나타나게 설정
+        dropdown.style.visibility = 'visible';
+        dropdown.style.width = `130px`;
+        dropdown.style.zIndex = '1000';  // 드롭다운이 다른 요소 위에 표시되도록 설정
+    }
+}
+
+
+function fnGetComboAjax(parm,val1,val2){
+	var strv = DoCallbackCommon("https://selfhelp.edu-ok.co.kr/common/ajaxTwoSelectComboNoSession.asp?Combo="+parm+"&ComboVal1="+val1+"&ComboVal2="+val2);
+	document.getElementById("Combo"+parm).innerHTML = strv;					
+	
+}
+
+function fnGetComboAjax2(parm,val1,val2){
+	var strv = DoCallbackCommon("https://selfhelp.edu-ok.co.kr/common/ajaxTwoSelectComboNoSession.asp?Combo="+parm+"&ComboVal1="+val1+"&ComboVal2="+val2);	
+	document.getElementById("Combo"+parm).innerHTML += strv;					
+	
+}
+//콤보박스만 리스레쉬하도록 처리하는 함수
+
+function fnChgSelectCombo(val){
+	$("input:checkbox[id='gubunAll1']").prop('checked',false); //radio reset
+	$("input:checkbox[id='gubunAll2']").prop('checked',false); //radio reset
+	
+	$('#ComboGubun2').empty(); // 모든 자식 요소 제거 (li 태그 포함)
+
+	$('input:checkbox').each(function() { //[name=??] 로특정 체크박스만 불러오기가능
+	 if(this.checked)
+		fnGetComboAjax2("Gubun2",this.value,'');
+	});
+}  
+
+function checkReset(){
+	$("input:checkbox[id='Gubun1']").prop('checked',false); //checkbox reset
+	$("input:checkbox[id='Gubun2']").prop('checked',false); //checkbox reset
+}
+
+function gubunAllReset(){
+	$("input:checkbox[id='gubunAll1']").prop('checked',false); //checkbox reset
+	$("input:checkbox[id='gubunAll2']").prop('checked',false); //checkbox reset
+}
+
+function checkOnlyOneGubun1() {
+	$(document).ready(function() {
+		$('input[type="checkbox"][id="gubunAll1"]').click(function(){
+			if($(this).prop('checked')){
+				$('input[type="checkbox"][id="gubunAll1"]').prop('checked',false);
+				$(this).prop('checked',true);
+			}
+		});
+	});
+}
+
+function checkOnlyOneGubun2() {
+	$(document).ready(function() {
+		$('input[type="checkbox"][id="gubunAll2"]').click(function(){
+			if($(this).prop('checked')){
+				$('input[type="checkbox"][id="gubunAll2"]').prop('checked',false);
+				$(this).prop('checked',true);
+			}
+		});
+	});
+}
+
+//검색후 로드되었을때 구분1있음,구분1없음 중복체크 방지
+$(document).ready(function() {
+	$('input[type="checkbox"][id="gubunAll1"]').click(function(){
+		if($(this).prop('checked')){
+			$('input[type="checkbox"][id="gubunAll1"]').prop('checked',false);
+			$(this).prop('checked',true);
+		}
+	});
+});
+
+//검색후 로드되었을때 구분2있음,구분2없음 중복체크 방지
+$(document).ready(function() {
+	$('input[type="checkbox"][id="gubunAll2"]').click(function(){
+		if($(this).prop('checked')){
+			$('input[type="checkbox"][id="gubunAll2"]').prop('checked',false);
+			$(this).prop('checked',true);
+		}
+	});
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+		
+    
+
+
+    
+    
+    
+
+
+<!doctype html>
+<html lang="kr">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>자조금통합지원센터</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta content="" name="description" />
+	<meta content="Coderthemes" name="" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+	
+
+
+
+
+
+
+
+
+
+
+
+	<script>
+	    var BASE_URL_ADMIN = '/wkwhrma';
+	    window.__JSP_FILE_PATH__ = "/WEB-INF/jsp/content/recpt/pop_academy_price_regist.jsp";
+	    window.__CONTROLLER_CLASS__ = "MultiReceiptViewController";
+	    window.__CONTROLLER_METHOD__ = "academyPriceRegist";
+	</script>
+	<script src="https://자조금.kr/js/jquery-3.7.1.js"></script>
+	<script src="https://자조금.kr/js/jquery.form.min.js"></script>
+	<script src="https://자조금.kr/js/ajax.js?v=1.0.4"></script>
+	<script src="https://자조금.kr/js/fn.common.js?v=1.0.11"></script>
+	<script src="https://자조금.kr/js/fn.print_path.js?v=1.0.3"></script>
+	<script src="https://자조금.kr/js/common.js?v=1.0.2"></script>
+	<script src="https://자조금.kr/js/jquery.bpopup.min.js" type="text/javascript"></script>
+	<script src="https://자조금.kr/js/jquery-confirm.min.js"></script>   <!-- confirm js-->
+	<script src="https://자조금.kr/js/jquery.toast.js" type="text/javascript"></script>
+	<script type="text/javascript" src="/js/jquery.cookie.js"></script>		
+	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+	
+	
+        
+        
+            <!-- DEBUG 환경일 경우 -->
+            <script src="https://자조금.kr/js/fn.console.log.dev.js?v=1.0.3"></script>
+        
+    
+	
+
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+	
+
+<link href="https://자조금.kr/css/common.css?ver=1.0.2" rel="stylesheet" type="text/css" />
+<link href="https://자조금.kr/css/premium.css?ver=1.0.3" rel="stylesheet" type="text/css" />
+<link href="https://자조금.kr/css/menu.css?ver=1.0.5" rel="stylesheet" type="text/css" />
+<link href="https://자조금.kr/css/alert.css?ver=1.0.0" rel="stylesheet" type="text/css" />
+
+<script src="https://자조금.kr/js/fn.menu.js?v=1.0.2"></script>
+<script src="https://자조금.kr/Library/js/premiun_Script.js?v=1.0.2"></script>
+
+
+    <script type="text/javascript">
+        function getQueryParam(name) {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const v = params.get(name);
+                return v !== null ? String(v) : "";
+            } catch (e) {
+                return "";
+            }
+        }
+
+        function setFieldValue(id, value) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.value = value == null ? "" : String(value);
+        }
+
+        function setEnabled(id, enabled) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.disabled = !enabled;
+        }
+
+        window.addEventListener("DOMContentLoaded", function () {
+            // 팝업을 여는 쪽(Statistics2)에서 쿼리로 전달
+            const itemName = getQueryParam("itemName");
+            const budgetAmount = getQueryParam("budgetAllocAmount");
+            const balance = getQueryParam("balance");
+            const note = getQueryParam("note");
+            const yearText = getQueryParam("year");
+            const showBalance = getQueryParam("showBalance");
+
+            setFieldValue("pItemName", itemName);
+            setFieldValue("pBudgetAmount", budgetAmount);
+            setFieldValue("pBalance", balance);
+            setFieldValue("pNote", note);
+            if (yearText) setFieldValue("pYear", yearText);
+
+            // 기본은 수정 불가
+            setEnabled("pBudgetAmount", false);
+            setEnabled("pNote", false);
+            // 잔액은 항상 수정 불가
+            setEnabled("pBalance", false);
+            // 항목명/해당년도도 항상 수정 불가
+            setEnabled("pItemName", false);
+            setEnabled("pYear", false);
+
+            const isRegisterMode = showBalance === "0";
+
+            // showBalance=0이면 잔액 행만 숨김(예산배정등록 팝업 모드)
+            if (showBalance === "0") {
+                const rowBalance = document.getElementById("rowBalance");
+                if (rowBalance) rowBalance.style.display = "none";
+            }
+
+            const registerBtn = document.getElementById("registerBtn");
+            const editBtn = document.getElementById("editBtn");
+            const deleteBtn = document.getElementById("deleteBtn");
+
+            const titleEl = document.getElementById("popupTitle");
+            if (titleEl) {
+                titleEl.textContent = isRegisterMode ? "예산배정 등록" : "예산배정 정보";
+            }
+
+            if (isRegisterMode) {
+                // 예산배정등록 팝업: 해당년도/항목명/예산배정액/비고 전부 수정 가능
+                setEnabled("pYear", true);
+                setEnabled("pItemName", true);
+                setEnabled("pBudgetAmount", true);
+                setEnabled("pNote", true);
+
+                if (registerBtn) registerBtn.style.display = "";
+                if (editBtn) editBtn.style.display = "none";
+                if (deleteBtn) deleteBtn.style.display = "none";
+
+                // 등록: 현재 UI 목적에 맞게 저장 대신 opener 새로고침/닫기만 수행
+                if (registerBtn) {
+                    registerBtn.addEventListener("click", function (e) {
+                        e.preventDefault();
+                        try {
+                            if (window.opener) window.opener.location.reload();
+                        } catch (err) {}
+                        try {
+                            self.close();
+                        } catch (err) {}
+                    });
+                }
+            } else {
+                // 예산배정 정보: 열자마자 해당년도·항목명·예산배정액·비고 수정 가능
+                if (registerBtn) registerBtn.style.display = "none";
+                if (editBtn) editBtn.style.display = "";
+                if (deleteBtn) deleteBtn.style.display = "";
+
+                setEnabled("pYear", true);
+                setEnabled("pItemName", true);
+                setEnabled("pBudgetAmount", true);
+                setEnabled("pNote", true);
+            }
+
+            if (editBtn) {
+                editBtn.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    if (isRegisterMode) return;
+                    try {
+                        if (window.opener) window.opener.location.reload();
+                    } catch (err) {}
+                    try {
+                        self.close();
+                    } catch (err) {}
+                });
+            }
+
+            if (!isRegisterMode && deleteBtn) {
+                deleteBtn.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    const ok = window.confirm("정말 삭제하시겠습니까?");
+                    if (!ok) return;
+                    try {
+                        if (window.opener) window.opener.location.reload();
+                    } catch (err) {}
+                    try {
+                        self.close();
+                    } catch (err) {}
+                });
+            }
+        });
+    </script>
+    <style>
+        .popBody {
+            width: 600px;
+        }
+        .table_write table {
+            width: 100%;
+        }
+        .table_write th, .table_write td {
+            text-align: center;
+            padding: 8px;
+        }
+        /* 세로 폼: 왼쪽 th(라벨) 폭 */
+        .table_write th {
+            width: 35%;
+        }
+    </style>
+</head>
+<body class="popBody" style="width:600px">
+    <h2 class="popTitle" id="popupTitle"><i class="fa fa-dot-circle-o"></i>예산배정</h2>
+    <!-- popCon -->
+    <div class="popCon">
+        <div class="table_write">
+            <table cellpadding="8" border="1">
+                <tr>
+                    <th>해당년도</th>
+                    <td class="txtc" style="text-align: left;">
+                        <select id="pYear" name="pYear" style="margin-left: 4px; width: 120px; padding: 5px;" disabled>
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                            <option value="2021">2021</option>
+                            <option value="2020">2020</option>
+                            <option value="2019">2019</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>항목명</th>
+                    <td class="txtc">
+                        <input style="width: 95%;padding: 5px;" type="text" id="pItemName" name="pItemName" size="13" value="" disabled />
+                    </td>
+                </tr>
+                <tr>
+                    <th>예산배정액</th>
+                    <td class="txtc">
+                        <input style="width: 95%;padding: 5px;" type="text" id="pBudgetAmount" name="pBudgetAmount" size="13" value="" disabled />
+                    </td>
+                </tr>
+                <tr id="rowBalance">
+                    <th>잔액</th>
+                    <td class="txtc">
+                        <input style="width: 95%;padding: 5px;border:1px solid #f3f3f3;" type="text" id="pBalance" name="pBalance" size="13" value="" disabled />
+                    </td>
+                </tr>
+                <tr>
+                    <th>비고</th>
+                    <td class="txtc">
+                        <input style="width: 95%;padding: 5px;" type="text" id="pNote" name="pNote" size="13" value="" disabled />
+                    </td>
+                </tr>
+            </table>
+        </div>
+		<ul class="btnList mt20">
+            <li><a href="javascript:" id="registerBtn" class="btnLink btnBlueBg"><i class="fa fa-plus"></i> 등록</a></li>
+            <li><a href="javascript:" id="editBtn" class="btnLink btnBlueBg"><i class="fa fa-floppy-disk"></i> 저장</a></li>
+            <li><a href="javascript:" id="deleteBtn" class="btnLink btnBlueBg"><i class="fa fa-trash"></i> 삭제</a></li>
+            <li><a href="javascript:self.close();" class="btnLink btnRedBg"><i class="fa fa-times"></i> 닫기</a></li>
+        </ul>
+    </div>
+
+    <!-- //popCon -->
+
+</body>
+</html>

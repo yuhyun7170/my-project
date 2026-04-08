@@ -1,0 +1,262 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+		
+    
+
+
+    
+    
+    
+
+
+<!doctype html>
+<html lang="kr">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>자조금통합지원센터</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta content="" name="description" />
+	<meta content="Coderthemes" name="" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+	
+
+
+
+
+
+
+
+
+
+
+
+	<script>
+	    var BASE_URL_ADMIN = '/wkwhrma';
+	    window.__JSP_FILE_PATH__ = "/WEB-INF/jsp/content/acadm/pop_approval.jsp";
+	    window.__CONTROLLER_CLASS__ = "ApprovalController";
+	    window.__CONTROLLER_METHOD__ = "popApproval";
+	</script>
+	<script src="https://자조금.kr/js/jquery-3.7.1.js"></script>
+	<script src="https://자조금.kr/js/jquery.form.min.js"></script>
+	<script src="https://자조금.kr/js/ajax.js?v=1.0.4"></script>
+	<script src="https://자조금.kr/js/fn.common.js?v=1.0.11"></script>
+	<script src="https://자조금.kr/js/fn.print_path.js?v=1.0.3"></script>
+	<script src="https://자조금.kr/js/common.js?v=1.0.2"></script>
+	<script src="https://자조금.kr/js/jquery.bpopup.min.js" type="text/javascript"></script>
+	<script src="https://자조금.kr/js/jquery-confirm.min.js"></script>   <!-- confirm js-->
+	<script src="https://자조금.kr/js/jquery.toast.js" type="text/javascript"></script>
+	<script type="text/javascript" src="/js/jquery.cookie.js"></script>		
+	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+	
+	
+        
+        
+            <!-- DEBUG 환경일 경우 -->
+            <script src="https://자조금.kr/js/fn.console.log.dev.js?v=1.0.3"></script>
+        
+    
+	
+
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+	
+
+<link href="https://자조금.kr/css/common.css?ver=1.0.2" rel="stylesheet" type="text/css" />
+<link href="https://자조금.kr/css/premium.css?ver=1.0.3" rel="stylesheet" type="text/css" />
+<link href="https://자조금.kr/css/menu.css?ver=1.0.5" rel="stylesheet" type="text/css" />
+<link href="https://자조금.kr/css/alert.css?ver=1.0.0" rel="stylesheet" type="text/css" />
+
+<script src="https://자조금.kr/js/fn.menu.js?v=1.0.2"></script>
+<script src="https://자조금.kr/Library/js/premiun_Script.js?v=1.0.2"></script>
+
+
+<style>
+    body { overflow-y: auto !important; overflow-x: hidden !important; }
+</style>
+</head>
+
+<body class="popBody" style="width:480px">
+    <h2 class="popTitle"><i class="fa fa-dot-circle-o"></i> 결재선 지정</h2>
+    <div class="popCon">
+        <div class="table_write">
+            <table>
+                <colgroup>
+                    <col width="20%">
+                    <col width="80%">
+                </colgroup>
+                <tbody id="approverWrapper">
+                    <tr id="approverRow_1">
+                        <th>최종승인자</th>
+                        <td>
+                            <select id="approver_1" class="approver-select select01" style="width:130px;">
+                    <option value="">선택</option>
+                            
+                                <option value="2028500009" >
+                                    홍길동 사원
+                                </option>
+                            
+                                <option value="2028500005" >
+                                    김철수 대리
+                                </option>
+                            
+                                <option value="2028500003" >
+                                    이지영 과장
+                                </option>
+                            
+                            </select>
+                            <a href="#" onclick="addApprover(); return false;"><img src="http://자조금.kr/images/ico_plus.gif" style="vertical-align: middle;"></a>
+                            <a href="#" onclick="delApprover(1); return false;"><img src="http://자조금.kr/images/ico_minus.gif" style="vertical-align: middle;"></a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <ul class="btnList mt20">
+            <li class="mr5"><a href="#" onclick="registerAndClose(); return false;" class="btnLink btnBlueBg"><i class="fa fa-plus"></i> 등 록</a></li>
+            <li><a href="javascript:self.close();" class="btnLink btnRedBg"><i class="fa fa-times"></i> 닫 기</a></li>
+        </ul>
+    </div>
+
+<script>
+let approverIndex = 1;
+var approverSelectHtml = '<select class="approver-select select01" style="width:130px;">'
+    + '<option value="">선택</option>'
+    
+        + '<option value="2028500009">홍길동 사원</option>'
+    
+        + '<option value="2028500005">김철수 대리</option>'
+    
+        + '<option value="2028500003">이지영 과장</option>'
+    
+    + '</select>';
+function addApprover() {
+    approverIndex++;
+    var html = ''
+        + '<tr id="approverRow_' + approverIndex + '">'
+        +     '<th>' + approverIndex + '차</th>'
+        +     '<td>'
+        +         approverSelectHtml
+        +         ' <a href="#" onclick="addApprover(); return false;">'
+        +             '<img src="https://자조금.kr/images/ico_plus.gif" style="vertical-align:middle;">'
+        +         '</a>'
+        +         ' <a href="#" onclick="delApprover(' + approverIndex + '); return false;">'
+        +             '<img src="https://자조금.kr/images/ico_minus.gif" style="vertical-align:middle;">'
+        +         '</a>'
+        +     '</td>'
+        + '</tr>';
+
+    $("#approverWrapper").append(html);
+    updateApproverLabels();
+}
+
+function delApprover(idx) {
+    if ($("#approverWrapper tr").length > 1) {
+        $("#approverRow_" + idx).remove();
+        renumberApprovers();
+    } else {
+        alert("최소 1명의 결재자는 지정해야 합니다.");
+    }
+}
+
+function renumberApprovers() {
+    approverIndex = 0;
+    $("#approverWrapper tr").each(function(i, row) {
+        approverIndex = i + 1;
+        $(row).find("th").text(approverIndex + "차");
+        $(row).attr("id", "approverRow_" + approverIndex);
+        $(row).find("select").attr("id", "approver_" + approverIndex);
+        $(row).find("a[onclick^='delApprover']").attr("onclick", "delApprover(" + approverIndex + "); return false;");
+    });
+    updateApproverLabels();
+}
+
+/**
+ * 결재선 라벨 규칙
+ * - 선택된 결재자 수가 1명일 때: 해당 1명이 "최종결재자"
+ * - 2명 이상일 때: 마지막(아래) 1명이 "최종결재자", 그 위는 위에서부터 "승인자1, 승인자2, ..."
+ */
+function updateApproverLabels() {
+    const $rows = $("#approverWrapper tr");
+    const total = $rows.length;
+
+    $rows.each(function(i, row) {
+        const pos = i + 1; // 1-based
+        if (total === 1) {
+            $(row).find("th").text("최종결재자");
+            return;
+        }
+
+        if (pos === total) {
+            $(row).find("th").text("최종결재자");
+        } else {
+            $(row).find("th").text("승인자" + pos);
+        }
+    });
+}
+
+/**
+ * '등록' 버튼 클릭 시 실행.
+ * 선택된 결재자 정보를 조합하여 부모창으로 전달하고 자신을 닫습니다.
+ */
+function registerAndClose() {
+    const lines = [];
+    let isValid = true;
+
+    $('.approver-select').each(function() {
+        const empno = $(this).val();
+        if (empno) {
+            // ⭐️ 변경된 부분 1: '2016,' 와 같은 소속 코드를 제외하고 직원 번호(empno)만 추가
+            lines.push(empno);
+        } else {
+            isValid = false;
+        }
+    });
+
+    if (!isValid || lines.length === 0) {
+        alert("모든 결재자를 선택해주세요.");
+        return;
+    }
+
+    // ⭐️ 변경된 부분 2: 구분자를 파이프('|')가 아닌 쉼표(',')로 변경
+    const formattedLine = lines.join(',');
+
+    // 부모창과 통신하는 핵심 부분 (변경 없음)
+    if (window.opener && typeof window.opener.setApprovalLine === 'function') {
+        window.opener.setApprovalLine(formattedLine);
+        self.close();
+    } else {
+        alert("부모창을 찾을 수 없거나 통신할 수 없습니다.");
+    }
+}
+</script>
+
+</body>
+</html>
+

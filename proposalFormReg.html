@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<title>비용처리등록</title>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+	<link href="https://자조금.kr/css/common.css?ver=1.0.2" rel="stylesheet" type="text/css" />
+	<link href="https://자조금.kr/css/premium.css?ver=1.0.3" rel="stylesheet" type="text/css" />
+	<link href="https://자조금.kr/css/menu.css?ver=1.0.5" rel="stylesheet" type="text/css" />
+	<link href="https://자조금.kr/css/alert.css?ver=1.0.0" rel="stylesheet" type="text/css" />
+	<style>
+		body {
+			overflow-y: auto !important;
+			overflow-x: hidden !important;
+		}
+		.popBody {
+			width: 436px;
+		}
+		.popTitle {
+			margin-bottom: 6px;
+		}
+		.table_write table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+		.table_write th,
+		.table_write td {
+			vertical-align: middle;
+			padding: 4px 6px !important;
+		}
+		.table_write td {
+			text-align: left;
+		}
+		.table_write .exp-select {
+			width: 98%;
+			max-width: 100%;
+			box-sizing: border-box;
+		}
+		.table_write .exp-input {
+			width: 98%;
+			max-width: 100%;
+			box-sizing: border-box;
+			padding: 4px 6px;
+		}
+		ul.exp-reg-btns {
+			margin-top: 8px !important;
+			margin-bottom: 0;
+		}
+	</style>
+</head>
+<body class="popBody" style="width:436px;">
+	<h2 class="popTitle"><i class="fa-solid fa-circle-dot"></i> 비용처리등록</h2>
+	<div class="popCon">
+		<form id="expenseRegForm" action="javascript:void(0);" method="post">
+			<div class="table_write">
+				<table cellpadding="5" border="1">
+					<colgroup>
+						<col width="20%" />
+						<col width="80%" />
+					</colgroup>
+					<tbody>
+						<tr>
+							<th scope="row">항</th>
+							<td>
+								<select id="selHang" name="hangId" class="select01 exp-select" aria-label="항"></select>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">목</th>
+							<td>
+								<select id="selMok" name="mokId" class="select01 exp-select" aria-label="목"></select>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">세목</th>
+							<td>
+								<select id="selSemok" name="semokId" class="select01 exp-select" aria-label="세목"></select>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">세부사업</th>
+							<td>
+								<select id="selDetail" name="detailId" class="select01 exp-select" aria-label="세부사업"></select>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">집행액</th>
+							<td>
+								<input type="text" id="inpAmount" name="amount" class="exp-input" inputmode="numeric" autocomplete="off" placeholder="금액(원)" />
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">결재일</th>
+							<td>
+								<input type="date" id="inpApprovalDate" name="approvalDate" class="exp-input" autocomplete="off" title="결재일" />
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">세무담당자</th>
+							<td>
+								<select id="selTaxManager" name="taxManager" class="select01 exp-select" aria-label="세무담당자">
+									<option value="">선택</option>
+									<option value="박세무 세무사">박세무 세무사</option>
+									<option value="이지영 세무사">이지영 세무사</option>
+									<option value="김민규 세무사">김민규 세무사</option>
+									<option value="한세무 회계사">한세무 회계사</option>
+									<option value="최담당 세무회계">최담당 세무회계</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">비고</th>
+							<td>
+								<input type="text" id="inpNote" name="note" class="exp-input" maxlength="500" autocomplete="off" placeholder="비고" />
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<ul class="btnList mt20 exp-reg-btns">
+				<li class="mr5">
+					<a href="javascript:void(0);" id="btnSubmit" class="btnLink btnBlueBg"><i class="fa-solid fa-plus"></i> 등 록</a>
+				</li>
+				<li>
+					<a href="javascript:self.close();" class="btnLink btnRedBg"><i class="fa-solid fa-times"></i> 닫 기</a>
+				</li>
+			</ul>
+		</form>
+	</div>
+
+	<script>
+	(function () {
+		var STORAGE_KEY_V1 = "budgetTreeItems_v1";
+		var STORAGE_KEY = "budgetTreeItems_v2";
+
+		function getCsvSeedText() {
+			return `,,,
+구분1,구분2,구분3,구분4
+,,,
+소비홍보,광고,품질향상,현수막 제작 및 게첨
+,,소비촉진,TV광고(PPL)
+수급안정,가격안정,수급조절사업,'25년산 가격안정 행사
+,,,주산지 포도축제 행사
+,,,포도데이 행사 등
+,,,과일산업대전 행사
+,,,연말 수급조절 행사
+,,,판촉홍보물 제작 등
+,수급안정 예비비,수급안정 예비비,농업수입안정보험 등 지원사업(보류)
+경쟁력제고,품질향상,교육자료 발간 등,재배기술 책자 발간 등
+,,,영상자료 링크
+,,,담당자 교육
+,생산성향상,샤인머스켓 이외 품종 삽목묘 구입비 지원,삽목묘 구입비 지원
+교육 및 정보제공,교육,거출률광고,버스외부광고
+,,사무국 주관 농가교육,사무국 주관 교육
+,,회원농협 주관 농가교육,회원농협 주관 교육
+,정보제공,거출금 고지 등,거출금 고지
+,,,문자 발송
+,,,영농일지 등 제작
+,,홈페이지 관리?운영 등,수납관리시스템관리
+,,,홈페이지유지관리
+,,,인스타그램 운영
+수납위탁 수수료,수납기관 수수료,수납지원,수납기관 수수료(가상계좌)
+운영관리,인건비,급여 및 퇴직연금,급여 및 퇴직연금
+,,법정부담금,법정부담금(4대보험)
+,경비,대의원회,임차료
+,,,"참석수당(대면, 서면)"
+,,,인쇄비 등
+,,,기타(참석자 식대 등)
+,,"회의비(이사회, 관리위원회 등)",임차료
+,,,"참석수당(대면, 서면)"
+,,,인쇄비 등
+,,,기타(참석자 식대 등)
+,,수용비,사무국 운영비 등
+,,,의무자조금단체 연회비
+,,,해직자 고발 건 대응 노무사비 등
+,,제수수료,"외부회계감사, 세무기장료, 등기 등"
+,,업무추진비,업무추진비
+,,직무수행비,회장
+,,여비,출장여비 등
+,,통신비,전화요금 및 우편료 등
+,,임차료,"임차료(사무실 임차료, 렌터카 등)"
+,자산취득비,자산취득비,중요재산`;
+		}
+
+		function parseCsv4(text) {
+			var rows = [];
+			var row = [];
+			var field = "";
+			var inQuotes = false;
+			for (var i = 0; i < text.length; i++) {
+				var ch = text[i];
+				if (ch === "\"") {
+					if (inQuotes && text[i + 1] === "\"") {
+						field += "\"";
+						i++;
+					} else {
+						inQuotes = !inQuotes;
+					}
+					continue;
+				}
+				if (ch === "," && !inQuotes) {
+					row.push(field);
+					field = "";
+					continue;
+				}
+				if ((ch === "\n" || ch === "\r") && !inQuotes) {
+					if (ch === "\r" && text[i + 1] === "\n") i++;
+					row.push(field);
+					field = "";
+					while (row.length < 4) row.push("");
+					rows.push(row.slice(0, 4));
+					row = [];
+					continue;
+				}
+				field += ch;
+			}
+			if (field.length || row.length) {
+				row.push(field);
+				while (row.length < 4) row.push("");
+				rows.push(row.slice(0, 4));
+			}
+			return rows;
+		}
+
+		function buildItemsFromSeedCsv4(csvText) {
+			var rows = parseCsv4(csvText);
+			var current = ["", "", "", ""];
+			var mapKey = {};
+			var childrenCount = {};
+			var items = {};
+
+			function getId(depth, parentId, name) {
+				if (!name) return null;
+				var key = depth + "|" + parentId + "|" + name;
+				if (mapKey[key]) return mapKey[key];
+				var ck = depth + "|" + parentId;
+				var idx = (childrenCount[ck] || 0) + 1;
+				childrenCount[ck] = idx;
+				var id = depth === 1 ? String(idx) : parentId + "-" + String(idx);
+				mapKey[key] = id;
+				items[id] = { name: name, alloc: "", spent: "", approvalDate: "", note: "", active: true };
+				return id;
+			}
+
+			for (var r = 0; r < rows.length; r++) {
+				var cols = rows[r].map(function (c) {
+					return (c == null ? "" : String(c)).trim();
+				});
+				if (cols.every(function (c) { return !c; })) continue;
+				if (cols.some(function (c) { return c.indexOf("구분") !== -1; })) continue;
+
+				var deepest = 0;
+				for (var d0 = 0; d0 < 4; d0++) {
+					if (cols[d0] !== "") deepest = d0 + 1;
+				}
+				if (deepest === 0) continue;
+
+				for (var d1 = 0; d1 < deepest; d1++) {
+					if (cols[d1] !== "") {
+						current[d1] = cols[d1];
+						for (var e = d1 + 1; e < 4; e++) current[e] = "";
+					}
+				}
+
+				var parent = "";
+				for (var d2 = 1; d2 <= deepest; d2++) {
+					var nm = current[d2 - 1];
+					if (!nm) break;
+					parent = getId(d2, parent, nm) || parent;
+				}
+			}
+
+			return items;
+		}
+
+		function migrateV1ToV2() {
+			try {
+				if (localStorage.getItem(STORAGE_KEY)) return;
+				var raw = localStorage.getItem(STORAGE_KEY_V1);
+				if (!raw) return;
+				var data = JSON.parse(raw);
+				var items = {};
+				Object.keys(data.items || {}).forEach(function (k) {
+					var it = data.items[k];
+					items[k] = {
+						name: (it && it.name) || "",
+						alloc:
+							it && it.alloc != null && String(it.alloc).trim() !== ""
+								? it.alloc
+								: it && it.amount != null
+									? it.amount
+									: "",
+						spent: it && it.spent != null ? it.spent : "",
+						approvalDate: it && it.approvalDate != null ? String(it.approvalDate) : "",
+						note: it && it.note != null ? String(it.note) : "",
+						active: true
+					};
+				});
+				var y = String(new Date().getFullYear());
+				localStorage.setItem(
+					STORAGE_KEY,
+					JSON.stringify({
+						years: (function () {
+							var o = {};
+							o[y] = { items: items, deleted: data.deleted || [] };
+							return o;
+						})()
+					})
+				);
+			} catch (e) {}
+		}
+
+		function readRoot() {
+			try {
+				var raw = localStorage.getItem(STORAGE_KEY);
+				if (!raw) return { years: {} };
+				return JSON.parse(raw);
+			} catch (e) {
+				return { years: {} };
+			}
+		}
+
+		function writeRoot(root) {
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(root));
+		}
+
+		function getYearPayload(year) {
+			var root = readRoot();
+			var y = (root && root.years) || {};
+			return y[year] || { items: {}, deleted: [] };
+		}
+
+		function setYearPayload(year, payload2) {
+			var root = readRoot();
+			if (!root.years) root.years = {};
+			root.years[year] = payload2;
+			writeRoot(root);
+		}
+
+		function resolveYear() {
+			try {
+				var u = new URLSearchParams(window.location.search || "");
+				var y = u.get("year");
+				if (y) return y;
+			} catch (e1) {}
+			var root = readRoot();
+			var years = root.years || {};
+			var best = null;
+			var bestCount = -1;
+			Object.keys(years).forEach(function (yy) {
+				var n = Object.keys((years[yy] && years[yy].items) || {}).length;
+				if (n > bestCount) {
+					bestCount = n;
+					best = yy;
+				}
+			});
+			if (best) return best;
+			return String(new Date().getFullYear());
+		}
+
+		function depthFromId(id) {
+			return id ? String(id).trim().split("-").length : 1;
+		}
+
+		function parentIdFromBudgetId(id) {
+			if (!id) return "";
+			var parts = String(id).split("-");
+			return parts.length <= 1 ? "" : parts.slice(0, -1).join("-");
+		}
+
+		function deletedSet(pl) {
+			return new Set(pl.deleted || []);
+		}
+
+		function sortIds(ids) {
+			return ids.slice().sort(function (a, b) {
+				var la = String(a).split("-").slice(-1)[0];
+				var lb = String(b).split("-").slice(-1)[0];
+				var na = parseInt(la, 10);
+				var nb = parseInt(lb, 10);
+				if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
+				return String(a).localeCompare(String(b), "ko-KR");
+			});
+		}
+
+		function getChildIds(pl, depth, parentId) {
+			var ds = deletedSet(pl);
+			var items = pl.items || {};
+			var pid = parentId || "";
+			var out = [];
+			Object.keys(items).forEach(function (id) {
+				if (ds.has(id)) return;
+				if (depthFromId(id) !== depth) return;
+				if (parentIdFromBudgetId(id) !== pid) return;
+				var it = items[id];
+				if (it && it.active === false) return;
+				out.push(id);
+			});
+			return sortIds(out);
+		}
+
+		function fillSelectByIds(sel, ids, items, placeholder) {
+			sel.innerHTML = "";
+			var o0 = document.createElement("option");
+			o0.value = "";
+			o0.textContent = placeholder || "선택";
+			sel.appendChild(o0);
+			for (var i = 0; i < ids.length; i++) {
+				var id = ids[i];
+				var it = items[id] || {};
+				var nm = it.name != null ? String(it.name) : "";
+				var o = document.createElement("option");
+				o.value = id;
+				o.textContent = nm;
+				sel.appendChild(o);
+			}
+		}
+
+		migrateV1ToV2();
+		var yearKey = resolveYear();
+		var payload = getYearPayload(yearKey);
+		if (!payload.items || Object.keys(payload.items).length === 0) {
+			payload = {
+				items: buildItemsFromSeedCsv4(getCsvSeedText()),
+				deleted: [],
+				order: []
+			};
+			setYearPayload(yearKey, payload);
+		}
+
+		var items = payload.items;
+
+		var selHang = document.getElementById("selHang");
+		var selMok = document.getElementById("selMok");
+		var selSemok = document.getElementById("selSemok");
+		var selDetail = document.getElementById("selDetail");
+
+		function refreshMok() {
+			var pid = selHang.value;
+			fillSelectByIds(selMok, pid ? getChildIds(payload, 2, pid) : [], items, "목 선택");
+			selSemok.value = "";
+			selDetail.value = "";
+			fillSelectByIds(selSemok, [], items, "세목 선택");
+			fillSelectByIds(selDetail, [], items, "세부사업 선택");
+		}
+
+		function refreshSemok() {
+			var pid = selMok.value;
+			fillSelectByIds(selSemok, pid ? getChildIds(payload, 3, pid) : [], items, "세목 선택");
+			selDetail.value = "";
+			fillSelectByIds(selDetail, [], items, "세부사업 선택");
+		}
+
+		function refreshDetail() {
+			var pid = selSemok.value;
+			fillSelectByIds(selDetail, pid ? getChildIds(payload, 4, pid) : [], items, "세부사업 선택");
+		}
+
+		fillSelectByIds(selHang, getChildIds(payload, 1, ""), items, "항 선택");
+		fillSelectByIds(selMok, [], items, "목 선택");
+		fillSelectByIds(selSemok, [], items, "세목 선택");
+		fillSelectByIds(selDetail, [], items, "세부사업 선택");
+
+		selHang.addEventListener("change", refreshMok);
+		selMok.addEventListener("change", refreshSemok);
+		selSemok.addEventListener("change", refreshDetail);
+
+		function itemName(id) {
+			var it = items[id];
+			return it && it.name != null ? String(it.name).trim() : "";
+		}
+
+		function parseAmountPlain(s) {
+			if (s == null) return 0;
+			var t = String(s).replace(/[,\s]/g, "").trim();
+			if (t === "" || t === "—" || t === "-" || t === "–") return 0;
+			var n = parseFloat(t);
+			return isNaN(n) ? 0 : n;
+		}
+
+		function trySubmit() {
+			if (!selHang.value) {
+				alert("항을 선택하세요.");
+				return;
+			}
+			if (!selMok.value) {
+				alert("목을 선택하세요.");
+				return;
+			}
+			if (!selSemok.value) {
+				alert("세목을 선택하세요.");
+				return;
+			}
+			if (!selDetail.value) {
+				alert("세부사업을 선택하세요.");
+				return;
+			}
+			if (!document.getElementById("inpAmount").value.trim()) {
+				alert("집행액을 입력하세요.");
+				return;
+			}
+			if (!document.getElementById("selTaxManager").value) {
+				alert("세무담당자를 선택하세요.");
+				return;
+			}
+
+			var detailId = selDetail.value;
+			var addAmt = parseAmountPlain(document.getElementById("inpAmount").value);
+			var apprEl = document.getElementById("inpApprovalDate");
+			var apprVal = apprEl && apprEl.value ? String(apprEl.value).trim() : "";
+
+			try {
+				var root = readRoot();
+				if (!root.years) root.years = {};
+				var pl = root.years[yearKey] || { items: {}, deleted: [] };
+				pl.items = pl.items || {};
+				var it0 = pl.items[detailId] || {};
+				var prevSpent = parseAmountPlain(it0.spent);
+				var newSpent = prevSpent + addAmt;
+				pl.items[detailId] = {
+					name: it0.name != null ? it0.name : itemName(detailId),
+					alloc: it0.alloc != null ? it0.alloc : "",
+					spent: Math.round(newSpent).toLocaleString("ko-KR"),
+					approvalDate: apprVal || (it0.approvalDate != null ? String(it0.approvalDate) : ""),
+					note: it0.note != null ? String(it0.note) : "",
+					active: it0.active !== false
+				};
+				root.years[yearKey] = pl;
+				writeRoot(root);
+			} catch (err1) {}
+
+			alert(
+				"등록되었습니다.\n" +
+					[itemName(selHang.value), itemName(selMok.value), itemName(selSemok.value), itemName(selDetail.value)].join(" → ") +
+					(apprVal ? "\n결재일: " + apprVal : "")
+			);
+			try {
+				if (window.opener && window.opener.applyBudgetTreeFromStorage) {
+					window.opener.applyBudgetTreeFromStorage();
+				} else if (window.opener && window.opener.location) {
+					window.opener.location.reload();
+				}
+			} catch (err) {}
+			window.close();
+		}
+
+		document.getElementById("btnSubmit").addEventListener("click", function (e) {
+			e.preventDefault();
+			trySubmit();
+		});
+
+		document.getElementById("expenseRegForm").addEventListener("submit", function (e) {
+			e.preventDefault();
+			trySubmit();
+		});
+	})();
+	</script>
+</body>
+</html>

@@ -1,0 +1,843 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+		
+    
+
+
+    
+    
+    
+
+
+<!doctype html>
+<html lang="kr">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>사업관리>사업계획>예산계획</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta content="" name="description" />
+	<meta content="Coderthemes" name="" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+	
+
+
+
+
+
+
+
+
+
+
+
+	<script>
+	    var BASE_URL_ADMIN = '/wkwhrma';
+	    window.__JSP_FILE_PATH__ = "/WEB-INF/jsp/content/recpt/SettleAccounts_Report.jsp";
+	    window.__CONTROLLER_CLASS__ = "AdminController";
+	    window.__CONTROLLER_METHOD__ = "getAcademyStatistics1";
+	</script>
+	<script src="http://자조금.kr/js/jquery-3.7.1.js"></script>
+	<script src="http://자조금.kr/js/jquery.form.min.js"></script>
+	<script src="http://자조금.kr/js/ajax.js?v=1.0.4"></script>
+	<script src="http://자조금.kr/js/fn.common.js?v=1.0.11"></script>
+	<script src="http://자조금.kr/js/fn.print_path.js?v=1.0.3"></script>
+	<script src="http://자조금.kr/js/common.js?v=1.0.2"></script>
+	<script src="http://자조금.kr/js/jquery.bpopup.min.js" type="text/javascript"></script>
+	<script src="http://자조금.kr/js/jquery-confirm.min.js"></script>   <!-- confirm js-->
+	<script src="http://자조금.kr/js/jquery.toast.js" type="text/javascript"></script>
+	<script type="text/javascript" src="http://자조금.kr/js/jquery.cookie.js"></script>		
+	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+	
+	
+        
+        
+            <!-- DEBUG 환경일 경우 -->
+            <script src="http://자조금.kr/js/fn.console.log.dev.js?v=1.0.3"></script>
+        
+    
+	
+
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+	
+
+<link href="http://자조금.kr/css/common.css?ver=1.0.2" rel="stylesheet" type="text/css" />
+<link href="http://자조금.kr/css/premium.css?ver=1.0.3" rel="stylesheet" type="text/css" />
+<link href="http://자조금.kr/css/menu.css?ver=1.0.5" rel="stylesheet" type="text/css" />
+<link href="http://자조금.kr/css/alert.css?ver=1.0.0" rel="stylesheet" type="text/css" />
+
+<script src="http://자조금.kr/js/fn.menu.js?v=1.0.2"></script>
+<script src="http://자조금.kr/Library/js/premiun_Script.js?v=1.0.2"></script>
+
+
+<script>
+const pBranchID = "2028";
+const pMhighcode = "48";
+const PGubun1Code = "";
+const PGubun2Code = "";
+
+const selectedSido = "";
+const selectedSigungu = "";
+const selectedDong = "";
+
+const CONST_SIDO = "1";
+const CONST_SIGUNGU = "2";
+</script>
+
+
+<script src="http://자조금.kr/js/fn.set_gubun.js?v=1.0.2"></script>
+
+
+
+<script src="http://자조금.kr/js/fn.search_addr.js?v=1.0.2"></script>
+
+
+<script>
+
+function fn_searchFormSubmit() {
+	const currentUrl = window.location.href;
+	submitForm(currentUrl, '_self', fn_setSearchInput());
+}
+function fn_setSearchInput() {
+    // 폼에 추가할 파라미터를 객체로 수집
+    const params = {
+    		sidoCode: $('#p_sh_sido').val(),
+    		sigunguCode: $('#p_sh_sigungu').val(),
+        sigunguAll: $("input[name='sigunguAll']:checked").val() || ""
+    };
+
+    // Gubun1의 체크된 값을 콤마로 구분하여 수집
+    const gubun1Values = [];
+    $("input[name='Gubun1']:checked").each(function() {
+        gubun1Values.push($(this).val());
+    });
+    params.p_gubun1_code = gubun1Values.join(',');
+
+    // Gubun2의 체크된 값을 콤마로 구분하여 수집
+    const gubun2Values = [];
+    $("input[name='Gubun2']:checked").each(function() {
+        gubun2Values.push($(this).val());
+    });
+    params.p_gubun2_code = gubun2Values.join(',');
+
+    params.searchYear = $("#search_year").val();
+    params.searchYear2 = $("#search_year2").val();
+
+    return params;
+}
+</script>
+</head>
+<style>
+li a {
+    white-space: nowrap; /* 텍스트가 잘리지 않고 한 줄로 나오게 강제 */
+}
+</style>
+<body>
+
+<div id="wrap">
+
+	<!-- header_container -->
+	<!-- header -->
+	
+		
+		
+	
+	
+		
+	
+	
+
+
+
+<script>
+    var frmData;
+    $(document).ready(function() {
+        // 로그아웃 버튼 클릭 시 로그아웃 처리 함수 호출
+        $("#logoutBtn").click(function(event) {
+            logoutExcute();
+        });
+        // 원격지원 버튼 클릭 시 원격지원 페이지로 이동
+        $(".remote").click(function(event) {
+            goRemote();
+        });
+    });
+    // 로그아웃 실행 함수
+    function logoutExcute() {
+        if (confirm("로그아웃 하시겠습니까?")) {
+            callAjax("/wkwhrma/logoutExcute", "completeLogout");
+        }
+    }
+    // 로그아웃 완료 시 처리 함수
+    function completeLogout(data) {
+        alertMessage("로그아웃 되었습니다.");
+        location.href = "/wkwhrma";
+    }
+</script>
+
+<div id="header">
+    <div>
+        <div class="t_menu dWidth">
+            <div class="bntLeft"></div>
+            <h1><a href="/wkwhrma"><img id="topLogo" src="" style="width: 100%;" alt="홈으로" onerror="this.src='https://자조금.kr/image/top_logo.png'"/></a></h1>
+            <ul class="btnRight">
+                <!--<li><button class="btnLink btnBlueGr" onclick="window.open('/manual_v1.7.pdf', '_blank')">매뉴얼</button></li>//-->
+                <li><a href="javascript:" class="remote"><i class="fa fa-headphones fa-lg"></i><b>02-6677-5533 [원격지원]</b></a></li>
+                <li><i class="fa fa-user fa-lg"></i><strong>테스트002</strong>님</li>
+                <li><button class="btn" id="logoutBtn">로그아웃</button></li>
+            </ul>
+        </div>
+        <div class="nav-menu">
+            <ul class="dWidth">   
+                <!-- 메인 메뉴 렌더링 -->
+
+				        <li class="">
+				            <a href="/wkwhrma/in.do">회원관리</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu1 sub-menu" style="display:none">
+				                <ul>
+				                    <li class="">
+				                        <a href="/wkwhrma/in.do">재회원</a>
+				                    </li>
+				                    <li class="">
+				                    	<a href="/wkwhrma/withdrawalList.do">퇴회원</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/suspendedList.do">휴회원</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/all.do">전체회원</a>
+				                    </li> 
+				                </ul>
+				            </div>
+				        </li>
+
+				        <li class="">
+				            <a href="/wkwhrma/academyPriceList.do">경영관리</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu2 sub-menu" style="display:none">
+				                <ul>
+				                	<li class="">
+				                        <a href="/wkwhrma/academyPriceList.do">수납관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/academyPriceReceiptList.do">수납현황</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/academyPriceNoReceiptList.do">미납현황</a>
+				                    </li>                   
+				                    <li class="">
+				                        <a href="/wkwhrma/serviceInfo.do">승인내역</a>
+				                    </li>
+		                            <li class="">
+				                        <a href="/wkwhrma/getAcademyStatistics1.do">통계</a>
+				                    </li>
+				                </ul>
+				            </div>
+				        </li>
+				    
+				        <li class="">
+				            <a href="/wkwhrma/viewConsult.do">상담관리</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu3 sub-menu" style="display:none">
+				                <ul>
+				                    <li class="">
+				                        <a href="/wkwhrma/viewConsult.do">상담보기</a>
+				                    </li>    
+				                    <li class="">
+				                        <a href="/wkwhrma/consultStatistics.do">통계</a>
+				                    </li>
+				                </ul>
+				            </div>
+				        </li>
+
+				        <li class="">
+				            <a href="/wkwhrma/smsInput.do">SMS</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu4 sub-menu" style="display:none">
+				                <ul>                  
+				                    <li class="">
+				                        <a href="/wkwhrma/smsInput.do">SMS보내기</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/smsTranslist.do">SMS전송내역</a>
+				                    </li>
+		                            <li class="">
+				                        <a href="/wkwhrma/smsSetting.do">SMS설정</a>
+				                    </li>
+				                </ul>
+				            </div>
+				        </li>
+				    
+				        <li class="">
+				            <a href="/wkwhrma/farmReport.do">경작신고</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu5 sub-menu" style="display:none">
+				                <ul>
+				                    <li class="">
+				                        <a href="/wkwhrma/farmReport.do">경작신고</a>
+				                    </li>
+									<li class="">
+				                        <a href="/wkwhrma/fieldSearch.do">현장조사</a>
+				                    </li> 
+				                </ul>
+				            </div>
+				        </li>
+
+				        <li class="">
+				            <a href="/wkwhrma/acainfo.do">단체관리</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu6 sub-menu" style="display:none">
+				                <ul>
+				                    <li class="">
+				                        <a href="/wkwhrma/acainfo.do">설정관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/registadmin.do">직원관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/approvalList.do">결재관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/workInfo.do">근태관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/businessPlanList.do">사업계획서</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/wkwhrma/viewContractInfo.do">계약정보</a>
+				                    </li>  
+				                </ul>
+				            </div>
+				        </li>
+
+						<li class="active">
+				            <a href="/wkwhrma/acainfo.do">사업관리</a>
+				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
+				            <div class="sub-menu6 sub-menu" style="display:none">
+				                <ul>
+				                    <li class="on">
+				                        <a href="/Statistics4.html">사업계획</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/Statistics3.html">지출관리</a>
+				                    </li>
+				                    <li class="">
+				                        <a href="/budgetItemManageTab.html">항목관리</a>
+				                    </li>
+				                </ul>
+				            </div>
+				        </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+<!-- //header -->
+
+	<!-- // header_container -->		
+    
+    <!-- content -->
+    <div id="content">
+    	<div class="pageTitle">
+        	<h2>사업계획</h2>
+            <p><img src="https://자조금.kr/image/ico_home.png" alt="home"/>  > 사업관리 > 사업계획 > <strong>총괄표</strong></p>
+        </div>
+        <div class="pageTabMenu flxspw">
+        	<ul class="tabMenuList">
+				<li class=""><a href="/Statistics4.html">수입계획</a></li>
+				<li class=""><a href="/Statistics5.html">지출계획</a></li>
+				<li class="active" ><a href="/Statistics6.html">총괄표</a></li>
+			</ul>
+        </div>
+		<script>
+			function goBudgetItemManageTab() {
+				var sy = document.getElementById("search_year");
+				var year = sy ? sy.value : "";
+				var url = "budgetItemManageTab.html";
+				if (year) url += "?year=" + encodeURIComponent(year);
+				window.location.href = url;
+			}
+		</script>
+        <div class="tableListWrap">
+            <div class="table_list active">
+				<div style="width:100%;">
+				<div class="searchWrap" style="display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-bottom: 0;">
+					<!-- Container for 구분1 and 구분2 positioned on top -->
+					<div class="mb5" style="display:flex; width:100%; align-items:flex-start; justify-content:space-between; gap:12px; align-items: end;">
+						<div class="filterLeft" style="display:flex; flex-direction:row; align-items:flex-start; gap:12px;">
+							<div class="select-container">
+								<select id="search_year" name="searchYear" class="select01" onchange="fn_searchFormSubmit();">
+									<option value="2026" selected>2026</option>
+									<option value="2025" >2025</option>
+									<option value="2024" >2024</option>
+									<option value="2023" >2023</option>
+									<option value="2022" >2022</option>
+									<option value="2021" >2021</option>
+									<option value="2020" >2020</option>
+									<option value="2019" >2019</option>
+								</select>
+								<a class="btnLink btnGrayBg" href="javascript:void(0);" id="btnExpPlanSave" role="button">입력</a>
+							</div>
+						</div>
+						<a href="javascript:expPlanExcelDown();" class="btnLink btnBlueGr" id="expExcelLink">엑셀 <i class="fa fa-download"></i></a>
+					</div>
+				</div>
+
+				<!-- 총괄표 -->
+				<style>
+					.summary-table-wrap { overflow-x: auto; margin-top: 8px; }
+					.summary-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+					.summary-table th, .summary-table td { border: 1px solid #ccc; padding: 6px 8px; text-align: center; }
+					.summary-table thead th { background: #f5f5f5; font-weight: 600; }
+					.summary-table .col-calc { background: #e8e8e8; }
+					.summary-table .row-year { font-weight: 600; background: #fafafa; }
+					.summary-table .num { text-align: center; font-variant-numeric: tabular-nums; }
+				</style>
+				<div class="summary-table-wrap">
+					<table class="summary-table" id="summaryTable">
+						<thead>
+							<tr>
+								<th rowspan="3">계획연도</th>
+								<th colspan="6">수입</th>
+								<th colspan="3">지출</th>
+							</tr>
+							<tr>
+								<th colspan="4">자체조성</th>
+								<th rowspan="2">국고보조<br>(E)</th>
+								<th rowspan="2" class="col-calc">합계<br>(F=D+E)</th>
+								<th rowspan="2">사업비<br>(G)</th>
+								<th rowspan="2">예비비<br>(H)</th>
+								<th rowspan="2" class="col-calc">합계<br>(I=G+H)</th>
+							</tr>
+							<tr>
+								<th>이월금<br>(A)</th>
+								<th>거출금<br>(B)</th>
+								<th>기타<br>(C)</th>
+								<th class="col-calc">소계<br>(D=A+B+C)</th>
+							</tr>
+						</thead>
+						<tbody id="summaryTableBody"></tbody>
+					</table>
+				</div>
+				<script>
+				(function () {
+					var INCOME_LEGACY = "statistics4_incomePlan_v1";
+					function incomeKey(y) { return "statistics4_incomePlan_v1_" + y; }
+					function expKey(y) { return "expenditurePlan_v1_" + y; }
+
+					function parseNum(v) {
+						if (v == null || v === "") return 0;
+						var n = parseFloat(String(v).replace(/,/g, ""));
+						return isFinite(n) ? n : 0;
+					}
+
+					function loadIncomeForYear(y) {
+						var raw = localStorage.getItem(incomeKey(y));
+						if (!raw) raw = localStorage.getItem(INCOME_LEGACY);
+						if (!raw) return { a: 0, b: 0, c: 0, e: 0 };
+						try {
+							var o = JSON.parse(raw);
+							var levies = o.levies || [];
+							var b = 0;
+							for (var i = 0; i < levies.length; i++) b += parseNum(levies[i].amt);
+							return {
+								a: parseNum(o.a),
+								b: b,
+								c: parseNum(o.c),
+								e: parseNum(o.e)
+							};
+						} catch (e) {
+							return { a: 0, b: 0, c: 0, e: 0 };
+						}
+					}
+
+					function sumGroupExpense(g) {
+						var s = 0, b = 0;
+						var hangOnly = (g.leaves || []).length === 0 && !g.draft;
+						if (hangOnly) {
+							s += g.hangSelfAmt || 0;
+							b += g.hangSubsidyAmt || 0;
+						}
+						(g.leaves || []).forEach(function (L) {
+							s += L.selfAmt || 0;
+							b += L.subsidyAmt || 0;
+						});
+						if (g.draft && g.draft.mokId) {
+							s += g.draft.selfAmt || 0;
+							b += g.draft.subsidyAmt || 0;
+						}
+						return s + b;
+					}
+
+					function sumExpenseG(y) {
+						var raw = localStorage.getItem(expKey(y));
+						if (!raw) return 0;
+						var plan;
+						try { plan = JSON.parse(raw); } catch (e) { return 0; }
+						var groups = plan.groups || [];
+						var total = 0;
+						for (var gi = 0; gi < groups.length; gi++) total += sumGroupExpense(groups[gi]);
+						return total;
+					}
+
+					function fmt(n) {
+						return Math.round(n).toLocaleString("ko-KR");
+					}
+
+					var YEARS = [2024, 2025, 2026, 2027];
+					var tbody = document.getElementById("summaryTableBody");
+
+					function render() {
+						if (!tbody) return;
+						tbody.innerHTML = "";
+						for (var yi = 0; yi < YEARS.length; yi++) {
+							var y = YEARS[yi];
+							var inc = loadIncomeForYear(y);
+							var d = inc.a + inc.b + inc.c;
+							var f = d + inc.e;
+							var gVal = sumExpenseG(y);
+							var hVal = 0;
+							var iVal = gVal + hVal;
+							var tr = document.createElement("tr");
+							tr.innerHTML =
+								'<td class="row-year">' + y + "</td>" +
+								'<td class="num">' + fmt(inc.a) + "</td>" +
+								'<td class="num">' + fmt(inc.b) + "</td>" +
+								'<td class="num">' + fmt(inc.c) + "</td>" +
+								'<td class="num col-calc">' + fmt(d) + "</td>" +
+								'<td class="num">' + fmt(inc.e) + "</td>" +
+								'<td class="num col-calc">' + fmt(f) + "</td>" +
+								'<td class="num">' + fmt(gVal) + "</td>" +
+								'<td class="num">' + fmt(hVal) + "</td>" +
+								'<td class="num col-calc">' + fmt(iVal) + "</td>";
+							tbody.appendChild(tr);
+						}
+					}
+
+					window.summaryExcelDown = function () {
+						var rows = [];
+						rows.push(["계획연도", "이월금(A)", "거출금(B)", "기타(C)", "소계(D)", "국고보조(E)", "합계(F)", "사업비(G)", "예비비(H)", "합계(I)"]);
+						for (var yi = 0; yi < YEARS.length; yi++) {
+							var y = YEARS[yi];
+							var inc = loadIncomeForYear(y);
+							var d = inc.a + inc.b + inc.c;
+							var f = d + inc.e;
+							var gVal = sumExpenseG(y);
+							var hVal = 0;
+							var iVal = gVal + hVal;
+							rows.push([y, inc.a, inc.b, inc.c, d, inc.e, f, gVal, hVal, iVal]);
+						}
+						var lines = rows.map(function (r) {
+							return r.map(function (cell) {
+								var s = String(cell);
+								if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+								return s;
+							}).join(",");
+						});
+						var bom = "\uFEFF";
+						var blob = new Blob([bom + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+						var a = document.createElement("a");
+						a.href = URL.createObjectURL(blob);
+						a.download = "총괄표.csv";
+						a.click();
+						URL.revokeObjectURL(a.href);
+					};
+
+					render();
+					window.addEventListener("storage", function () { render(); });
+					document.addEventListener("visibilitychange", function () {
+						if (!document.hidden) render();
+					});
+				})();
+				</script>
+				</div>
+            </div>
+
+
+
+
+        </div>
+
+        <!-- 에듀페이 모달 -->
+		<!--
+		<div class="modal_bg"></div>
+		<div class="pop_modal">
+			<div class="modalbox">
+				<ul class="flx">
+					<li><img src="https://자조금.kr/image/pop_main.png"></li>
+					<li><img src="https://자조금.kr/image/pop_text(smart).png"></li>
+				</ul>
+				<button class="pop_close">X</a></button>
+				<a href="/content/acadm/acainfo.html" class="apply_link"><img src="https://자조금.kr/image/btn-request(smart).png"></a>
+			</div>
+		</div>
+		//-->
+    </div>
+    <!-- //content -->
+
+       
+    <!-- footer -->
+
+
+
+
+<!-- footer -->
+<div id="footer">
+	자조금통합지원센터<br/>
+	서울시 서대문구 통일로 81, 농협생명 서관 20층 TEL 1577-0345<br/>
+	copyrightⓒ 자조금통합지원센터. all rights reserved.
+</div>
+<div id="loading-msg" style="
+display:none;
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+padding:20px 32px;
+background:#ffffff;
+color: #0056b3;        /* 진한 파란색 */
+font-size: 22px;       /* 글자 크기 확대 (기존 16px) */
+border-radius:12px;
+z-index:999999;
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+">
+  데이터를 처리 중입니다. 잠시만 기다려 주세요…
+</div>
+
+<script>
+/*
+(function () {
+  const msg = document.getElementById('loading-msg');
+  const show = () => { if (msg) msg.style.display = 'block'; };
+
+  // a 태그 클릭(메뉴 이동 포함)
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a');
+    if (!a) return;
+
+
+
+    if (a.target === '_blank') return;
+    if (a.hasAttribute('download')) return;
+    if (!a.href || a.href.startsWith('javascript:')) return;
+
+    show();
+  });
+
+  // form submit
+  document.addEventListener('submit', () => show());
+
+  // 새로고침/닫기 등
+  window.addEventListener('beforeunload', () => show());
+})();
+*/
+(function () {
+  const msg = document.getElementById('loading-msg');
+  const show = () => { if (msg) msg.style.display = 'block'; };
+
+  document.addEventListener('click', (e) => {
+    // 1. 클릭된 요소로부터 가장 가까운 a 태그를 찾음
+    const a = e.target.closest('a');
+    if (!a) return;
+
+    // 2. href 속성 값을 직접 가져옴 (a.href는 전체 URL을 반환하므로 getAttribute 권장)
+    const href = a.getAttribute('href');
+
+    // 3. 예외 처리 (이 부분이 미납현황을 걸러내고 있을 수 있음)
+    if (a.target === '_blank') return;
+    if (a.hasAttribute('download')) return;
+    
+    // href가 없거나, #으로만 시작하거나, javascript인 경우 제외
+    if (!href || href === '#' || href.startsWith('javascript:')) return;
+
+    // 4. .do나 .php 등 실제 페이지 이동이 명확한 경로인지 확인 (선택 사항)
+    // 현재 "미납현황"은 .do로 끝나므로 아래 조건이 없어도 위 조건을 통과하면 작동해야 함
+    show();
+  });
+
+  // 폼 전송 시 로딩바 표시
+  document.addEventListener('submit', (e) => {
+    if (e.target.target && e.target.target !== '_self') return;
+    show();
+  });
+
+  window.addEventListener('beforeunload', () => show());
+})();
+</script>
+
+
+
+    <!-- //footer -->
+
+
+</div>
+
+
+
+
+<script>
+	$('.price_crit form').hide();
+	$('.price_crit form').first().show();
+	$(".price_tab input[type='radio']").click(function(){
+		$('.price_crit form').hide();
+		$('.price_crit form').eq($("input[type='radio']").index(this)).show();
+	});
+
+	/*
+	$('.modal_bg,.pop_modal').hide();
+	$('.pop_open').click(function(){
+		$('.modal_bg,.pop_modal').stop().show();
+	});
+	$('.pop_close').click(function(){
+		$('.modal_bg,.pop_modal').stop().hide();
+	});
+	*/
+</script>
+
+<script>
+function exceldown() {
+    if (typeof expPlanExcelDown === "function") {
+        expPlanExcelDown();
+        return;
+    }
+    submitForm('/wkwhrma/getAcademyStatistics1Excel.do', 'ifrm01', fn_setSearchInput());
+}
+
+/* 구분 1, 2 */
+function multiSelect1() {
+    const dropdown = document.getElementById('selMulti1');
+    
+    if (dropdown.style.visibility === 'visible') {
+        dropdown.style.visibility = 'hidden';
+    } else {
+        // 드롭다운의 위치를 고정된 값으로 설정
+        dropdown.style.top = `20px`;  // 드롭다운이 셀렉트 박스 아래로 약간 떨어지게 설정
+        dropdown.style.visibility = 'visible';
+        dropdown.style.width = `130px`;
+        dropdown.style.zIndex = '1000';  // 드롭다운이 다른 요소 위에 표시되도록 설정
+    }
+}
+
+function multiSelect2() {
+    const dropdown = document.getElementById('selMulti2');
+    
+    if (dropdown.style.visibility === 'visible') {
+        dropdown.style.visibility = 'hidden';
+    } else {
+        // 드롭다운의 위치를 고정된 값으로 설정
+        dropdown.style.top = `20px`;  // 드롭다운이 셀렉트 박스 아래로 약간 떨어지게 설정
+        dropdown.style.left = `151px`;   // 드롭다운이 셀렉트 박스의 왼쪽에 맞춰서 나타나게 설정
+        dropdown.style.visibility = 'visible';
+        dropdown.style.width = `130px`;
+        dropdown.style.zIndex = '1000';  // 드롭다운이 다른 요소 위에 표시되도록 설정
+    }
+}
+
+
+function fnGetComboAjax(parm,val1,val2){
+	var strv = DoCallbackCommon("https://selfhelp.edu-ok.co.kr/common/ajaxTwoSelectComboNoSession.asp?Combo="+parm+"&ComboVal1="+val1+"&ComboVal2="+val2);
+	document.getElementById("Combo"+parm).innerHTML = strv;					
+	
+}
+
+function fnGetComboAjax2(parm,val1,val2){
+	var strv = DoCallbackCommon("https://selfhelp.edu-ok.co.kr/common/ajaxTwoSelectComboNoSession.asp?Combo="+parm+"&ComboVal1="+val1+"&ComboVal2="+val2);	
+	document.getElementById("Combo"+parm).innerHTML += strv;					
+	
+}
+//콤보박스만 리스레쉬하도록 처리하는 함수
+
+function fnChgSelectCombo(val){
+	$("input:checkbox[id='gubunAll1']").prop('checked',false); //radio reset
+	$("input:checkbox[id='gubunAll2']").prop('checked',false); //radio reset
+	
+	$('#ComboGubun2').empty(); // 모든 자식 요소 제거 (li 태그 포함)
+
+	$('input:checkbox').each(function() { //[name=??] 로특정 체크박스만 불러오기가능
+	 if(this.checked)
+		fnGetComboAjax2("Gubun2",this.value,'');
+	});
+}  
+
+function checkReset(){
+	$("input:checkbox[id='Gubun1']").prop('checked',false); //checkbox reset
+	$("input:checkbox[id='Gubun2']").prop('checked',false); //checkbox reset
+}
+
+function gubunAllReset(){
+	$("input:checkbox[id='gubunAll1']").prop('checked',false); //checkbox reset
+	$("input:checkbox[id='gubunAll2']").prop('checked',false); //checkbox reset
+}
+
+function checkOnlyOneGubun1() {
+	$(document).ready(function() {
+		$('input[type="checkbox"][id="gubunAll1"]').click(function(){
+			if($(this).prop('checked')){
+				$('input[type="checkbox"][id="gubunAll1"]').prop('checked',false);
+				$(this).prop('checked',true);
+			}
+		});
+	});
+}
+
+function checkOnlyOneGubun2() {
+	$(document).ready(function() {
+		$('input[type="checkbox"][id="gubunAll2"]').click(function(){
+			if($(this).prop('checked')){
+				$('input[type="checkbox"][id="gubunAll2"]').prop('checked',false);
+				$(this).prop('checked',true);
+			}
+		});
+	});
+}
+
+//검색후 로드되었을때 구분1있음,구분1없음 중복체크 방지
+$(document).ready(function() {
+	$('input[type="checkbox"][id="gubunAll1"]').click(function(){
+		if($(this).prop('checked')){
+			$('input[type="checkbox"][id="gubunAll1"]').prop('checked',false);
+			$(this).prop('checked',true);
+		}
+	});
+});
+
+//검색후 로드되었을때 구분2있음,구분2없음 중복체크 방지
+$(document).ready(function() {
+	$('input[type="checkbox"][id="gubunAll2"]').click(function(){
+		if($(this).prop('checked')){
+			$('input[type="checkbox"][id="gubunAll2"]').prop('checked',false);
+			$(this).prop('checked',true);
+		}
+	});
+});
+</script>
+</body>
+</html>

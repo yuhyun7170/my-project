@@ -484,18 +484,6 @@
 				alert("항을 선택하세요.");
 				return;
 			}
-			if (!selMok.value) {
-				alert("목을 선택하세요.");
-				return;
-			}
-			if (!selSemok.value) {
-				alert("세목을 선택하세요.");
-				return;
-			}
-			if (!selDetail.value) {
-				alert("세부사업을 선택하세요.");
-				return;
-			}
 			if (!document.getElementById("inpAmount").value.trim()) {
 				alert("집행액을 입력하세요.");
 				return;
@@ -505,7 +493,8 @@
 				return;
 			}
 
-			var detailId = selDetail.value;
+			var targetId =
+				selDetail.value || selSemok.value || selMok.value || selHang.value;
 			var addAmt = parseAmountPlain(document.getElementById("inpAmount").value);
 			var apprEl = document.getElementById("inpApprovalDate");
 			var apprVal = apprEl && apprEl.value ? String(apprEl.value).trim() : "";
@@ -515,11 +504,11 @@
 				if (!root.years) root.years = {};
 				var pl = root.years[yearKey] || { items: {}, deleted: [] };
 				pl.items = pl.items || {};
-				var it0 = pl.items[detailId] || {};
+				var it0 = pl.items[targetId] || {};
 				var prevSpent = parseAmountPlain(it0.spent);
 				var newSpent = prevSpent + addAmt;
-				pl.items[detailId] = {
-					name: it0.name != null ? it0.name : itemName(detailId),
+				pl.items[targetId] = {
+					name: it0.name != null ? it0.name : itemName(targetId),
 					alloc: it0.alloc != null ? it0.alloc : "",
 					spent: Math.round(newSpent).toLocaleString("ko-KR"),
 					approvalDate: apprVal || (it0.approvalDate != null ? String(it0.approvalDate) : ""),
@@ -530,9 +519,15 @@
 				writeRoot(root);
 			} catch (err1) {}
 
+			var pathParts = [];
+			pathParts.push(itemName(selHang.value));
+			if (selMok.value) pathParts.push(itemName(selMok.value));
+			if (selSemok.value) pathParts.push(itemName(selSemok.value));
+			if (selDetail.value) pathParts.push(itemName(selDetail.value));
+
 			alert(
 				"등록되었습니다.\n" +
-					[itemName(selHang.value), itemName(selMok.value), itemName(selSemok.value), itemName(selDetail.value)].join(" → ") +
+					pathParts.join(" → ") +
 					(apprVal ? "\n결재일: " + apprVal : "")
 			);
 			try {

@@ -457,9 +457,9 @@ li a {
 							var n = parseFloat(t.replace(/,/g, "").replace(/\s/g, ""));
 							return isNaN(n) ? 0 : n;
 						}
-						/** 계획 예산(alloc) 또는 집행(spent)이 있는 세부사업만 표시. 시드처럼 금액이 전혀 없는 행은 숨김 */
-						function shouldShowExpenseMatrixLeaf(items, leafId) {
-							var it = items[leafId] || {};
+						/** 계획 예산(alloc) 또는 집행(spent)이 있는 노드(항~세부사업)만 표시 */
+						function shouldShowExpenseMatrixLeaf(items, nodeId) {
+							var it = items[nodeId] || {};
 							return parseMoney(it.alloc) > 0 || parseMoney(it.spent) > 0;
 						}
 						function formatMoney(n) {
@@ -655,20 +655,6 @@ li a {
 							return { sa: sa, ss: ss };
 						}
 
-						function buildByTreeFromLeaves(allLeaves, items) {
-							var by = {};
-							allLeaves.forEach(function (leafId) {
-								var p1 = parentDepth1(leafId);
-								var p2 = parentDepth2(leafId);
-								var p3 = parentDepth3(leafId);
-								if (!by[p1]) by[p1] = { name: items[p1] ? (items[p1].name || "") : "", p2: {} };
-								if (!by[p1].p2[p2]) by[p1].p2[p2] = { name: items[p2] ? (items[p2].name || "") : "", p3: {} };
-								if (!by[p1].p2[p2].p3[p3]) by[p1].p2[p2].p3[p3] = { name: items[p3] ? (items[p3].name || "") : "", leaves: [] };
-								by[p1].p2[p2].p3[p3].leaves.push(leafId);
-							});
-							return by;
-						}
-
 						function rebuildTableChrome(maxD) {
 							var table = document.getElementById("budgetStatsMatrixLikeTable");
 							if (!table) return;
@@ -706,18 +692,23 @@ li a {
 							rebuildTableChrome(maxD);
 							tbody.innerHTML = "";
 
-							var allLeaves = [];
+							var lineIds = [];
 							Object.keys(items).forEach(function (id) {
 								if (!id || deletedSet.has(id)) return;
-								if (depthFromId(id) === 4) allLeaves.push(id);
+								var d = depthFromId(id);
+								if (d < 1 || d > 4) return;
+								if (!shouldShowExpenseMatrixLeaf(items, id)) return;
+								lineIds.push(id);
 							});
-							allLeaves.sort(sortIdByNumbers);
-							allLeaves = allLeaves.filter(function (id) {
-								return shouldShowExpenseMatrixLeaf(items, id);
-							});
+							lineIds.sort(sortIdByNumbers);
 
 							var grandA = 0;
 							var grandS = 0;
+
+							function matrixItemLabel(id) {
+								var it = items[id] || {};
+								return it.name != null ? String(it.name).trim() : "";
+							}
 
 							function subtotalRow(label, sa, ss) {
 								var tr = document.createElement("tr");
@@ -748,31 +739,41 @@ li a {
 								tbody.appendChild(trG);
 							}
 
-							if (allLeaves.length === 0) {
+							if (lineIds.length === 0) {
 								appendGrandRow();
 								updateDepthButtons();
 								return;
 							}
 
-							var by = buildByTreeFromLeaves(allLeaves, items);
-							var p1Ids = Object.keys(by).sort(function (a, b) { return parseInt(a, 10) - parseInt(b, 10); });
+							var p1Ids = [];
+							var seenP1 = {};
+							lineIds.forEach(function (id) {
+								var p1 = parentDepth1(id);
+								if (!seenP1[p1]) {
+									seenP1[p1] = true;
+									p1Ids.push(p1);
+								}
+							});
+							p1Ids.sort(function (a, b) { return parseInt(a, 10) - parseInt(b, 10); });
+
+							function idsUnderP1(p1) {
+								var r = [];
+								lineIds.forEach(function (id) {
+									if (parentDepth1(id) === p1) r.push(id);
+								});
+								return r;
+							}
 
 							if (maxD === 1) {
 								p1Ids.forEach(function (p1) {
-									var g1 = by[p1];
-									var leavesUnder = [];
-									Object.keys(g1.p2).forEach(function (p2) {
-										Object.keys(g1.p2[p2].p3).forEach(function (p3) {
-											Array.prototype.push.apply(leavesUnder, g1.p2[p2].p3[p3].leaves);
-										});
-									});
-									var sm = sumLeavesMoney(items, leavesUnder);
+									var ids = idsUnderP1(p1);
+									var sm = sumLeavesMoney(items, ids);
 									grandA += sm.sa;
 									grandS += sm.ss;
 									var tr = document.createElement("tr");
 									var td1 = document.createElement("td");
 									td1.className = "left";
-									td1.textContent = g1.name || "";
+									td1.textContent = matrixItemLabel(p1) || "";
 									tr.appendChild(td1);
 									tr.appendChild(tdNum(formatMoney(sm.sa)));
 									tr.appendChild(tdNum(formatMoney(sm.ss)));
@@ -786,19 +787,31 @@ li a {
 
 							if (maxD === 2) {
 								p1Ids.forEach(function (p1) {
-									var g1 = by[p1];
-									var p2Ids = Object.keys(g1.p2).sort(sortBySecondLevelId);
-									var p1RowSpan = p2Ids.length + 1;
+									var ids = idsUnderP1(p1);
+									var buckets = {};
+									ids.forEach(function (lid) {
+										var d = depthFromId(lid);
+										if (d === 1) {
+											if (!buckets.__h) buckets.__h = [];
+											buckets.__h.push(lid);
+										} else {
+											var p2 = parentDepth2(lid);
+											if (!buckets[p2]) buckets[p2] = [];
+											buckets[p2].push(lid);
+										}
+									});
+									var p2Keys = Object.keys(buckets).sort(function (a, b) {
+										if (a === "__h") return -1;
+										if (b === "__h") return 1;
+										return sortBySecondLevelId(a, b);
+									});
+									var p1RowSpan = p2Keys.length + 1;
 									var p1Done = false;
 									var subA = 0;
 									var subS = 0;
-									p2Ids.forEach(function (p2) {
-										var g2 = g1.p2[p2];
-										var leavesUnder = [];
-										Object.keys(g2.p3).forEach(function (p3) {
-											Array.prototype.push.apply(leavesUnder, g2.p3[p3].leaves);
-										});
-										var sm = sumLeavesMoney(items, leavesUnder);
+									var hangName = matrixItemLabel(p1);
+									p2Keys.forEach(function (p2k) {
+										var sm = sumLeavesMoney(items, buckets[p2k]);
 										subA += sm.sa;
 										subS += sm.ss;
 										grandA += sm.sa;
@@ -808,13 +821,13 @@ li a {
 											var td1 = document.createElement("td");
 											td1.rowSpan = p1RowSpan;
 											td1.className = "left";
-											td1.textContent = g1.name || "";
+											td1.textContent = hangName;
 											tr.appendChild(td1);
 											p1Done = true;
 										}
 										var td2 = document.createElement("td");
 										td2.className = "left";
-										td2.textContent = g2.name || "";
+										td2.textContent = p2k === "__h" ? "—" : matrixItemLabel(p2k);
 										tr.appendChild(td2);
 										tr.appendChild(tdNum(formatMoney(sm.sa)));
 										tr.appendChild(tdNum(formatMoney(sm.ss)));
@@ -830,63 +843,79 @@ li a {
 
 							if (maxD === 3) {
 								p1Ids.forEach(function (p1) {
-									var g1 = by[p1];
-									var p2Ids = Object.keys(g1.p2).sort(sortBySecondLevelId);
-									var bodyRows = 0;
-									p2Ids.forEach(function (p2) {
-										var g2 = g1.p2[p2];
-										var p3Ids = Object.keys(g2.p3).sort(sortByThirdLevelId);
-										p3Ids.forEach(function (p3) {
-											if (g2.p3[p3].leaves.length) bodyRows++;
-										});
+									var ids = idsUnderP1(p1);
+									var specs = [];
+									ids.forEach(function (lid) {
+										var d = depthFromId(lid);
+										if (d <= 3) specs.push({ t: "one", id: lid, d: d, o: lid });
 									});
-									var p1RowSpan = bodyRows + 1;
+									var p3ToLeaves = {};
+									ids.forEach(function (lid) {
+										if (depthFromId(lid) === 4) {
+											var p3k = parentDepth3(lid);
+											if (!p3ToLeaves[p3k]) p3ToLeaves[p3k] = [];
+											p3ToLeaves[p3k].push(lid);
+										}
+									});
+									Object.keys(p3ToLeaves).forEach(function (p3k) {
+										specs.push({ t: "g4", p3: p3k, leaves: p3ToLeaves[p3k], o: p3k });
+									});
+									specs.sort(function (a, b) {
+										return sortIdByNumbers(a.o, b.o);
+									});
+									var p1RowSpan = specs.length + 1;
 									var p1Done = false;
 									var subA = 0;
 									var subS = 0;
-									p2Ids.forEach(function (p2) {
-										var g2 = g1.p2[p2];
-										var p3Ids = Object.keys(g2.p3).sort(sortByThirdLevelId);
-										var p3Rows = 0;
-										p3Ids.forEach(function (p3) {
-											if (g2.p3[p3].leaves.length) p3Rows++;
-										});
-										var p2RowSpan = p3Rows;
-										var p2Done = false;
-										p3Ids.forEach(function (p3) {
-											var g3 = g2.p3[p3];
-											if (!g3.leaves.length) return;
-											var sm = sumLeavesMoney(items, g3.leaves);
-											subA += sm.sa;
-											subS += sm.ss;
-											grandA += sm.sa;
-											grandS += sm.ss;
-											var tr = document.createElement("tr");
-											if (!p1Done) {
-												var td1 = document.createElement("td");
-												td1.rowSpan = p1RowSpan;
-												td1.className = "left";
-												td1.textContent = g1.name || "";
-												tr.appendChild(td1);
-												p1Done = true;
+									var hangName = matrixItemLabel(p1);
+									specs.forEach(function (sp) {
+										var tr = document.createElement("tr");
+										if (!p1Done) {
+											var td1 = document.createElement("td");
+											td1.rowSpan = p1RowSpan;
+											td1.className = "left";
+											td1.textContent = hangName;
+											tr.appendChild(td1);
+											p1Done = true;
+										}
+										var mok = "";
+										var sem = "";
+										var sm;
+										if (sp.t === "g4") {
+											mok = matrixItemLabel(parentDepth2(sp.p3));
+											sem = matrixItemLabel(sp.p3);
+											sm = sumLeavesMoney(items, sp.leaves);
+										} else {
+											var lid = sp.id;
+											var d0 = sp.d;
+											if (d0 === 1) {
+												mok = "—";
+												sem = "—";
+											} else if (d0 === 2) {
+												mok = matrixItemLabel(lid);
+												sem = "—";
+											} else {
+												mok = matrixItemLabel(parentDepth2(lid));
+												sem = matrixItemLabel(lid);
 											}
-											if (!p2Done) {
-												var td2 = document.createElement("td");
-												td2.rowSpan = Math.max(1, p2RowSpan);
-												td2.className = "left";
-												td2.textContent = g2.name || "";
-												tr.appendChild(td2);
-												p2Done = true;
-											}
-											var td3 = document.createElement("td");
-											td3.className = "left";
-											td3.textContent = g3.name || "";
-											tr.appendChild(td3);
-											tr.appendChild(tdNum(formatMoney(sm.sa)));
-											tr.appendChild(tdNum(formatMoney(sm.ss)));
-											tr.appendChild(tdNum(formatMoney(sm.sa - sm.ss)));
-											tbody.appendChild(tr);
-										});
+											sm = sumLeavesMoney(items, [lid]);
+										}
+										subA += sm.sa;
+										subS += sm.ss;
+										grandA += sm.sa;
+										grandS += sm.ss;
+										var td2 = document.createElement("td");
+										td2.className = "left";
+										td2.textContent = mok;
+										tr.appendChild(td2);
+										var td3 = document.createElement("td");
+										td3.className = "left";
+										td3.textContent = sem;
+										tr.appendChild(td3);
+										tr.appendChild(tdNum(formatMoney(sm.sa)));
+										tr.appendChild(tdNum(formatMoney(sm.ss)));
+										tr.appendChild(tdNum(formatMoney(sm.sa - sm.ss)));
+										tbody.appendChild(tr);
 									});
 									subtotalRow("소계", subA, subS);
 								});
@@ -896,77 +925,65 @@ li a {
 							}
 
 							p1Ids.forEach(function (p1) {
-								var g1 = by[p1];
-								var p2Ids = Object.keys(g1.p2).sort(sortBySecondLevelId);
-								var p1Rows = 0;
-								p2Ids.forEach(function (p2) {
-									var g2 = g1.p2[p2];
-									var p3Ids = Object.keys(g2.p3).sort(sortByThirdLevelId);
-									p3Ids.forEach(function (p3) {
-										p1Rows += g2.p3[p3].leaves.length;
-									});
-								});
-								var p1RowSpan = p1Rows + 1;
+								var ids = idsUnderP1(p1).sort(sortIdByNumbers);
+								var p1RowSpan = ids.length + 1;
 								var p1Done = false;
 								var subA = 0;
 								var subS = 0;
-
-								p2Ids.forEach(function (p2) {
-									var g2 = g1.p2[p2];
-									var p3Ids = Object.keys(g2.p3).sort(sortByThirdLevelId);
-									var p2Rows = 0;
-									p3Ids.forEach(function (p3) {
-										p2Rows += g2.p3[p3].leaves.length;
-									});
-									var p2RowSpan = p2Rows;
-									var p2Done = false;
-
-									p3Ids.forEach(function (p3) {
-										var g3 = g2.p3[p3];
-										var p3Span = g3.leaves.length || 1;
-										var p3Done = false;
-										g3.leaves.forEach(function (leafId) {
-											var tr = document.createElement("tr");
-											if (!p1Done) {
-												var td1 = document.createElement("td");
-												td1.rowSpan = p1RowSpan;
-												td1.className = "left";
-												td1.textContent = g1.name || "";
-												tr.appendChild(td1);
-												p1Done = true;
-											}
-											if (!p2Done) {
-												var td2 = document.createElement("td");
-												td2.rowSpan = Math.max(1, p2RowSpan);
-												td2.className = "left";
-												td2.textContent = g2.name || "";
-												tr.appendChild(td2);
-												p2Done = true;
-											}
-											if (!p3Done) {
-												var td3 = document.createElement("td");
-												td3.rowSpan = p3Span;
-												td3.className = "left";
-												td3.textContent = g3.name || "";
-												tr.appendChild(td3);
-												p3Done = true;
-											}
-											var td4 = document.createElement("td");
-											td4.className = "left";
-											td4.textContent = (items[leafId] && items[leafId].name) || "";
-											tr.appendChild(td4);
-											var it = items[leafId] || {};
-											var m = moneyCells(it.alloc, it.spent);
-											tr.appendChild(tdNum(m.a));
-											tr.appendChild(tdNum(m.s));
-											tr.appendChild(tdNum(m.b));
-											tbody.appendChild(tr);
-											subA += parseMoney(it.alloc);
-											subS += parseMoney(it.spent);
-											grandA += parseMoney(it.alloc);
-											grandS += parseMoney(it.spent);
-										});
-									});
+								var hangName = matrixItemLabel(p1);
+								ids.forEach(function (lid) {
+									var d = depthFromId(lid);
+									var tr = document.createElement("tr");
+									if (!p1Done) {
+										var td1 = document.createElement("td");
+										td1.rowSpan = p1RowSpan;
+										td1.className = "left";
+										td1.textContent = hangName;
+										tr.appendChild(td1);
+										p1Done = true;
+									}
+									var c2 = "";
+									var c3 = "";
+									var c4 = "";
+									if (d === 1) {
+										c2 = "—";
+										c3 = "—";
+										c4 = "—";
+									} else if (d === 2) {
+										c2 = matrixItemLabel(lid);
+										c3 = "—";
+										c4 = "—";
+									} else if (d === 3) {
+										c2 = matrixItemLabel(parentDepth2(lid));
+										c3 = matrixItemLabel(lid);
+										c4 = "—";
+									} else {
+										c2 = matrixItemLabel(parentDepth2(lid));
+										c3 = matrixItemLabel(parentDepth3(lid));
+										c4 = matrixItemLabel(lid);
+									}
+									var td2 = document.createElement("td");
+									td2.className = "left";
+									td2.textContent = c2;
+									tr.appendChild(td2);
+									var td3 = document.createElement("td");
+									td3.className = "left";
+									td3.textContent = c3;
+									tr.appendChild(td3);
+									var td4 = document.createElement("td");
+									td4.className = "left";
+									td4.textContent = c4;
+									tr.appendChild(td4);
+									var it = items[lid] || {};
+									var m = moneyCells(it.alloc, it.spent);
+									tr.appendChild(tdNum(m.a));
+									tr.appendChild(tdNum(m.s));
+									tr.appendChild(tdNum(m.b));
+									tbody.appendChild(tr);
+									subA += parseMoney(it.alloc);
+									subS += parseMoney(it.spent);
+									grandA += parseMoney(it.alloc);
+									grandS += parseMoney(it.spent);
 								});
 								subtotalRow("소계", subA, subS);
 							});

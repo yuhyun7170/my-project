@@ -158,6 +158,87 @@ function fn_setSearchInput() {
 li a {
     white-space: nowrap; /* 텍스트가 잘리지 않고 한 줄로 나오게 강제 */
 }
+#expensePlanTableWrap { margin-top: 10px; overflow-x: auto; }
+#expensePlanTable {
+	width: 100%;
+	border-collapse: collapse;
+	table-layout: fixed;
+	font-size: 12px;
+}
+#expensePlanTable th, #expensePlanTable td {
+	border: 1px solid #9a9a9a;
+	padding: 6px 8px;
+	text-align: center;
+	vertical-align: middle;
+}
+#expensePlanTable thead th { background: #e8f2fa; font-weight: 600; }
+#expensePlanTable .ep-num { text-align: right; font-variant-numeric: tabular-nums; }
+#expensePlanTable .ep-inp {
+	width: 92%;
+	box-sizing: border-box;
+	text-align: right;
+	padding: 4px 6px;
+	font-size: 12px;
+}
+#expensePlanTable tr.ep-row-subtotal td,
+#expensePlanTable tr.ep-row-grand td { background: #f0f0f0; font-weight: 600; }
+#expensePlanTable .ep-add {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	margin-left: 4px;
+	border: 1px solid #888;
+	border-radius: 3px;
+	background: #fff;
+	cursor: pointer;
+	font-size: 14px;
+	line-height: 1;
+	vertical-align: middle;
+}
+#expensePlanTable .ep-add:hover:not(:disabled) { background: #eef6ff; }
+#expensePlanTable .ep-add:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+#expPlanPickerModal {
+	display: none;
+	position: fixed;
+	left: 0; top: 0; right: 0; bottom: 0;
+	background: rgba(0,0,0,0.45);
+	z-index: 100020;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+}
+#expPlanPickerModal.is-open { display: flex; }
+.ep-modal-panel {
+	background: #fff;
+	border-radius: 8px;
+	max-width: 420px;
+	width: 100%;
+	max-height: 80vh;
+	overflow: auto;
+	box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+	padding: 16px 18px 14px;
+}
+.ep-modal-panel h3 { margin: 0 0 12px; font-size: 16px; }
+#expPlanPickerList { list-style: none; margin: 0; padding: 0; }
+#expPlanPickerList li { margin: 0 0 6px; }
+#expPlanPickerList button {
+	width: 100%;
+	text-align: left;
+	padding: 10px 12px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	background: #fafafa;
+	cursor: pointer;
+	font-size: 14px;
+}
+#expPlanPickerList button:hover { background: #e8f2fa; border-color: #69c; }
+.ep-modal-actions { margin-top: 12px; text-align: right; }
 </style>
 <body>
 
@@ -394,7 +475,7 @@ li a {
 					<div class="mb5" style="display:flex; width:100%; align-items:flex-start; justify-content:space-between; gap:12px; align-items: end;">
 						<div class="filterLeft" style="display:flex; flex-direction:row; align-items:flex-start; gap:12px;">
 							<div class="select-container">
-								<select id="search_year" name="searchYear" class="select01" onchange="fn_searchFormSubmit();">
+								<select id="search_year" name="searchYear" class="select01">
 									<option value="2026" selected>2026</option>
 									<option value="2025" >2025</option>
 									<option value="2024" >2024</option>
@@ -404,19 +485,44 @@ li a {
 									<option value="2020" >2020</option>
 									<option value="2019" >2019</option>
 								</select>
-								<a class="btnLink btnGrayBg" href="javascript:goBudgetItemManageTab();">입력</a>
+								<a class="btnLink btnBlueBg" href="javascript:void(0);" id="btnExpensePlanSave">저장</a>
+								<a class="btnLink btnGrayBg" href="javascript:void(0);" id="btnExpensePlanInput">입력</a>
 							</div>
 						</div>
-						<a href="javascript:exceldown();" class="btnLink btnBlueGr">엑셀 <i class="fa fa-download"></i></a>
+						<a href="javascript:expensePlanExcelDownload();" class="btnLink btnBlueGr">엑셀 <i class="fa fa-download"></i></a>
 					</div>
 				</div>
 
-				<div class="expense-plan-notice" style="margin-top:12px; padding:16px 18px; background:#f7f9fc; border:1px solid #dde4ee; border-radius:8px; font-size:14px; line-height:1.6; color:#222;">
-					<p style="margin:0 0 10px 0;">예산 항목별 <strong>집행·잔액 현황 표</strong>는 <strong>지출관리 &gt; 지출현황</strong> 화면에서 확인할 수 있습니다.</p>
-					<p style="margin:0;">
-						<a href="/Statistics7.html" class="btnLink btnBlueGr" style="display:inline-block; margin-right:8px;">지출현황으로 이동</a>
-						<a href="javascript:goBudgetItemManageTab();" class="btnLink btnGrayBg" style="display:inline-block;">항목 편집 (항목관리)</a>
-					</p>
+				<p style="margin:10px 0 6px; font-size:13px; color:#444;">예산 <strong>항·목·세목·세부사업</strong>의 <strong>등록·이름 수정</strong>은 <a href="javascript:goBudgetItemManageTab();" class="btnLink btnGrayBg" style="display:inline-block;vertical-align:middle;">항목관리</a>에서 하세요. 지출계획에서는 <strong>입력</strong>을 누른 뒤 <strong>+ 항 추가</strong>로 항을 고르고, 같은 블록에서 <strong>목 → 세목 → 세부사업</strong> 순으로 <strong>+</strong>를 눌러 항목을 선택합니다. 금액 입력 후 <strong>저장</strong>하세요. 지출현황은 <a href="/Statistics7.html">지출현황</a>에서 확인합니다.</p>
+
+				<div id="expensePlanTableWrap">
+					<table id="expensePlanTable">
+						<thead>
+							<tr>
+								<th rowspan="2" style="width:11%;">항</th>
+								<th rowspan="2" style="width:11%;">목</th>
+								<th rowspan="2" style="width:12%;">세목</th>
+								<th rowspan="2" style="width:18%;">세부사업</th>
+								<th colspan="3">계획 (단위: 원)</th>
+							</tr>
+							<tr>
+								<th style="width:12%;">자체조달</th>
+								<th style="width:12%;">보조금</th>
+								<th style="width:12%;">계</th>
+							</tr>
+						</thead>
+						<tbody id="expensePlanTbody"></tbody>
+					</table>
+				</div>
+
+				<div id="expPlanPickerModal" aria-hidden="true">
+					<div class="ep-modal-panel">
+						<h3 id="expPlanPickerTitle">항목 선택</h3>
+						<ul id="expPlanPickerList"></ul>
+						<div class="ep-modal-actions">
+							<a href="javascript:void(0);" class="btnLink btnGrayBg" id="expPlanPickerClose">닫기</a>
+						</div>
+					</div>
 				</div>
 				</div>
             </div>
@@ -425,6 +531,691 @@ li a {
 
 
         </div>
+
+<script>
+(function () {
+	var BUDGET_KEY = "budgetTreeItems_v2";
+	var PLAN_KEY = "statistics5_expensePlan_v1";
+	/** false면 + 버튼 비활성화. 「입력」으로만 켭니다. */
+	var expensePlanInputMode = false;
+
+	function depthFromId(id) {
+		return id ? String(id).trim().split("-").length : 0;
+	}
+	function parentDepth1(id) {
+		return String(id).split("-")[0] || "";
+	}
+	function parentDepth2(id) {
+		var p = String(id).split("-");
+		return p.length >= 2 ? p[0] + "-" + p[1] : "";
+	}
+	function parentDepth3(id) {
+		var p = String(id).split("-");
+		return p.length >= 3 ? p[0] + "-" + p[1] + "-" + p[2] : "";
+	}
+	function parentIdFromBudgetId(id) {
+		if (!id) return "";
+		var parts = String(id).split("-");
+		return parts.length <= 1 ? "" : parts.slice(0, -1).join("-");
+	}
+	function sortIdByNumbers(a, b) {
+		var pa = String(a).split("-").map(function (x) { return parseInt(x, 10); });
+		var pb = String(b).split("-").map(function (x) { return parseInt(x, 10); });
+		for (var i = 0; i < 4; i++) {
+			var da = isNaN(pa[i]) ? 0 : pa[i];
+			var db = isNaN(pb[i]) ? 0 : pb[i];
+			if (da !== db) return da - db;
+		}
+		return 0;
+	}
+	function parseNum(s) {
+		if (s == null || s === "") return 0;
+		var t = String(s).replace(/[,\s]/g, "").trim();
+		if (t === "—" || t === "-" || t === "–") return 0;
+		var n = parseFloat(t);
+		return isNaN(n) ? 0 : n;
+	}
+	function fmtNum(n) {
+		if (!isFinite(n)) return "";
+		return Math.round(n).toLocaleString("ko-KR");
+	}
+
+	function parseCsv4(text) {
+		var rows = [];
+		var row = [];
+		var field = "";
+		var inQuotes = false;
+		for (var i = 0; i < text.length; i++) {
+			var ch = text[i];
+			if (ch === '"') {
+				if (inQuotes && text[i + 1] === '"') {
+					field += '"';
+					i++;
+				} else {
+					inQuotes = !inQuotes;
+				}
+				continue;
+			}
+			if (ch === "," && !inQuotes) {
+				row.push(field);
+				field = "";
+				continue;
+			}
+			if ((ch === "\n" || ch === "\r") && !inQuotes) {
+				if (ch === "\r" && text[i + 1] === "\n") i++;
+				row.push(field);
+				field = "";
+				while (row.length < 4) row.push("");
+				rows.push(row.slice(0, 4));
+				row = [];
+				continue;
+			}
+			field += ch;
+		}
+		if (field.length || row.length) {
+			row.push(field);
+			while (row.length < 4) row.push("");
+			rows.push(row.slice(0, 4));
+		}
+		return rows;
+	}
+
+	function buildItemsFromSeedCsv4(csvText) {
+		var rows = parseCsv4(csvText);
+		var current = ["", "", "", ""];
+		var mapKey = {};
+		var childrenCount = {};
+		var itemsLocal = {};
+
+		function getId(depth, parentId, name) {
+			if (!name) return null;
+			var key = depth + "|" + parentId + "|" + name;
+			if (mapKey[key]) return mapKey[key];
+			var ck = depth + "|" + parentId;
+			var idx = (childrenCount[ck] || 0) + 1;
+			childrenCount[ck] = idx;
+			var id = depth === 1 ? String(idx) : parentId + "-" + String(idx);
+			mapKey[key] = id;
+			itemsLocal[id] = { name: name, alloc: "", spent: "", note: "", active: true };
+			return id;
+		}
+
+		for (var r = 0; r < rows.length; r++) {
+			var cols = rows[r].map(function (c) { return (c == null ? "" : String(c)).trim(); });
+			if (cols.every(function (c) { return !c; })) continue;
+			if (cols.some(function (c) { return c.indexOf("구분") !== -1; })) continue;
+
+			var deepest = 0;
+			for (var d0 = 0; d0 < 4; d0++) {
+				if (cols[d0] !== "") deepest = d0 + 1;
+			}
+			if (deepest === 0) continue;
+
+			for (var d1 = 0; d1 < deepest; d1++) {
+				if (cols[d1] !== "") {
+					current[d1] = cols[d1];
+					for (var e = d1 + 1; e < 4; e++) current[e] = "";
+				}
+			}
+
+			var parent = "";
+			for (var d2 = 1; d2 <= deepest; d2++) {
+				var nm = current[d2 - 1];
+				if (!nm) break;
+				parent = getId(d2, parent, nm) || parent;
+			}
+		}
+		return itemsLocal;
+	}
+
+	var CSV_SEED_TEXT = ",,,\n구분1,구분2,구분3,구분4\n,,,\n소비홍보,광고,품질향상,현수막 제작 및 게첨\n,,소비촉진,TV광고(PPL)\n수급안정,가격안정,수급조절사업,'25년산 가격안정 행사\n경쟁력제고,품질향상,교육자료 발간 등,재배기술 책자 발간 등\n교육 및 정보제공,교육,거출률광고,버스외부광고\n수납위탁 수수료,수납기관 수수료,수납지원,수납기관 수수료(가상계좌)\n운영관리,인건비,급여 및 퇴직연금,급여 및 퇴직연금\n";
+
+	function getYear() {
+		var el = document.getElementById("search_year");
+		return el && el.value ? String(el.value) : String(new Date().getFullYear());
+	}
+
+	function readBudgetRoot() {
+		try {
+			var raw = localStorage.getItem(BUDGET_KEY);
+			if (!raw) return { years: {} };
+			return JSON.parse(raw);
+		} catch (e) {
+			return { years: {} };
+		}
+	}
+
+	function loadBudgetPack() {
+		var year = getYear();
+		var root = readBudgetRoot();
+		var payload = (root.years && root.years[year]) || null;
+		if (!payload && root.years) {
+			var ys = Object.keys(root.years);
+			payload = ys.length ? root.years[ys[0]] : null;
+		}
+		var items = (payload && payload.items) || {};
+		var deleted = (payload && payload.deleted) || [];
+		if (Object.keys(items).length === 0) {
+			items = buildItemsFromSeedCsv4(CSV_SEED_TEXT);
+			deleted = [];
+		}
+		return { items: items, deleted: new Set(deleted), year: year };
+	}
+
+	function deletedSet(arr) {
+		return new Set(arr || []);
+	}
+
+	function getChildIds(pl, depth, parentId) {
+		var ds = deletedSet(pl.deleted);
+		var items = pl.items || {};
+		var pid = parentId || "";
+		var out = [];
+		Object.keys(items).forEach(function (id) {
+			if (ds.has(id)) return;
+			if (depthFromId(id) !== depth) return;
+			if (parentIdFromBudgetId(id) !== pid) return;
+			var it = items[id];
+			if (it && it.active === false) return;
+			out.push(id);
+		});
+		out.sort(sortIdByNumbers);
+		return out;
+	}
+
+	function readPlanRoot() {
+		try {
+			var raw = localStorage.getItem(PLAN_KEY);
+			if (!raw) return { years: {} };
+			return JSON.parse(raw);
+		} catch (e) {
+			return { years: {} };
+		}
+	}
+	function writePlanRoot(root) {
+		localStorage.setItem(PLAN_KEY, JSON.stringify(root));
+	}
+
+	function loadPlan(year) {
+		var root = readPlanRoot();
+		var pl = (root.years && root.years[year]) || null;
+		if (!pl) return { blocks: [], cells: {} };
+		return {
+			blocks: Array.isArray(pl.blocks) ? pl.blocks : [],
+			cells: pl.cells && typeof pl.cells === "object" ? pl.cells : {}
+		};
+	}
+
+	function savePlan(year, plan) {
+		var root = readPlanRoot();
+		if (!root.years) root.years = {};
+		root.years[year] = { blocks: plan.blocks, cells: plan.cells };
+		writePlanRoot(root);
+	}
+
+	var epBudget = { items: {}, deleted: new Set() };
+
+	function itemLabel(items, id) {
+		var it = items[id] || {};
+		return it.name != null ? String(it.name).trim() : "";
+	}
+
+	function labelColsForLine(lineId) {
+		var items = epBudget.items;
+		var d = depthFromId(lineId);
+		var c2 = "";
+		var c3 = "";
+		var c4 = "";
+		if (d === 1) {
+			c2 = "—";
+			c3 = "—";
+			c4 = "—";
+		} else if (d === 2) {
+			c2 = itemLabel(items, lineId);
+			c3 = "—";
+			c4 = "—";
+		} else if (d === 3) {
+			c2 = itemLabel(items, parentDepth2(lineId));
+			c3 = itemLabel(items, lineId);
+			c4 = "—";
+		} else {
+			c2 = itemLabel(items, parentDepth2(lineId));
+			c3 = itemLabel(items, parentDepth3(lineId));
+			c4 = itemLabel(items, lineId);
+		}
+		return { c2: c2, c3: c3, c4: c4, d: d };
+	}
+
+	function isMaximalInBlock(id, lineIds) {
+		for (var i = 0; i < lineIds.length; i++) {
+			var o = lineIds[i];
+			if (o !== id && String(o).indexOf(id + "-") === 0) return false;
+		}
+		return true;
+	}
+
+	function sumBlock(lineIds, cells) {
+		var s = 0;
+		var b = 0;
+		lineIds.forEach(function (id) {
+			if (!isMaximalInBlock(id, lineIds)) return;
+			var c = cells[id] || {};
+			s += parseNum(c.self);
+			b += parseNum(c.sub);
+		});
+		return { self: s, sub: b, tot: s + b };
+	}
+
+	function closePicker() {
+		var m = document.getElementById("expPlanPickerModal");
+		if (m) {
+			m.classList.remove("is-open");
+			m.setAttribute("aria-hidden", "true");
+		}
+	}
+
+	function openPicker(title, ids, items, onPick) {
+		var m = document.getElementById("expPlanPickerModal");
+		var ul = document.getElementById("expPlanPickerList");
+		var tt = document.getElementById("expPlanPickerTitle");
+		if (!m || !ul || !tt) return;
+		tt.textContent = title;
+		ul.innerHTML = "";
+		if (!ids.length) {
+			var li0 = document.createElement("li");
+			li0.textContent = "(선택 가능한 하위 항목이 없습니다)";
+			ul.appendChild(li0);
+		} else {
+			ids.forEach(function (id) {
+				var li = document.createElement("li");
+				var btn = document.createElement("button");
+				btn.type = "button";
+				btn.textContent = itemLabel(items, id) || id;
+				btn.addEventListener("click", function () {
+					onPick(id);
+					closePicker();
+				});
+				li.appendChild(btn);
+				ul.appendChild(li);
+			});
+		}
+		m.classList.add("is-open");
+		m.setAttribute("aria-hidden", "false");
+	}
+
+	function ensureCell(cells, id) {
+		if (!cells[id]) cells[id] = { self: "", sub: "" };
+		return cells[id];
+	}
+
+	function render() {
+		var pack = loadBudgetPack();
+		epBudget.items = pack.items;
+		epBudget.deleted = pack.deleted;
+		var plan = loadPlan(pack.year);
+		var items = pack.items;
+		var cells = plan.cells;
+		var blocks = plan.blocks;
+		var tbody = document.getElementById("expensePlanTbody");
+		if (!tbody) return;
+
+		var plObj = { items: items, deleted: Array.from(pack.deleted) };
+
+		tbody.innerHTML = "";
+
+		if (!blocks.length) {
+			var trE = document.createElement("tr");
+			var tdE = document.createElement("td");
+			tdE.colSpan = 7;
+			tdE.style.padding = "16px";
+			tdE.style.color = "#666";
+			tdE.innerHTML = expensePlanInputMode
+				? "행이 없습니다. 맨 아래 <strong>+ 항 추가</strong>를 눌러 등록된 항목 중에서 항을 선택하세요."
+				: "먼저 상단 <strong>입력</strong>을 누른 뒤 <strong>+ 항 추가</strong>로 항목을 선택하세요. (항목 트리는 <strong>항목관리</strong>에서 등록합니다.)";
+			trE.appendChild(tdE);
+			tbody.appendChild(trE);
+		}
+
+		var grandS = 0;
+		var grandB = 0;
+
+		blocks.forEach(function (block, bi) {
+			var p1 = block.p1;
+			var lineIds = (block.lineIds || []).filter(function (lid) {
+				return parentDepth1(lid) === p1;
+			});
+			lineIds.sort(sortIdByNumbers);
+			if (!lineIds.length) return;
+
+			var p1RowSpan = lineIds.length + 1;
+			var hang = itemLabel(items, p1);
+			var first = true;
+
+			lineIds.forEach(function (lid) {
+				var tr = document.createElement("tr");
+				tr.setAttribute("data-node-id", lid);
+				var lc = labelColsForLine(lid);
+				if (first) {
+					var td1 = document.createElement("td");
+					td1.rowSpan = p1RowSpan;
+					td1.textContent = hang;
+					tr.appendChild(td1);
+					first = false;
+				}
+				var td2 = document.createElement("td");
+				var span2 = document.createElement("span");
+				span2.textContent = lc.c2;
+				td2.appendChild(span2);
+				if (lc.d === 1 && lid === p1 && getChildIds(plObj, 2, lid).length) {
+					var b2 = document.createElement("button");
+					b2.type = "button";
+					b2.className = "ep-add";
+					b2.textContent = "+";
+					b2.title = "목 추가";
+					b2.disabled = !expensePlanInputMode;
+					b2.addEventListener("click", function () { onAddChild(bi, lid); });
+					td2.appendChild(b2);
+				}
+				tr.appendChild(td2);
+
+				var td3 = document.createElement("td");
+				var span3 = document.createElement("span");
+				span3.textContent = lc.c3;
+				td3.appendChild(span3);
+				if (lc.d === 2 && getChildIds(plObj, 3, lid).length) {
+					var b3 = document.createElement("button");
+					b3.type = "button";
+					b3.className = "ep-add";
+					b3.textContent = "+";
+					b3.title = "세목 추가";
+					b3.disabled = !expensePlanInputMode;
+					b3.addEventListener("click", function () { onAddChild(bi, lid); });
+					td3.appendChild(b3);
+				}
+				tr.appendChild(td3);
+
+				var td4 = document.createElement("td");
+				var span4 = document.createElement("span");
+				span4.textContent = lc.c4;
+				td4.appendChild(span4);
+				if (lc.d === 3 && getChildIds(plObj, 4, lid).length) {
+					var b4 = document.createElement("button");
+					b4.type = "button";
+					b4.className = "ep-add";
+					b4.textContent = "+";
+					b4.title = "세부사업 추가";
+					b4.disabled = !expensePlanInputMode;
+					b4.addEventListener("click", function () { onAddChild(bi, lid); });
+					td4.appendChild(b4);
+				}
+				if (lc.d === 4) {
+					var pid = parentIdFromBudgetId(lid);
+					var sibs = getChildIds(plObj, 4, pid);
+					var taken = lineIds;
+					var hasNew = sibs.some(function (sid) { return taken.indexOf(sid) === -1; });
+					if (hasNew) {
+						var bs = document.createElement("button");
+						bs.type = "button";
+						bs.className = "ep-add";
+						bs.textContent = "+";
+						bs.title = "세부사업 추가(형제)";
+						bs.disabled = !expensePlanInputMode;
+						bs.addEventListener("click", function () { onAddSibling(bi, lid); });
+						td4.appendChild(bs);
+					}
+				}
+				tr.appendChild(td4);
+
+				var cell = ensureCell(cells, lid);
+				var inpS = document.createElement("input");
+				inpS.type = "text";
+				inpS.className = "ep-inp";
+				inpS.setAttribute("data-kind", "self");
+				inpS.value = cell.self || "";
+				var inpB = document.createElement("input");
+				inpB.type = "text";
+				inpB.className = "ep-inp";
+				inpB.setAttribute("data-kind", "sub");
+				inpB.value = cell.sub || "";
+				var selfN = parseNum(cell.self);
+				var subN = parseNum(cell.sub);
+				var tdT = document.createElement("td");
+				tdT.className = "ep-num ep-total";
+				tdT.textContent = fmtNum(selfN + subN);
+
+				function recalcRow() {
+					var sn = parseNum(inpS.value);
+					var bn = parseNum(inpB.value);
+					tdT.textContent = fmtNum(sn + bn);
+				}
+				inpS.addEventListener("input", recalcRow);
+				inpB.addEventListener("input", recalcRow);
+
+				var tdS = document.createElement("td");
+				tdS.appendChild(inpS);
+				var tdB = document.createElement("td");
+				tdB.appendChild(inpB);
+				tr.appendChild(tdS);
+				tr.appendChild(tdB);
+				tr.appendChild(tdT);
+				tbody.appendChild(tr);
+			});
+
+			var sm = sumBlock(lineIds, cells);
+			grandS += sm.self;
+			grandB += sm.sub;
+
+			var trSub = document.createElement("tr");
+			trSub.className = "ep-row-subtotal";
+			var tdLab = document.createElement("td");
+			tdLab.colSpan = 3;
+			tdLab.textContent = "소계";
+			tdLab.style.textAlign = "center";
+			trSub.appendChild(tdLab);
+			var tdSs = document.createElement("td");
+			tdSs.className = "ep-num";
+			tdSs.textContent = fmtNum(sm.self);
+			var tdSb = document.createElement("td");
+			tdSb.className = "ep-num";
+			tdSb.textContent = fmtNum(sm.sub);
+			var tdSt = document.createElement("td");
+			tdSt.className = "ep-num";
+			tdSt.textContent = fmtNum(sm.tot);
+			trSub.appendChild(tdSs);
+			trSub.appendChild(tdSb);
+			trSub.appendChild(tdSt);
+			tbody.appendChild(trSub);
+		});
+
+		var trAdd = document.createElement("tr");
+		var tdAdd = document.createElement("td");
+		tdAdd.colSpan = 7;
+		tdAdd.style.textAlign = "left";
+		tdAdd.style.padding = "10px 8px";
+		var btnAddP = document.createElement("button");
+		btnAddP.type = "button";
+		btnAddP.className = "btnLink btnGrayBg";
+		btnAddP.textContent = "+ 항 추가";
+		btnAddP.disabled = !expensePlanInputMode;
+		btnAddP.title = expensePlanInputMode ? "" : "먼저 상단 「입력」을 누르세요.";
+		btnAddP.addEventListener("click", onAddHang);
+		tdAdd.appendChild(btnAddP);
+		trAdd.appendChild(tdAdd);
+		tbody.appendChild(trAdd);
+
+		var trG = document.createElement("tr");
+		trG.className = "ep-row-grand";
+		var tdG = document.createElement("td");
+		tdG.colSpan = 4;
+		tdG.textContent = "합계";
+		tdG.style.textAlign = "center";
+		trG.appendChild(tdG);
+		var tdGs = document.createElement("td");
+		tdGs.className = "ep-num";
+		tdGs.textContent = fmtNum(grandS);
+		var tdGb = document.createElement("td");
+		tdGb.className = "ep-num";
+		tdGb.textContent = fmtNum(grandB);
+		var tdGt = document.createElement("td");
+		tdGt.className = "ep-num";
+		tdGt.textContent = fmtNum(grandS + grandB);
+		trG.appendChild(tdGs);
+		trG.appendChild(tdGb);
+		trG.appendChild(tdGt);
+		tbody.appendChild(trG);
+	}
+
+	function onAddHang() {
+		if (!expensePlanInputMode) return;
+		var pack = loadBudgetPack();
+		var plObj = { items: pack.items, deleted: Array.from(pack.deleted) };
+		var ids = getChildIds(plObj, 1, "");
+		var plan = loadPlan(pack.year);
+		var existing = plan.blocks.map(function (b) { return b.p1; });
+		openPicker("\"항\" 항목 선택", ids.filter(function (id) { return existing.indexOf(id) === -1; }), pack.items, function (id) {
+			var pl2 = loadPlan(getYear());
+			pl2.blocks.push({ p1: id, lineIds: [id] });
+			ensureCell(pl2.cells, id);
+			savePlan(getYear(), pl2);
+			render();
+		});
+	}
+
+	function onAddChild(blockIdx, parentLineId) {
+		if (!expensePlanInputMode) return;
+		var pack = loadBudgetPack();
+		var plObj = { items: pack.items, deleted: Array.from(pack.deleted) };
+		var d = depthFromId(parentLineId);
+		if (d >= 4) return;
+		var plan = loadPlan(pack.year);
+		var block = plan.blocks[blockIdx];
+		if (!block || parentDepth1(parentLineId) !== block.p1) return;
+		var childDepth = d + 1;
+		var ids = getChildIds(plObj, childDepth, parentLineId);
+		var taken = block.lineIds || [];
+		var pickTitle = childDepth === 2 ? "\"목\" 항목 선택" : childDepth === 3 ? "\"세목\" 항목 선택" : "\"세부사업\" 항목 선택";
+		openPicker(pickTitle, ids.filter(function (id) { return taken.indexOf(id) === -1; }), pack.items, function (id) {
+			var pl2 = loadPlan(getYear());
+			var b2 = pl2.blocks[blockIdx];
+			if (!b2 || b2.lineIds.indexOf(id) >= 0) return;
+			if (parentDepth1(id) !== b2.p1) return;
+			b2.lineIds.push(id);
+			b2.lineIds.sort(sortIdByNumbers);
+			ensureCell(pl2.cells, id);
+			savePlan(getYear(), pl2);
+			render();
+		});
+	}
+
+	function onAddSibling(blockIdx, lineId) {
+		if (!expensePlanInputMode) return;
+		var pack = loadBudgetPack();
+		var plObj = { items: pack.items, deleted: Array.from(pack.deleted) };
+		var pid = parentIdFromBudgetId(lineId);
+		var d = depthFromId(lineId);
+		var plan = loadPlan(pack.year);
+		var block = plan.blocks[blockIdx];
+		if (!block || parentDepth1(lineId) !== block.p1) return;
+		var ids = getChildIds(plObj, d, pid);
+		var taken = block.lineIds || [];
+		openPicker("\"세부사업\" 항목 선택", ids.filter(function (id) { return taken.indexOf(id) === -1; }), pack.items, function (id) {
+			var pl2 = loadPlan(getYear());
+			var b2 = pl2.blocks[blockIdx];
+			if (!b2 || b2.lineIds.indexOf(id) >= 0) return;
+			if (parentDepth1(id) !== b2.p1) return;
+			b2.lineIds.push(id);
+			b2.lineIds.sort(sortIdByNumbers);
+			ensureCell(pl2.cells, id);
+			savePlan(getYear(), pl2);
+			render();
+		});
+	}
+
+	function saveFromDom() {
+		var pack = loadBudgetPack();
+		var plan = loadPlan(pack.year);
+		var tbody = document.getElementById("expensePlanTbody");
+		if (!tbody) return;
+		var rows = tbody.querySelectorAll("tr[data-node-id]");
+		for (var r = 0; r < rows.length; r++) {
+			var tr = rows[r];
+			var id = tr.getAttribute("data-node-id");
+			var inpS = tr.querySelector("input[data-kind=self]");
+			var inpB = tr.querySelector("input[data-kind=sub]");
+			ensureCell(plan.cells, id);
+			plan.cells[id].self = inpS ? inpS.value.trim() : "";
+			plan.cells[id].sub = inpB ? inpB.value.trim() : "";
+		}
+		savePlan(pack.year, plan);
+		alert("저장되었습니다.");
+		render();
+	}
+
+	window.expensePlanExcelDownload = function () {
+		var table = document.getElementById("expensePlanTable");
+		if (!table) return;
+		var lines = [];
+		var trs = table.querySelectorAll("tr");
+		for (var i = 0; i < trs.length; i++) {
+			var tr = trs[i];
+			var cells = tr.querySelectorAll("th,td");
+			var parts = [];
+			for (var j = 0; j < cells.length; j++) {
+				var td = cells[j];
+				var t = "";
+				var inp = td.querySelector("input");
+				if (inp) t = inp.value;
+				else t = td.textContent.replace(/\s+/g, " ").trim();
+				parts.push('"' + String(t).replace(/"/g, '""') + '"');
+			}
+			lines.push(parts.join(","));
+		}
+		var blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+		var a = document.createElement("a");
+		a.href = URL.createObjectURL(blob);
+		a.download = "지출계획_" + getYear() + ".csv";
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(a.href);
+	};
+
+	function init() {
+		var sy = document.getElementById("search_year");
+		if (sy) {
+			sy.addEventListener("change", function () {
+				expensePlanInputMode = false;
+				var bi = document.getElementById("btnExpensePlanInput");
+				if (bi) bi.textContent = "입력";
+				render();
+			});
+		}
+		var bin = document.getElementById("btnExpensePlanInput");
+		if (bin) {
+			bin.addEventListener("click", function (e) {
+				e.preventDefault();
+				expensePlanInputMode = !expensePlanInputMode;
+				bin.textContent = expensePlanInputMode ? "입력종료" : "입력";
+				render();
+			});
+		}
+		var bs = document.getElementById("btnExpensePlanSave");
+		if (bs) bs.addEventListener("click", function (e) { e.preventDefault(); saveFromDom(); });
+		var cl = document.getElementById("expPlanPickerClose");
+		if (cl) cl.addEventListener("click", function (e) { e.preventDefault(); closePicker(); });
+		var modal = document.getElementById("expPlanPickerModal");
+		if (modal) {
+			modal.addEventListener("click", function (e) {
+				if (e.target === modal) closePicker();
+			});
+		}
+		render();
+	}
+
+	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+	else init();
+})();
+</script>
 
         <!-- 에듀페이 모달 -->
 		<!--

@@ -384,62 +384,10 @@ li a {
 				<div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
 					<a href="javascript:exceldown();" class="btnLink btnBlueGr">엑셀 <i class="fa fa-download"></i></a>
 				</div>
-                결재일
-				<input id="pFromCrtDt" type="date" value=""> ~
-				<input id="pToCrtDt" type="date" value="">
-				
-				
-				
-			</div>
-
-			<div class="mb5" style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; width:100%;">
-				<select id="rowCount" style="width:60px;">
-                    <option selected="" value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                    <option value="150">150</option>
-                    <option value="200">200</option>
-                    <option value="500">500</option>
-                    <option value="1000">1000</option>
-                </select>
-                <select id="p_sh_sido">
-					<option value="">항</option>
-					<option value="">소비홍보</option>
-					<option value="">수급안정</option>
-					<option value="">유통구조개선</option>
-					<option value="">경쟁력제고</option>
-					<option value="">수출활성화</option>
-					<option value="">교육및정보제공</option>
-					<option value="">조사연구</option>
-					<option value="">선거</option>
-					<option value="">징수수수료</option>
-					<option value="">운영관리</option>
-					<option value="">예비비</option>
-				</select>
-                <select id="p_sh_sido">
-					<option value="">목</option>
-				</select>
-                <select id="p_sh_sido">
-					<option value="">세목</option>
-				</select>
-                <select id="p_sh_sido">
-					<option value="">세부사업</option>
-				</select>
-				
-                <input type="text" name="" id="pSearchValue" maxlength="" value="" placeholder="집행금액, 비고" class="inputTxt"/>
-				<a href="javascript:" class="btnLink btnChaBg" id="goSearchBtn">검색</a>
-
-                <div style="margin-left:auto; display:flex; gap:8px;">
-					<a href="javascript:popAcademyPriceConfirmExcel();" class="btnLink btnBlueGr">내역 엑셀 <i class="fa fa-download"></i></a>
-				</div>
 			</div>
 		</div>
 <div class="budget-matrix-section" style="width:100%; margin-bottom:20px;">
-				<div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
-					<h3 style="font-size:15px; margin:0; font-weight:600;">예산·집행 현황 (항목별)</h3>
-					<a href="javascript:goBudgetItemManageTab();" class="btnLink btnGrayBg" style="flex-shrink:0;">항목 편집</a>
-				</div>
+
 				<!-- 예산통계 -->
 				<style>
 					#budgetStatsMatrixLikeWrap { overflow-x: auto; margin-top: 10px; }
@@ -474,9 +422,6 @@ li a {
 								<th>계획 예산</th>
 								<th>집행</th>
 								<th>잔액</th>
-							</tr>
-							<tr>
-								<th colspan="7" style="text-align:right;font-weight:400;font-size:11px;">(단위: 원)</th>
 							</tr>
 						</thead>
 						<tbody id="budgetStatsMatrixLikeTbody"></tbody>
@@ -1012,133 +957,7 @@ li a {
 
 </div>
 
-<div class="tableListWrap">
-    
-<div class="table_list active">   
-<div style="width:100%;">
-<div class="tableListWrap">
-    <div class="table_list active">
-        <table>
-            <colgroup>
-                <col style="width:5%"/>
-                <col style="width:8%"/>
-                <col style="width:9%"/>
-                <col style="width:10%"/>
-                <col style="width:18%"/>
-                <col style="width:10%"/>
-                <col style="width:10%"/>
-                <col style="width:11%"/>
-                <col style="width:11%"/>
-            </colgroup>
-        <thead>
-            <tr>
-                <th>
-                    <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
-                        <input class="inputVm" type="checkbox"/>
-                        <span style="font-size:12px; font-weight:600;">No</span>
-                    </div>
-                </th>
-                <th>항</th>
-                <th>목</th>
-                <th>세목</th>
-                <th>세부사업</th>
-                <th>집행액</th>
-                <th>결재일</th>
-                <th>세무담당자</th>
-                <th>비고</th>
-            </tr>
-        </thead>
-<tbody>
-    <tr>
-        <td><span><input class="inputVm" data-studentname="소비홍보-현수막" data-studentno="2028000553" name="studentCheckbox" type="checkbox"/></span></td>
-        <td><span><a href="javascript:">소비홍보</a></span></td>
-        <td><span>광고</span></td>
-        <td><span>품질향상</span></td>
-        <td><span><strong>현수막 제작 및 게첨</strong></span></td>
-        <td><span>1,250,000</span></td>
-        <td><span>2026.03.12</span></td>
-        <td><span>박세무</span></td>
-        <td><span>예산현황 표기용 샘플</span></td>
-    </tr>
-    <tr>
-        <td><span><input class="inputVm" data-studentname="소비홍보-PPL" data-studentno="2028000554" name="studentCheckbox" type="checkbox"/></span></td>
-        <td><span><a href="javascript:">소비홍보</a></span></td>
-        <td><span>광고</span></td>
-        <td><span>소비촉진</span></td>
-        <td><span><strong>TV광고(PPL)</strong></span></td>
-        <td><span>8,500,000</span></td>
-        <td><span></span></td>
-        <td><span>박세무</span></td>
-        <td><span></span></td>
-    </tr>
-    <tr>
-        <td><span><input class="inputVm" data-studentname="수급안정-가격안정" data-studentno="2028000555" name="studentCheckbox" type="checkbox"/></span></td>
-        <td><span><a href="javascript:">수급안정</a></span></td>
-        <td><span>가격안정</span></td>
-        <td><span>수급조절사업</span></td>
-        <td><span><strong>'25년산 가격안정 행사</strong></span></td>
-        <td><span>3,200,000</span></td>
-        <td><span>2026.02.28</span></td>
-        <td><span>박세무</span></td>
-        <td><span>현장결제</span></td>
-    </tr>
-    <tr>
-        <td><span><input class="inputVm" data-studentname="경쟁력제고-책자" data-studentno="2028000556" name="studentCheckbox" type="checkbox"/></span></td>
-        <td><span><a href="javascript:">경쟁력제고</a></span></td>
-        <td><span>품질향상</span></td>
-        <td><span>교육자료 발간 등</span></td>
-        <td><span><strong>재배기술 책자 발간 등</strong></span></td>
-        <td><span>420,000</span></td>
-        <td><span></span></td>
-        <td><span>박세무</span></td>
-        <td><span>인쇄 대금</span></td>
-    </tr>
-    <tr>
-        <td><span><input class="inputVm" data-studentname="운영관리-급여" data-studentno="2028000546" name="studentCheckbox" type="checkbox"/></span></td>
-        <td><span><a href="javascript:">운영관리</a></span></td>
-        <td><span>인건비</span></td>
-        <td><span>급여 및 퇴직연금</span></td>
-        <td><span><a href="javascript:openProposalForm();" title="지출품의서 보기"><strong>급여 및 퇴직연금</strong></a></span></td>
-        <td><span>45,200,000</span></td>
-        <td><span>2026.03.25</span></td>
-        <td><span>박세무</span></td>
-        <td><span>월 정기</span></td>
-    </tr>
-    <tr>
-        <td><span><input class="inputVm" data-studentname="수납위탁-수수료" data-studentno="2028000557" name="studentCheckbox" type="checkbox"/></span></td>
-        <td><span><a href="javascript:">수납위탁 수수료</a></span></td>
-        <td><span>수납기관 수수료</span></td>
-        <td><span>수납지원</span></td>
-        <td><span><strong>수납기관 수수료(가상계좌)</strong></span></td>
-        <td><span>180,000</span></td>
-        <td><span></span></td>
-        <td><span>박세무</span></td>
-        <td><span>가상계좌 정산분</span></td>
-    </tr>
-</tbody>
-</table>
-</div>
-</div>
 
-<div class="tableBot_list">
-    <ul class="btnList flxcol" style="justify-content: right;">
-        <li><a class="btnLink btnGrayBg" href="javascript:openGroupGogiseo();">삭제</a></li>
-        <li style="margin-left: 5px;"><a class="btnLink btnBlueBg" href="javascript:openExpenseRegPopup();">비용처리등록</a></li>
-    </ul>
-</div>
-
-</div>
-<div class="paging">
-    <ul>
-        <li><a href="javascript:"><i class="fa fa-angle-double-left" text="처음"></i></a></li>
-        <li><a href="javascript:"><i class="fa fa-angle-left" text="이전"></i></a></li>
-        <li class="active"><a href="javascript:" title="현재열람중인 1페이지">1</a></li>
-        <li><a href="javascript:" onclick="fn_link_page(2); return false;"><i class="fa fa-angle-right" text="다음"></i></a></li>
-        <li><a href="javascript:" onclick="fn_link_page(56); return false;"><i class="fa fa-angle-double-right" text="마지막"></i></a></li>
-    </ul>
-</div>
-</div>
-</div>
 <!-- //content -->
 <!-- footer -->
 <!-- footer -->

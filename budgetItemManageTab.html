@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- 항목관리 트리: 저장 버튼으로만 반영 · 미저장 시 페이지 이탈/항목 이동 시 확인 · localStorage: budgetItemManageTree_v1 -->
+<!-- 항목관리 트리: 저장 버튼으로만 반영 · 미저장 시 알럿 없이 마지막 저장 상태로 되돌림 · localStorage: budgetItemManageTree_v1 -->
 <html lang="kr">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -153,10 +153,10 @@ li a { white-space: nowrap; }
 <div id="wrap">
 <script>
     $(document).ready(function() {
-        $("#logoutBtn").click(function() { if (confirm("로그아웃 하시겠습니까?")) callAjax("/wkwhrma/logoutExcute", "completeLogout"); });
+        $("#logoutBtn").click(function() { callAjax("/wkwhrma/logoutExcute", "completeLogout"); });
         $(".remote").click(function() { goRemote(); });
     });
-    function completeLogout(data) { alertMessage("로그아웃 되었습니다."); location.href = "/wkwhrma"; }
+    function completeLogout(data) { location.href = "/wkwhrma"; }
 </script>
 <div id="header">
     <div>
@@ -497,7 +497,6 @@ li a { white-space: nowrap; }
 	function selectId(id, skipDirtyCheck) {
 		if (id === selectedId) return;
 		if (!skipDirtyCheck && isDirty()) {
-			if (!confirm("저장하지 않은 내용이 있습니다. 이동하면 반영되지 않습니다. 계속하시겠습니까?")) return;
 			revertTreeToPersisted();
 			ensureValidSelection();
 		}
@@ -534,7 +533,6 @@ li a { white-space: nowrap; }
 
 	function addRoot() {
 		if (isDirty()) {
-			if (!confirm("저장하지 않은 내용이 있습니다. 이동하면 반영되지 않습니다. 계속하시겠습니까?")) return;
 			revertTreeToPersisted();
 			ensureValidSelection();
 		}
@@ -546,18 +544,13 @@ li a { white-space: nowrap; }
 
 	function addChild(parentNode) {
 		if (isDirty()) {
-			if (!confirm("저장하지 않은 내용이 있습니다. 이동하면 반영되지 않습니다. 계속하시겠습니까?")) return;
 			revertTreeToPersisted();
 			ensureValidSelection();
 		}
 		var ref = findNode(parentNode.id);
 		if (!ref) return;
 		parentNode = ref.node;
-		if (depthOf(parentNode) >= BIM_MAX_DEPTH) {
-			var msg = "최대 4단계(항·목·세목·세부사업)까지만 등록할 수 있습니다.";
-			if (typeof alertMessage === "function") alertMessage(msg); else alert(msg);
-			return;
-		}
+		if (depthOf(parentNode) >= BIM_MAX_DEPTH) return;
 		var n = { id: uid(), name: "새항목", used: true, remark: "", expanded: true, children: [] };
 		if (!parentNode.children) parentNode.children = [];
 		parentNode.children.push(n);
@@ -592,7 +585,6 @@ li a { white-space: nowrap; }
 
 	function toggleFoldAll() {
 		if (isDirty()) {
-			if (!confirm("저장하지 않은 내용이 있습니다. 이동하면 반영되지 않습니다. 계속하시겠습니까?")) return;
 			revertTreeToPersisted();
 			ensureValidSelection();
 		}
@@ -612,31 +604,22 @@ li a { white-space: nowrap; }
 
 	document.getElementById("bimBtnAddRoot").addEventListener("click", addRoot);
 	document.getElementById("bimBtnSave").addEventListener("click", function () {
-		if (!selectedId) {
-			alert("저장할 항목을 선택하세요.");
-			return;
-		}
+		if (!selectedId) return;
 		flushFormToTree();
 		persistSnapshot();
 		renderTree();
 		syncFormFromSelection();
-		if (typeof alertMessage === "function") alertMessage("저장되었습니다.");
-		else alert("저장되었습니다.");
 	});
 	document.getElementById("bimBtnToggleFold").addEventListener("click", toggleFoldAll);
 
 	document.getElementById("bimBtnDelete").addEventListener("click", function () {
 		if (!selectedId) return;
 		if (isDirty()) {
-			if (!confirm("저장하지 않은 내용이 있습니다. 저장하지 않고 삭제를 진행하시겠습니까?")) return;
 			revertTreeToPersisted();
 			ensureValidSelection();
 		}
 		var found = findNode(selectedId);
 		if (!found) return;
-		var hasKids = found.node.children && found.node.children.length > 0;
-		var msg = hasKids ? "선택한 항목과 포함된 모든 하위 항목이 함께 삭제됩니다. 삭제하시겠습니까?" : "선택한 항목을 삭제하시겠습니까?";
-		if (!confirm(msg)) return;
 		var delId = selectedId;
 		if (found.parent) removeNodeById(delId); else removeRootById(delId);
 		selectedId = null;
@@ -644,13 +627,6 @@ li a { white-space: nowrap; }
 		persistSnapshot();
 		renderTree();
 		if (tree.length) selectId(tree[0].id, true); else syncFormFromSelection();
-	});
-
-	window.addEventListener("beforeunload", function (e) {
-		if (isDirty()) {
-			e.preventDefault();
-			e.returnValue = "";
-		}
 	});
 
 	tree = loadTree();

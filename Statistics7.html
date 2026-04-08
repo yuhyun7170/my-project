@@ -710,11 +710,12 @@ li a {
 								return it.name != null ? String(it.name).trim() : "";
 							}
 
-							function subtotalRow(label, sa, ss) {
+							function subtotalRow(label, sa, ss, hangRowspan) {
 								var tr = document.createElement("tr");
 								tr.className = "row-matrix-subtotal";
 								var tdL = document.createElement("td");
-								tdL.colSpan = labelCols;
+								/* 항 열이 rowspan으로 비어 있을 때는 라벨이 목~세부 열만 덮어야 함 (숫자 3열과 겹치면 안 됨) */
+								tdL.colSpan = hangRowspan ? Math.max(1, labelCols - 1) : labelCols;
 								tdL.textContent = label;
 								tdL.style.textAlign = "center";
 								tdL.style.fontWeight = "600";
@@ -834,7 +835,7 @@ li a {
 										tr.appendChild(tdNum(formatMoney(sm.sa - sm.ss)));
 										tbody.appendChild(tr);
 									});
-									subtotalRow("소계", subA, subS);
+									subtotalRow("소계", subA, subS, true);
 								});
 								appendGrandRow();
 								updateDepthButtons();
@@ -917,7 +918,7 @@ li a {
 										tr.appendChild(tdNum(formatMoney(sm.sa - sm.ss)));
 										tbody.appendChild(tr);
 									});
-									subtotalRow("소계", subA, subS);
+									subtotalRow("소계", subA, subS, true);
 								});
 								appendGrandRow();
 								updateDepthButtons();
@@ -985,7 +986,7 @@ li a {
 									grandA += parseMoney(it.alloc);
 									grandS += parseMoney(it.spent);
 								});
-								subtotalRow("소계", subA, subS);
+								subtotalRow("소계", subA, subS, true);
 							});
 
 							appendGrandRow();

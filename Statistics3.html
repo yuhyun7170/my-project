@@ -405,7 +405,7 @@ li a {
 <div style="width:100%;">
 <div class="tableListWrap">
     <div class="table_list active">
-        <table>
+        <table id="expenseDetailTable">
             <colgroup>
                 <col style="width:5%"/>
                 <col style="width:8%"/>
@@ -435,73 +435,7 @@ li a {
                 <th>비고</th>
             </tr>
         </thead>
-<tbody>
-    <tr>
-        <td><span><input class="inputVm" data-studentname="소비홍보-현수막" data-studentno="2028000553" name="studentCheckbox" type="checkbox"/></span></td>
-        <td><span><a href="javascript:">소비홍보</a></span></td>
-        <td><span>광고</span></td>
-        <td><span>품질향상</span></td>
-        <td><span><strong>현수막 제작 및 게첨</strong></span></td>
-        <td><span>1,250,000</span></td>
-        <td><span>2026.03.12</span></td>
-        <td><span>박세무</span></td>
-        <td><span>예산현황 표기용 샘플</span></td>
-    </tr>
-    <tr>
-        <td><span><input class="inputVm" data-studentname="소비홍보-PPL" data-studentno="2028000554" name="studentCheckbox" type="checkbox"/></span></td>
-        <td><span><a href="javascript:">소비홍보</a></span></td>
-        <td><span>광고</span></td>
-        <td><span>소비촉진</span></td>
-        <td><span><strong>TV광고(PPL)</strong></span></td>
-        <td><span>8,500,000</span></td>
-        <td><span></span></td>
-        <td><span>박세무</span></td>
-        <td><span></span></td>
-    </tr>
-    <tr>
-        <td><span><input class="inputVm" data-studentname="수급안정-가격안정" data-studentno="2028000555" name="studentCheckbox" type="checkbox"/></span></td>
-        <td><span><a href="javascript:">수급안정</a></span></td>
-        <td><span>가격안정</span></td>
-        <td><span>수급조절사업</span></td>
-        <td><span><strong>'25년산 가격안정 행사</strong></span></td>
-        <td><span>3,200,000</span></td>
-        <td><span>2026.02.28</span></td>
-        <td><span>박세무</span></td>
-        <td><span>현장결제</span></td>
-    </tr>
-    <tr>
-        <td><span><input class="inputVm" data-studentname="경쟁력제고-책자" data-studentno="2028000556" name="studentCheckbox" type="checkbox"/></span></td>
-        <td><span><a href="javascript:">경쟁력제고</a></span></td>
-        <td><span>품질향상</span></td>
-        <td><span>교육자료 발간 등</span></td>
-        <td><span><strong>재배기술 책자 발간 등</strong></span></td>
-        <td><span>420,000</span></td>
-        <td><span></span></td>
-        <td><span>박세무</span></td>
-        <td><span>인쇄 대금</span></td>
-    </tr>
-    <tr>
-        <td><span><input class="inputVm" data-studentname="운영관리-급여" data-studentno="2028000546" name="studentCheckbox" type="checkbox"/></span></td>
-        <td><span><a href="javascript:">운영관리</a></span></td>
-        <td><span>인건비</span></td>
-        <td><span>급여 및 퇴직연금</span></td>
-        <td><span><a href="javascript:openProposalForm();" title="지출품의서 보기"><strong>급여 및 퇴직연금</strong></a></span></td>
-        <td><span>45,200,000</span></td>
-        <td><span>2026.03.25</span></td>
-        <td><span>박세무</span></td>
-        <td><span>월 정기</span></td>
-    </tr>
-    <tr>
-        <td><span><input class="inputVm" data-studentname="수납위탁-수수료" data-studentno="2028000557" name="studentCheckbox" type="checkbox"/></span></td>
-        <td><span><a href="javascript:">수납위탁 수수료</a></span></td>
-        <td><span>수납기관 수수료</span></td>
-        <td><span>수납지원</span></td>
-        <td><span><strong>수납기관 수수료(가상계좌)</strong></span></td>
-        <td><span>180,000</span></td>
-        <td><span></span></td>
-        <td><span>박세무</span></td>
-        <td><span>가상계좌 정산분</span></td>
-    </tr>
+<tbody id="expenseDetailTbody">
 </tbody>
 </table>
 </div>
@@ -625,7 +559,7 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 <script>
 	(function () {
 		function applyRowNumbers() {
-			const table = document.querySelector("#content table");
+			const table = document.getElementById("expenseDetailTable");
 			if (!table) return;
 			const tbody = table.querySelector("tbody");
 			if (!tbody) return;
@@ -635,6 +569,8 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 			rows.forEach((tr, idx) => {
 				const td = tr.querySelector("td:nth-child(1)");
 				if (!td) return;
+				const cs = td.getAttribute("colspan");
+				if (cs && parseInt(cs, 10) > 1) return;
 
 				td.style.display = "flex";
 				td.style.alignItems = "center";
@@ -651,19 +587,184 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 					td.appendChild(noEl);
 				}
 
-				// No 내림차순 (첫 행이 가장 큰 번호)
 				noEl.textContent = String(n - idx);
 			});
 		}
 
-		function run() {
-			applyRowNumbers();
+		window.reapplyExpenseDetailRowNumbers = applyRowNumbers;
+	})();
+</script>
+<script>
+	(function () {
+		var STORAGE_KEY = "budgetTreeItems_v2";
+
+		function depthFromId(id) {
+			return id ? String(id).trim().split("-").length : 0;
+		}
+		function parentDepth1(id) {
+			return String(id).split("-")[0] || "";
+		}
+		function parentDepth2(id) {
+			var p = String(id).split("-");
+			return p.length >= 2 ? p[0] + "-" + p[1] : "";
+		}
+		function parentDepth3(id) {
+			var p = String(id).split("-");
+			return p.length >= 3 ? p[0] + "-" + p[1] + "-" + p[2] : "";
+		}
+		function sortIdByNumbers(a, b) {
+			var pa = String(a).split("-").map(function (x) { return parseInt(x, 10); });
+			var pb = String(b).split("-").map(function (x) { return parseInt(x, 10); });
+			for (var i = 0; i < 4; i++) {
+				var da = isNaN(pa[i]) ? 0 : pa[i];
+				var db = isNaN(pb[i]) ? 0 : pb[i];
+				if (da !== db) return da - db;
+			}
+			return 0;
+		}
+		function parseMoney(s) {
+			if (s == null || s === "") return 0;
+			var t = String(s).trim();
+			if (t === "—" || t === "-" || t === "–") return 0;
+			var n = parseFloat(t.replace(/,/g, "").replace(/\s/g, ""));
+			return isNaN(n) ? 0 : n;
+		}
+		function labelName(items, id) {
+			var it = items[id] || {};
+			return it.name != null ? String(it.name).trim() : "";
+		}
+		function pathColumns(items, id) {
+			var d = depthFromId(id);
+			var p1 = parentDepth1(id);
+			var h = labelName(items, p1);
+			if (d === 1) return { h: h, m: "—", sem: "—", det: "—" };
+			if (d === 2) return { h: h, m: labelName(items, id), sem: "—", det: "—" };
+			if (d === 3) return { h: h, m: labelName(items, parentDepth2(id)), sem: labelName(items, id), det: "—" };
+			return { h: h, m: labelName(items, parentDepth2(id)), sem: labelName(items, parentDepth3(id)), det: labelName(items, id) };
+		}
+		function formatApprovalDate(s) {
+			if (s == null || String(s).trim() === "") return "";
+			var t = String(s).trim();
+			var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t);
+			if (m) return m[1] + "." + m[2] + "." + m[3];
+			return t;
+		}
+
+		function loadPayload() {
+			var year = "";
+			try {
+				var ys = document.getElementById("pFromDate");
+				year = ys && ys.value ? String(ys.value) : "";
+			} catch (e0) {}
+			if (!year) year = String(new Date().getFullYear());
+			var payload = null;
+			try {
+				var raw = localStorage.getItem(STORAGE_KEY);
+				if (raw) {
+					var root = JSON.parse(raw);
+					payload = (root && root.years && root.years[year]) || null;
+					if (!payload && root && root.years) {
+						var ys2 = Object.keys(root.years);
+						payload = ys2.length ? root.years[ys2[0]] : null;
+					}
+				}
+			} catch (e1) {}
+			return {
+				items: (payload && payload.items) || {},
+				deleted: new Set((payload && payload.deleted) || []),
+				year: year
+			};
+		}
+
+		window.renderExpenseDetailFromStorage = function () {
+			var tbody = document.getElementById("expenseDetailTbody");
+			if (!tbody) return;
+			var pack = loadPayload();
+			var items = pack.items;
+			var deletedSet = pack.deleted;
+			var ids = [];
+			Object.keys(items).forEach(function (id) {
+				if (!id || deletedSet.has(id)) return;
+				var d = depthFromId(id);
+				if (d < 1 || d > 4) return;
+				if (parseMoney((items[id] || {}).spent) <= 0) return;
+				ids.push(id);
+			});
+			ids.sort(sortIdByNumbers);
+			ids.sort(function (a, b) {
+				return parseMoney((items[b] || {}).spent) - parseMoney((items[a] || {}).spent);
+			});
+
+			tbody.innerHTML = "";
+			if (ids.length === 0) {
+				var tr0 = document.createElement("tr");
+				var td0 = document.createElement("td");
+				td0.colSpan = 9;
+				td0.style.textAlign = "center";
+				td0.style.padding = "24px 8px";
+				td0.style.color = "#666";
+				td0.textContent = "비용처리등록으로 집행액이 입력된 내역이 없습니다. (연도 " + pack.year + ")";
+				tr0.appendChild(td0);
+				tbody.appendChild(tr0);
+			} else {
+				ids.forEach(function (bid) {
+					var it = items[bid] || {};
+					var pc = pathColumns(items, bid);
+					var tr = document.createElement("tr");
+
+					function tdSpan(txt, strongDet) {
+						var td = document.createElement("td");
+						var s = document.createElement("span");
+						if (strongDet) {
+							var st = document.createElement("strong");
+							st.textContent = txt;
+							s.appendChild(st);
+						} else {
+							s.textContent = txt;
+						}
+						td.appendChild(s);
+						return td;
+					}
+
+					var tdChk = document.createElement("td");
+					var spanW = document.createElement("span");
+					var inp = document.createElement("input");
+					inp.type = "checkbox";
+					inp.className = "inputVm";
+					inp.name = "studentCheckbox";
+					inp.setAttribute("data-budget-id", bid);
+					spanW.appendChild(inp);
+					tdChk.appendChild(spanW);
+					tr.appendChild(tdChk);
+
+					tr.appendChild(tdSpan(pc.h, false));
+					tr.appendChild(tdSpan(pc.m, false));
+					tr.appendChild(tdSpan(pc.sem, false));
+					tr.appendChild(tdSpan(pc.det, true));
+					tr.appendChild(tdSpan(it.spent != null ? String(it.spent) : "", false));
+					tr.appendChild(tdSpan(formatApprovalDate(it.approvalDate), false));
+					tr.appendChild(tdSpan("—", false));
+					tr.appendChild(tdSpan(it.note != null ? String(it.note) : "", false));
+					tbody.appendChild(tr);
+				});
+			}
+
+			if (typeof window.reapplyExpenseDetailRowNumbers === "function") {
+				window.reapplyExpenseDetailRowNumbers();
+			}
+		};
+
+		function initExpenseList() {
+			window.renderExpenseDetailFromStorage();
+			var yr = document.getElementById("pFromDate");
+			if (yr) yr.addEventListener("change", window.renderExpenseDetailFromStorage);
+			window.addEventListener("focus", window.renderExpenseDetailFromStorage);
 		}
 
 		if (document.readyState === "loading") {
-			document.addEventListener("DOMContentLoaded", run);
+			document.addEventListener("DOMContentLoaded", initExpenseList);
 		} else {
-			run();
+			initExpenseList();
 		}
 	})();
 </script>

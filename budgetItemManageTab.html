@@ -132,9 +132,10 @@ li a { white-space: nowrap; }
 .bim-manage .bim-tree-row.is-row-selected { background: #d9e8f7; }
 .bim-manage .bim-tree-row.is-row-selected:hover { background: #d0e3f5; }
 .bim-manage .tree-toggle { flex: 0 0 20px; width: 20px; height: 20px; padding: 0; border: 1px solid #9a9a9a; background: #fff; border-radius: 1px; cursor: pointer; font-size: 13px; line-height: 18px; color: #222; }
-.bim-manage .tree-toggle:disabled { opacity: 0.4; cursor: default; color: #888; }
-.bim-manage .bim-tree-label-wrap { display: flex; align-items: center; gap: 10px; flex: 1 1 auto; min-width: 0; justify-content: space-between; }
+.bim-manage .tree-toggle--leaf { opacity: 0.4; cursor: default; color: #888; }
+.bim-manage .bim-tree-label-wrap { display: flex; align-items: center; gap: 6px; flex: 1 1 auto; min-width: 0; justify-content: flex-start; }
 .bim-manage .tree-label { cursor: pointer; font-size: 13px; color: #111; word-break: keep-all; flex: 1 1 auto; min-width: 0; }
+.bim-manage .bim-tree-label-wrap--with-add .tree-label { flex: 0 1 auto; }
 .bim-manage .bim-tree-row.is-row-selected .tree-label { color: #111; font-weight: 400; }
 .bim-manage .btn-bim-add-child { flex: 0 0 auto; padding: 2px 10px; font-size: 11px; border: 1px solid #6b9bd1; background: #fff; color: #2563b8; border-radius: 2px; cursor: pointer; font-weight: 600; }
 .bim-manage .btn-bim-add-child:hover { background: #f2f7fd; }
@@ -455,8 +456,13 @@ li a { white-space: nowrap; }
 		toggle.className = "tree-toggle";
 		toggle.setAttribute("aria-expanded", hasKids && node.expanded !== false ? "true" : "false");
 		if (!hasKids) {
-			toggle.disabled = true;
+			toggle.classList.add("tree-toggle--leaf");
 			toggle.textContent = "+";
+			toggle.setAttribute("aria-disabled", "true");
+			toggle.addEventListener("click", function (e) {
+				e.stopPropagation();
+				e.preventDefault();
+			});
 		} else {
 			toggle.textContent = node.expanded === false ? "+" : "−";
 			toggle.addEventListener("click", function (e) {
@@ -497,8 +503,10 @@ li a { white-space: nowrap; }
 	function selectId(id, skipDirtyCheck) {
 		if (id === selectedId) return;
 		if (!skipDirtyCheck && isDirty()) {
-			revertTreeToPersisted();
-			ensureValidSelection();
+			var cur = selectedId ? findNode(selectedId) : null;
+			if (cur && !formMatchesNode(cur.node)) {
+				syncFormFromSelection();
+			}
 		}
 		if (id != null && !findNode(id)) {
 			if (!tree.length) { selectedId = null; renderTree(); syncFormFromSelection(); return; }
@@ -584,10 +592,6 @@ li a { white-space: nowrap; }
 	}
 
 	function toggleFoldAll() {
-		if (isDirty()) {
-			revertTreeToPersisted();
-			ensureValidSelection();
-		}
 		var hasKids = false, anyExpanded = false;
 		walkTree(tree, function (n) {
 			if (n.children && n.children.length) { hasKids = true; if (n.expanded !== false) anyExpanded = true; }

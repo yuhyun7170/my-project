@@ -108,6 +108,33 @@ li a {
 #content table:not(#budgetStatsMatrixLikeTable) col:nth-child(7) { width: 10% !important; }
 #content table:not(#budgetStatsMatrixLikeTable) col:nth-child(8) { width: 11% !important; }
 #content table:not(#budgetStatsMatrixLikeTable) col:nth-child(9) { width: 11% !important; }
+
+.btnBudgetDepth {
+    padding: 5px 12px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #313131;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    line-height: 1.3;
+}
+.btnBudgetDepth:hover {
+    background: #f0f6fc;
+    border-color: #90b4d9;
+}
+.btnBudgetDepth.is-active {
+    background: #2b6cb0;
+    color: #fff;
+    border-color: #2b6cb0;
+}
+#budgetStatsMatrixLikeTable .num-cell { text-align: right; font-variant-numeric: tabular-nums; }
+#budgetStatsMatrixLikeTable tr.row-matrix-subtotal td,
+#budgetStatsMatrixLikeTable tr.row-matrix-grand td {
+    background: #ececec;
+    font-weight: 600;
+}
 </style>
 <body>
     <div id="wrap">
@@ -348,6 +375,15 @@ li a {
 				        <option value="2016" >2016</option>
 				    
 				</select>
+				<div class="budget-depth-filter" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:4px;">
+					<button type="button" class="btnBudgetDepth" data-max-depth="1" title="1뎁스만 표시">구분1</button>
+					<button type="button" class="btnBudgetDepth" data-max-depth="2" title="2뎁스까지 표시">구분2</button>
+					<button type="button" class="btnBudgetDepth" data-max-depth="3" title="3뎁스까지 표시">구분3</button>
+					<button type="button" class="btnBudgetDepth is-active" data-max-depth="4" title="4뎁스까지 표시">구분4</button>
+				</div>
+				<div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+					<a href="javascript:exceldown();" class="btnLink btnBlueGr">엑셀 <i class="fa fa-download"></i></a>
+				</div>
                 결재일
 				<input id="pFromCrtDt" type="date" value=""> ~
 				<input id="pToCrtDt" type="date" value="">
@@ -395,7 +431,7 @@ li a {
 				<a href="javascript:" class="btnLink btnChaBg" id="goSearchBtn">검색</a>
 
                 <div style="margin-left:auto; display:flex; gap:8px;">
-					<a href="javascript:popAcademyPriceConfirmExcel();" class="btnLink btnBlueGr">엑셀 <i class="fa fa-download"></i></a>
+					<a href="javascript:popAcademyPriceConfirmExcel();" class="btnLink btnBlueGr">내역 엑셀 <i class="fa fa-download"></i></a>
 				</div>
 			</div>
 		</div>
@@ -410,41 +446,43 @@ li a {
 					#budgetStatsMatrixLikeTable { width: 100%; border-collapse: collapse; table-layout: fixed; }
 					#budgetStatsMatrixLikeTable th, #budgetStatsMatrixLikeTable td {
 						border: 1px solid #9a9a9a;
-						padding: 6px 6px;
+						padding: 6px 8px;
 						font-size: 12px;
 						text-align: center;
 						vertical-align: middle;
 					}
-					#budgetStatsMatrixLikeTable thead th { background: #f3f3f3; }
-						#budgetStatsMatrixLikeTable .left { text-align: center; }
+					#budgetStatsMatrixLikeTable thead th { background: #f3f3f3; font-weight: 600; }
+					#budgetStatsMatrixLikeTable .left { text-align: center; }
 				</style>
 				<div id="budgetStatsMatrixLikeWrap">
 					<table id="budgetStatsMatrixLikeTable">
 						<colgroup>
-							<col style="width:140px" />   <!-- 항 -->
-							<col style="width:140px" />  <!-- 목 -->
-							<col style="width:210px" />  <!-- 세목 -->
-							<col style="width:140px" />  <!-- 예산 -->
-							<col style="width:auto" />   <!-- 세부사업 -->
-							<col style="width:120px" />  <!-- 예산편성(A) -->
-							<col style="width:120px" />  <!-- 집행(B) -->
-							<col style="width:120px" />  <!-- 잔액(A-B) -->
-							<col style="width:120px" />  <!-- 비고 -->
+							<col style="width:12%;" />
+							<col style="width:12%;" />
+							<col style="width:14%;" />
+							<col style="width:22%;" />
+							<col style="width:14%;" />
+							<col style="width:13%;" />
+							<col style="width:13%;" />
 						</colgroup>
 						<thead>
 							<tr>
-								<th colspan="3">예산 (단위: 원)</th>
-								<th rowspan="2">비고</th>
+								<th>항</th>
+								<th>목</th>
+								<th>세목</th>
+								<th>세부사업</th>
+								<th>계획 예산</th>
+								<th>집행</th>
+								<th>잔액</th>
 							</tr>
 							<tr>
-								<th>예산현황 (A)</th>
-								<th>집행 (B)</th>
-								<th>잔액 (A-B)</th>
+								<th colspan="7" style="text-align:right;font-weight:400;font-size:11px;">(단위: 원)</th>
 							</tr>
 						</thead>
 						<tbody id="budgetStatsMatrixLikeTbody"></tbody>
 					</table>
 				</div>
+
 
 				<script>
 					(function () {
@@ -452,17 +490,19 @@ li a {
 						var tbody = document.getElementById("budgetStatsMatrixLikeTbody");
 						if (!tbody) return;
 
+						window.__expenseMatrixMaxDepth = window.__expenseMatrixMaxDepth || 4;
+
 						function depthFromId(id) {
 							return id ? String(id).trim().split("-").length : 0;
 						}
-						function parentDepth1FromDepth4(id) {
+						function parentDepth1(id) {
 							return String(id).split("-")[0] || "";
 						}
-						function parentDepth2FromDepth4(id) {
+						function parentDepth2(id) {
 							var p = String(id).split("-");
 							return p.length >= 2 ? p[0] + "-" + p[1] : "";
 						}
-						function parentDepth3FromDepth4(id) {
+						function parentDepth3(id) {
 							var p = String(id).split("-");
 							return p.length >= 3 ? p[0] + "-" + p[1] + "-" + p[2] : "";
 						}
@@ -476,345 +516,37 @@ li a {
 							}
 							return 0;
 						}
-
-						var year = "";
-						try {
-							var ys = document.getElementById("pFromDate") || document.getElementById("search_year");
-							year = ys && ys.value ? String(ys.value) : "";
-						} catch (e2) {}
-						if (!year) year = String(new Date().getFullYear());
-
-						var payload = null;
-						try {
-							var raw = localStorage.getItem(STORAGE_KEY);
-							if (raw) {
-								var root = JSON.parse(raw);
-								var yd = root && root.years ? root.years[year] : null;
-								payload = yd || (root && root.years ? root.years[Object.keys(root.years)[0]] : null);
-							}
-						} catch (e3) {}
-
-						var items = (payload && payload.items) || {};
-						var deleted = (payload && payload.deleted) || [];
-
-						function parseCsv4MatrixA(text) {
-							var rows = [];
-							var row = [];
-							var field = "";
-							var inQuotes = false;
-							for (var i = 0; i < text.length; i++) {
-								var ch = text[i];
-								if (ch === '\"') {
-									if (inQuotes && text[i + 1] === '\"') {
-										field += '\"';
-										i++;
-									} else {
-										inQuotes = !inQuotes;
-									}
-									continue;
-								}
-								if (ch === "," && !inQuotes) {
-									row.push(field);
-									field = "";
-									continue;
-								}
-								if ((ch === "\n" || ch === "\r") && !inQuotes) {
-									if (ch === "\r" && text[i + 1] === "\n") i++;
-									row.push(field);
-									field = "";
-									while (row.length < 4) row.push("");
-									rows.push(row.slice(0, 4));
-									row = [];
-									continue;
-								}
-								field += ch;
-							}
-							if (field.length || row.length) {
-								row.push(field);
-								while (row.length < 4) row.push("");
-								rows.push(row.slice(0, 4));
-							}
-							return rows;
+						function sortBySecondLevelId(a, b) {
+							return parseInt(String(a).split("-")[1] || "0", 10) - parseInt(String(b).split("-")[1] || "0", 10);
+						}
+						function sortByThirdLevelId(a, b) {
+							return parseInt(String(a).split("-")[2] || "0", 10) - parseInt(String(b).split("-")[2] || "0", 10);
 						}
 
-						function buildItemsFromSeedCsv4MatrixA(csvText) {
-							var rows = parseCsv4MatrixA(csvText);
-							var current = ["", "", "", ""];
-							var mapKey = {};
-							var childrenCount = {};
-							var itemsLocal = {};
-
-							function getId(depth, parentId, name) {
-								if (!name) return null;
-								var key = depth + "|" + parentId + "|" + name;
-								if (mapKey[key]) return mapKey[key];
-								var ck = depth + "|" + parentId;
-								var idx = (childrenCount[ck] || 0) + 1;
-								childrenCount[ck] = idx;
-								var id = depth === 1 ? String(idx) : parentId + "-" + String(idx);
-								mapKey[key] = id;
-								itemsLocal[id] = { name: name, alloc: "", spent: "", note: "", active: true };
-								return id;
-							}
-
-							for (var r = 0; r < rows.length; r++) {
-								var cols = rows[r].map(function (c) {
-									return (c == null ? "" : String(c)).trim();
-								});
-								if (cols.every(function (c) { return !c; })) continue;
-								if (cols.some(function (c) { return c.indexOf("구분") !== -1; })) continue;
-
-								var deepest = 0;
-								for (var d0 = 0; d0 < 4; d0++) {
-									if (cols[d0] !== "") deepest = d0 + 1;
-								}
-								if (deepest === 0) continue;
-
-								for (var d1 = 0; d1 < deepest; d1++) {
-									if (cols[d1] !== "") {
-										current[d1] = cols[d1];
-										for (var e = d1 + 1; e < 4; e++) current[e] = "";
-									}
-								}
-
-								var parent = "";
-								for (var d2 = 1; d2 <= deepest; d2++) {
-									var nm = current[d2 - 1];
-									if (!nm) break;
-									parent = getId(d2, parent, nm) || parent;
-								}
-							}
-
-							return itemsLocal;
+						function parseMoney(s) {
+							if (s == null || s === "") return 0;
+							var t = String(s).trim();
+							if (t === "—" || t === "-" || t === "–") return 0;
+							var n = parseFloat(t.replace(/,/g, "").replace(/\s/g, ""));
+							return isNaN(n) ? 0 : n;
+						}
+						function formatMoney(n) {
+							if (!isFinite(n)) return "";
+							return Math.round(n).toLocaleString("ko-KR");
+						}
+						function moneyCells(alloc, spent) {
+							var a = parseMoney(alloc);
+							var sp = parseMoney(spent);
+							var bal = a - sp;
+							return { a: formatMoney(a), s: formatMoney(sp), b: formatMoney(bal) };
+						}
+						function tdNum(txt, cls) {
+							var td = document.createElement("td");
+							td.className = (cls || "") + " num-cell";
+							td.textContent = txt || "";
+							return td;
 						}
 
-						if (Object.keys(items).length === 0) {
-							var CSV_SEED_TEXT_A = `,,,
-구분1,구분2,구분3,구분4
-,,,
-소비홍보,광고,품질향상,현수막 제작 및 게첨
-,,소비촉진,TV광고(PPL)
-수급안정,가격안정,수급조절사업,'25년산 가격안정 행사
-,,,주산지 포도축제 행사
-,,,포도데이 행사 등
-,,,과일산업대전 행사
-,,,연말 수급조절 행사
-,,,판촉홍보물 제작 등
-,수급안정 예비비,수급안정 예비비,농업수입안정보험 등 지원사업(보류)
-경쟁력제고,품질향상,교육자료 발간 등,재배기술 책자 발간 등
-,,,영상자료 링크
-,,,담당자 교육
-,생산성향상,샤인머스켓 이외 품종 삽목묘 구입비 지원,삽목묘 구입비 지원
-교육 및 정보제공,교육,거출률광고,버스외부광고
-,,사무국 주관 농가교육,사무국 주관 교육
-,,회원농협 주관 농가교육,회원농협 주관 교육
-,정보제공,거출금 고지 등,거출금 고지
-,,,문자 발송
-,,,영농일지 등 제작
-,,홈페이지 관리?운영 등,수납관리시스템관리
-,,,홈페이지유지관리
-,,,인스타그램 운영
-수납위탁 수수료,수납기관 수수료,수납지원,수납기관 수수료(가상계좌)
-운영관리,인건비,급여 및 퇴직연금,급여 및 퇴직연금
-,,법정부담금,법정부담금(4대보험)
-,경비,대의원회,임차료
-,,,"참석수당(대면, 서면)",임차료
-,,,인쇄비 등
-,,,기타(참석자 식대 등)
-,,"회의비(이사회, 관리위원회 등)",임차료
-,,,"참석수당(대면, 서면)"
-,,,인쇄비 등
-,,,기타(참석자 식대 등)
-,,수용비,사무국 운영비 등
-,,,의무자조금단체 연회비
-,,,해직자 고발 건 대응 노무사비 등
-,,제수수료,\"외부회계감사, 세무기장료, 등기 등\"
-,,업무추진비,업무추진비
-,,직무수행비,회장
-,,여비,출장여비 등
-,,통신비,전화요금 및 우편료 등
-,,임차료,\"임차료(사무실 임차료, 렌터카 등)\"
-,자산취득비,자산취득비,중요재산`;
-							items = buildItemsFromSeedCsv4MatrixA(CSV_SEED_TEXT_A);
-							deleted = [];
-						}
-
-						var deletedSet = new Set(deleted);
-
-						var leaves = [];
-						Object.keys(items).forEach(function (id) {
-							if (!id) return;
-							if (deletedSet.has(id)) return;
-							var d = depthFromId(id);
-							// 스크린샷의 "세부사업"에는 3뎁스/4뎁스가 함께 표시되는 구조로 맞춤
-							if (d !== 3 && d !== 4) return;
-							leaves.push(id);
-						});
-						leaves.sort(sortIdByNumbers);
-
-						var byP1 = {}; // p1 => { name, leaves, byP2 }
-						leaves.forEach(function (leafId) {
-							var p1 = parentDepth1FromDepth4(leafId);
-							var p2 = parentDepth2FromDepth4(leafId);
-							if (!byP1[p1]) byP1[p1] = { name: items[p1] ? (items[p1].name || "") : "", leaves: [], byP2: {} };
-							byP1[p1].leaves.push(leafId);
-							if (!byP1[p1].byP2[p2]) byP1[p1].byP2[p2] = { name: items[p2] ? (items[p2].name || "") : "", leaves: [] };
-							byP1[p1].byP2[p2].leaves.push(leafId);
-						});
-
-						var p1Ids = Object.keys(byP1);
-						p1Ids.sort(function (a, b) { return parseInt(a, 10) - parseInt(b, 10); });
-
-						p1Ids.forEach(function (p1) {
-							var g1 = byP1[p1];
-							var p2Ids = Object.keys(g1.byP2);
-							p2Ids.sort(function (a, b) {
-								var aa = parseInt(String(a).split("-")[1] || "0", 10);
-								var bb = parseInt(String(b).split("-")[1] || "0", 10);
-								return aa - bb;
-							});
-
-							var totalLeavesUnderP1 = g1.leaves.length || 0;
-							var p1RowSpan = totalLeavesUnderP1 + p2Ids.length + 1; // p2 소계 + p1 소계
-							var p1Rendered = false;
-
-							p2Ids.forEach(function (p2) {
-								var g2 = g1.byP2[p2];
-								var p2RowSpan = (g2.leaves.length || 0) + 1; // 마지막에 p2 소계 1행
-								var p2Rendered = false;
-
-								g2.leaves.forEach(function (leafId) {
-									var tr = document.createElement("tr");
-
-									if (!p1Rendered) {
-										var td1 = document.createElement("td");
-										td1.rowSpan = p1RowSpan;
-										td1.className = "left";
-										td1.textContent = g1.name || "";
-										tr.appendChild(td1);
-										p1Rendered = true;
-									}
-
-									if (!p2Rendered) {
-										var td2 = document.createElement("td");
-										td2.rowSpan = Math.max(1, p2RowSpan - 1);
-										td2.className = "left";
-										td2.textContent = g2.name || "";
-										tr.appendChild(td2);
-										p2Rendered = true;
-									}
-
-									var td3 = document.createElement("td");
-									td3.className = "left";
-									td3.textContent = items[leafId] ? (items[leafId].name || "") : "";
-									tr.appendChild(td3);
-
-									// 예산현황(A/B/A-B), 비고: 데이터 계산 없이 구조만 표시
-									var tdA = document.createElement("td");
-									tdA.textContent = "";
-									tr.appendChild(tdA);
-									var tdB = document.createElement("td");
-									tdB.textContent = "";
-									tr.appendChild(tdB);
-									var tdAB = document.createElement("td");
-									tdAB.textContent = "";
-									tr.appendChild(tdAB);
-
-									var tdNote = document.createElement("td");
-									tdNote.textContent = "";
-									tr.appendChild(tdNote);
-
-									tbody.appendChild(tr);
-								});
-
-								// p2 소계(세부 열: 소계)
-								var trSub = document.createElement("tr");
-								var td3Sub = document.createElement("td");
-								td3Sub.textContent = "소계";
-								trSub.appendChild(td3Sub);
-
-								// 예산현황(A/B/A-B)
-								var tdA0 = document.createElement("td");
-								tdA0.textContent = "";
-								trSub.appendChild(tdA0);
-								var tdB0 = document.createElement("td");
-								tdB0.textContent = "";
-								trSub.appendChild(tdB0);
-								var tdAB0 = document.createElement("td");
-								tdAB0.textContent = "";
-								trSub.appendChild(tdAB0);
-
-								// 비고
-								var tdNoteSub = document.createElement("td");
-								tdNoteSub.textContent = "";
-								trSub.appendChild(tdNoteSub);
-
-								tbody.appendChild(trSub);
-							});
-
-						// p1 소계(세부 열: 소계)
-						var trP1Sub = document.createElement("tr");
-						// p1 소계는 목(rowspan)이 끝난 다음에 나와서, 목 컬럼 td를 비워둬야 칸이 맞습니다.
-						var td2P1Sub = document.createElement("td");
-						td2P1Sub.textContent = "";
-						trP1Sub.appendChild(td2P1Sub);
-						var td3P1Sub = document.createElement("td");
-						td3P1Sub.textContent = "소계";
-						trP1Sub.appendChild(td3P1Sub);
-
-						var tdA1 = document.createElement("td");
-						tdA1.textContent = "";
-						trP1Sub.appendChild(tdA1);
-						var tdB1 = document.createElement("td");
-						tdB1.textContent = "";
-						trP1Sub.appendChild(tdB1);
-						var tdAB1 = document.createElement("td");
-						tdAB1.textContent = "";
-						trP1Sub.appendChild(tdAB1);
-
-						var tdNoteP1Sub = document.createElement("td");
-						tdNoteP1Sub.textContent = "";
-						trP1Sub.appendChild(tdNoteP1Sub);
-
-						tbody.appendChild(trP1Sub);
-						});
-					})();
-				</script>
-
-				<!-- 예산통계 스크린샷 구조 오버라이드(항/목/세목/예산/세부사업 + 예산현황(A/B/A-B) + 비고) -->
-				<script>
-					(function () {
-						var tbody = document.getElementById("budgetStatsMatrixLikeTbody");
-						var table = document.getElementById("budgetStatsMatrixLikeTable");
-						if (!tbody || !table) return;
-
-						function depthFromId(id) {
-							return id ? String(id).trim().split("-").length : 0;
-						}
-						function parentDepth1FromDepth4(id) {
-							return String(id).split("-")[0] || "";
-						}
-						function parentDepth2FromDepth4(id) {
-							var p = String(id).split("-");
-							return p.length >= 2 ? p[0] + "-" + p[1] : "";
-						}
-						function parentDepth3FromDepth4(id) {
-							var p = String(id).split("-");
-							return p.length >= 3 ? p[0] + "-" + p[1] + "-" + p[2] : "";
-						}
-						function sortIdByNumbers(a, b) {
-							var pa = String(a).split("-").map(function (x) { return parseInt(x, 10); });
-							var pb = String(b).split("-").map(function (x) { return parseInt(x, 10); });
-							for (var i = 0; i < 4; i++) {
-								var da = isNaN(pa[i]) ? 0 : pa[i];
-								var db = isNaN(pb[i]) ? 0 : pb[i];
-								if (da !== db) return da - db;
-							}
-							return 0;
-						}
-
-						// localStorage read + fallback(seed)
-						var STORAGE_KEY = "budgetTreeItems_v2";
 						function parseCsv4(text) {
 							var rows = [];
 							var row = [];
@@ -903,23 +635,7 @@ li a {
 							return itemsLocal;
 						}
 
-						var payload = null;
-						try {
-							var ys = document.getElementById("pFromDate") || document.getElementById("search_year");
-							var year = ys && ys.value ? String(ys.value) : String(new Date().getFullYear());
-							var raw = localStorage.getItem(STORAGE_KEY);
-							if (raw) {
-								var root = JSON.parse(raw);
-								payload = (root && root.years && root.years[year]) || null;
-								if (!payload && root && root.years) payload = root.years[Object.keys(root.years)[0]] || null;
-							}
-						} catch (e) {}
-
-						var items = (payload && payload.items) || {};
-						var deleted = (payload && payload.deleted) || [];
-
-						if (Object.keys(items).length === 0) {
-							var CSV_SEED_TEXT = `,,,
+						var CSV_SEED_TEXT = `,,,
 구분1,구분2,구분3,구분4
 ,,,
 소비홍보,광고,품질향상,현수막 제작 및 게첨
@@ -965,182 +681,335 @@ li a {
 ,,통신비,전화요금 및 우편료 등
 ,,임차료,\"임차료(사무실 임차료, 렌터카 등)\"
 ,자산취득비,자산취득비,중요재산`;
-							items = buildItemsFromSeedCsv4(CSV_SEED_TEXT);
-							deleted = [];
+
+						function loadPayload() {
+							var year = "";
+							try {
+								var ys = document.getElementById("pFromDate") || document.getElementById("search_year");
+								year = ys && ys.value ? String(ys.value) : "";
+							} catch (e0) {}
+							if (!year) year = String(new Date().getFullYear());
+
+							var payload = null;
+							try {
+								var raw = localStorage.getItem(STORAGE_KEY);
+								if (raw) {
+									var root = JSON.parse(raw);
+									payload = (root && root.years && root.years[year]) || null;
+									if (!payload && root && root.years) {
+										var ys2 = Object.keys(root.years);
+										payload = ys2.length ? root.years[ys2[0]] : null;
+									}
+								}
+							} catch (e1) {}
+
+							var items = (payload && payload.items) || {};
+							var deleted = (payload && payload.deleted) || [];
+							if (Object.keys(items).length === 0) {
+								items = buildItemsFromSeedCsv4(CSV_SEED_TEXT);
+								deleted = [];
+							}
+							return { items: items, deleted: new Set(deleted) };
 						}
 
-						var deletedSet = new Set(deleted);
+						function renderMatrix() {
+							var pack = loadPayload();
+							var items = pack.items;
+							var deletedSet = pack.deleted;
+							var maxD = Math.min(4, Math.max(1, parseInt(window.__expenseMatrixMaxDepth, 10) || 4));
 
-						// leaf(depth4)만 사용: 세부사업(세부사업) 목록
-						var leafIds = [];
-						Object.keys(items).forEach(function (id) {
-							if (!id) return;
-							if (deletedSet.has(id)) return;
-							if (depthFromId(id) !== 4) return;
-							leafIds.push(id);
-						});
-						leafIds.sort(sortIdByNumbers);
+							tbody.innerHTML = "";
 
-						// by[p1][p2][p3] = {name, leaves[]}
-						var by = {};
-						leafIds.forEach(function (leafId) {
-							var p1 = parentDepth1FromDepth4(leafId);
-							var p2 = parentDepth2FromDepth4(leafId);
-							var p3 = parentDepth3FromDepth4(leafId);
-							if (!by[p1]) by[p1] = { name: items[p1] ? (items[p1].name || "") : "", p2: {} };
-							if (!by[p1].p2[p2]) by[p1].p2[p2] = { name: items[p2] ? (items[p2].name || "") : "", p3: {} };
-							if (!by[p1].p2[p2].p3[p3]) by[p1].p2[p2].p3[p3] = { name: items[p3] ? (items[p3].name || "") : "", leaves: [] };
-							by[p1].p2[p2].p3[p3].leaves.push(leafId);
-						});
+							var leafIds = [];
+							Object.keys(items).forEach(function (id) {
+								if (!id || deletedSet.has(id)) return;
+								if (depthFromId(id) !== maxD) return;
+								leafIds.push(id);
+							});
+							leafIds.sort(sortIdByNumbers);
 
-						function sortBySecondLevelId(a, b) {
-							var aa = parseInt(String(a).split("-")[1] || "0", 10);
-							var bb = parseInt(String(b).split("-")[1] || "0", 10);
-							return aa - bb;
-						}
-						function sortByThirdLevelId(a, b) {
-							var aa = parseInt(String(a).split("-")[2] || "0", 10);
-							var bb = parseInt(String(b).split("-")[2] || "0", 10);
-							return aa - bb;
-						}
+							var grandA = 0;
+							var grandS = 0;
 
-						// render
-						tbody.innerHTML = "";
+							function subtotalRow(label, sa, ss) {
+								var tr = document.createElement("tr");
+								tr.className = "row-matrix-subtotal";
+								var tdL = document.createElement("td");
+								tdL.colSpan = 4;
+								tdL.textContent = label;
+								tdL.style.textAlign = "center";
+								tdL.style.fontWeight = "600";
+								tr.appendChild(tdL);
+								tr.appendChild(tdNum(formatMoney(sa)));
+								tr.appendChild(tdNum(formatMoney(ss)));
+								tr.appendChild(tdNum(formatMoney(sa - ss)));
+								tbody.appendChild(tr);
+							}
 
-						var p1Ids = Object.keys(by).sort(function (a, b) {
-							return parseInt(a, 10) - parseInt(b, 10);
-						});
-
-						p1Ids.forEach(function (p1) {
-							var g1 = by[p1];
-							var p2Ids = Object.keys(g1.p2).sort(sortBySecondLevelId);
-
-						var computeRowSpanP2 = function (p2) {
-								var g2 = g1.p2[p2];
-								var p3IdsLocal = Object.keys(g2.p3).sort(sortByThirdLevelId);
-								var sum = 0;
-								p3IdsLocal.forEach(function (p3) {
-									var g3 = g2.p3[p3];
-									// 세목 소계는 넣지 않고 leaf 개수만 합산
-									sum += g3.leaves.length;
+							if (maxD === 4) {
+								var by = {};
+								leafIds.forEach(function (leafId) {
+									var p1 = parentDepth1(leafId);
+									var p2 = parentDepth2(leafId);
+									var p3 = parentDepth3(leafId);
+									if (!by[p1]) by[p1] = { name: items[p1] ? (items[p1].name || "") : "", p2: {} };
+									if (!by[p1].p2[p2]) by[p1].p2[p2] = { name: items[p2] ? (items[p2].name || "") : "", p3: {} };
+									if (!by[p1].p2[p2].p3[p3]) by[p1].p2[p2].p3[p3] = { name: items[p3] ? (items[p3].name || "") : "", leaves: [] };
+									by[p1].p2[p2].p3[p3].leaves.push(leafId);
 								});
-							// p2 소계 1행 추가
-							return (sum || 0) + 1;
-							};
 
-							var p1RowSpan = 0;
-							p2Ids.forEach(function (p2) { p1RowSpan += computeRowSpanP2(p2); });
-							if (!p1RowSpan) p1RowSpan = 1;
+								var p1Ids = Object.keys(by).sort(function (a, b) { return parseInt(a, 10) - parseInt(b, 10); });
+								p1Ids.forEach(function (p1) {
+									var g1 = by[p1];
+									var p2Ids = Object.keys(g1.p2).sort(sortBySecondLevelId);
+									var p1Rows = 0;
+									p2Ids.forEach(function (p2) {
+										var g2 = g1.p2[p2];
+										var p3Ids = Object.keys(g2.p3).sort(sortByThirdLevelId);
+										p3Ids.forEach(function (p3) {
+											p1Rows += g2.p3[p3].leaves.length;
+										});
+									});
+									var p1RowSpan = p1Rows + 1;
+									var p1Done = false;
+									var subA = 0;
+									var subS = 0;
 
-							var p1TdDone = false;
+									p2Ids.forEach(function (p2) {
+										var g2 = g1.p2[p2];
+										var p3Ids = Object.keys(g2.p3).sort(sortByThirdLevelId);
+										var p2Rows = 0;
+										p3Ids.forEach(function (p3) {
+											p2Rows += g2.p3[p3].leaves.length;
+										});
+										var p2RowSpan = p2Rows;
+										var p2Done = false;
 
-							p2Ids.forEach(function (p2) {
-								var g2 = g1.p2[p2];
-								var p3Ids = Object.keys(g2.p3).sort(sortByThirdLevelId);
-								var p2RowSpan = computeRowSpanP2(p2);
-								var p2TdDone = false;
-
-								p3Ids.forEach(function (p3) {
-									var g3 = g2.p3[p3];
-									// 세목은 leaf만큼만 rowSpan (소계는 목(p2) 끝에 1행만 추가)
-									var p3RowSpan = g3.leaves.length || 1;
-									var p3TdDone = false;
-
-									// leaf rows
-									g3.leaves.forEach(function (leafId) {
+										p3Ids.forEach(function (p3) {
+											var g3 = g2.p3[p3];
+											var p3Span = g3.leaves.length || 1;
+											var p3Done = false;
+											g3.leaves.forEach(function (leafId) {
+												var tr = document.createElement("tr");
+												if (!p1Done) {
+													var td1 = document.createElement("td");
+													td1.rowSpan = p1RowSpan;
+													td1.className = "left";
+													td1.textContent = g1.name || "";
+													tr.appendChild(td1);
+													p1Done = true;
+												}
+												if (!p2Done) {
+													var td2 = document.createElement("td");
+													td2.rowSpan = Math.max(1, p2RowSpan);
+													td2.className = "left";
+													td2.textContent = g2.name || "";
+													tr.appendChild(td2);
+													p2Done = true;
+												}
+												if (!p3Done) {
+													var td3 = document.createElement("td");
+													td3.rowSpan = p3Span;
+													td3.className = "left";
+													td3.textContent = g3.name || "";
+													tr.appendChild(td3);
+													p3Done = true;
+												}
+												var td4 = document.createElement("td");
+												td4.className = "left";
+												td4.textContent = (items[leafId] && items[leafId].name) || "";
+												tr.appendChild(td4);
+												var it = items[leafId] || {};
+												var m = moneyCells(it.alloc, it.spent);
+												tr.appendChild(tdNum(m.a));
+												tr.appendChild(tdNum(m.s));
+												tr.appendChild(tdNum(m.b));
+												tbody.appendChild(tr);
+												subA += parseMoney(it.alloc);
+												subS += parseMoney(it.spent);
+												grandA += parseMoney(it.alloc);
+												grandS += parseMoney(it.spent);
+											});
+										});
+									});
+									subtotalRow("소계", subA, subS);
+								});
+							} else if (maxD === 3) {
+								var by = {};
+								leafIds.forEach(function (leafId) {
+									var p1 = parentDepth1(leafId);
+									var p2 = parentDepth2(leafId);
+									if (!by[p1]) by[p1] = { name: items[p1] ? (items[p1].name || "") : "", p2: {} };
+									if (!by[p1].p2[p2]) by[p1].p2[p2] = { name: items[p2] ? (items[p2].name || "") : "", leaves: [] };
+									by[p1].p2[p2].leaves.push(leafId);
+								});
+								var p1Ids = Object.keys(by).sort(function (a, b) { return parseInt(a, 10) - parseInt(b, 10); });
+								p1Ids.forEach(function (p1) {
+									var g1 = by[p1];
+									var p2Ids = Object.keys(g1.p2).sort(sortBySecondLevelId);
+									var p1Rows = 0;
+									p2Ids.forEach(function (p2) {
+										p1Rows += g1.p2[p2].leaves.length;
+									});
+									var p1RowSpan = p1Rows + 1;
+									var p1Done = false;
+									var subA = 0;
+									var subS = 0;
+									p2Ids.forEach(function (p2) {
+										var g2 = g1.p2[p2];
+										var p2Span = g2.leaves.length || 1;
+										var p2Done = false;
+										g2.leaves.sort(sortIdByNumbers);
+										g2.leaves.forEach(function (leafId) {
+											var tr = document.createElement("tr");
+											if (!p1Done) {
+												var td1 = document.createElement("td");
+												td1.rowSpan = p1RowSpan;
+												td1.className = "left";
+												td1.textContent = g1.name || "";
+												tr.appendChild(td1);
+												p1Done = true;
+											}
+											if (!p2Done) {
+												var td2 = document.createElement("td");
+												td2.rowSpan = p2Span;
+												td2.className = "left";
+												td2.textContent = g2.name || "";
+												tr.appendChild(td2);
+												p2Done = true;
+											}
+											var td3 = document.createElement("td");
+											td3.className = "left";
+											td3.textContent = (items[leafId] && items[leafId].name) || "";
+											tr.appendChild(td3);
+											var td4 = document.createElement("td");
+											td4.className = "left";
+											td4.textContent = "";
+											tr.appendChild(td4);
+											var it = items[leafId] || {};
+											var m = moneyCells(it.alloc, it.spent);
+											tr.appendChild(tdNum(m.a));
+											tr.appendChild(tdNum(m.s));
+											tr.appendChild(tdNum(m.b));
+											tbody.appendChild(tr);
+											subA += parseMoney(it.alloc);
+											subS += parseMoney(it.spent);
+											grandA += parseMoney(it.alloc);
+											grandS += parseMoney(it.spent);
+										});
+									});
+									subtotalRow("소계", subA, subS);
+								});
+							} else if (maxD === 2) {
+								var by = {};
+								leafIds.forEach(function (leafId) {
+									var p1 = parentDepth1(leafId);
+									if (!by[p1]) by[p1] = { name: items[p1] ? (items[p1].name || "") : "", leaves: [] };
+									by[p1].leaves.push(leafId);
+								});
+								var p1Ids = Object.keys(by).sort(function (a, b) { return parseInt(a, 10) - parseInt(b, 10); });
+								p1Ids.forEach(function (p1) {
+									var g1 = by[p1];
+									g1.leaves.sort(sortIdByNumbers);
+									var p1RowSpan = g1.leaves.length + 1;
+									var p1Done = false;
+									var subA = 0;
+									var subS = 0;
+									g1.leaves.forEach(function (leafId) {
 										var tr = document.createElement("tr");
-
-										if (!p1TdDone) {
+										if (!p1Done) {
 											var td1 = document.createElement("td");
 											td1.rowSpan = p1RowSpan;
 											td1.className = "left";
 											td1.textContent = g1.name || "";
 											tr.appendChild(td1);
-											p1TdDone = true;
+											p1Done = true;
 										}
-										if (!p2TdDone) {
-											var td2 = document.createElement("td");
-											td2.rowSpan = Math.max(1, p2RowSpan - 1);
-											td2.className = "left";
-											td2.textContent = g2.name || "";
-											tr.appendChild(td2);
-											p2TdDone = true;
-										}
-										if (!p3TdDone) {
-											var td3 = document.createElement("td");
-											td3.rowSpan = p3RowSpan;
-											td3.className = "left";
-											td3.textContent = g3.name || "";
-											tr.appendChild(td3);
-											p3TdDone = true;
-										}
-
-										// 예산(leaf)
-										var tdBudget = document.createElement("td");
-										tdBudget.textContent = "";
-										tr.appendChild(tdBudget);
-
-										// 세부사업(leaf)
-										var tdDetail = document.createElement("td");
-										tdDetail.textContent = items[leafId] ? (items[leafId].name || "") : "";
-										tr.appendChild(tdDetail);
-
-										// 예산현황(A/B/A-B)
-										["", "", ""].forEach(function (v) {
-											var td = document.createElement("td");
-											td.textContent = v;
-											tr.appendChild(td);
-										});
-
-										// 비고
-										var tdNote = document.createElement("td");
-										tdNote.textContent = "";
-										tr.appendChild(tdNote);
-
+										var td2 = document.createElement("td");
+										td2.className = "left";
+										td2.textContent = (items[leafId] && items[leafId].name) || "";
+										tr.appendChild(td2);
+										var td3e = document.createElement("td");
+										td3e.className = "left";
+										tr.appendChild(td3e);
+										var td4e = document.createElement("td");
+										td4e.className = "left";
+										tr.appendChild(td4e);
+										var it = items[leafId] || {};
+										var m = moneyCells(it.alloc, it.spent);
+										tr.appendChild(tdNum(m.a));
+										tr.appendChild(tdNum(m.s));
+										tr.appendChild(tdNum(m.b));
 										tbody.appendChild(tr);
+										subA += parseMoney(it.alloc);
+										subS += parseMoney(it.spent);
+										grandA += parseMoney(it.alloc);
+										grandS += parseMoney(it.spent);
 									});
-
-									// 세목(p3) 아래 소계 행은 넣지 않음
+									subtotalRow("소계", subA, subS);
 								});
-
-								// p2 소계(목 아래 소계): 세부사업 열에는 공백, 세목(세부사업) 열에 소계 표시
-								var trP2Sub = document.createElement("tr");
-								// 목+세목 2칸 병합: merged cell = 소계
-								var tdMergedSub = document.createElement("td");
-								tdMergedSub.colSpan = "2";
-								tdMergedSub.textContent = "소계";
-								tdMergedSub.style.fontWeight = "";
-								tdMergedSub.style.background = "rgb(247, 247, 247)";
-								trP2Sub.appendChild(tdMergedSub);
-
-								// 예산 칸(빈칸)
-								var tdBudgetP2Sub2 = document.createElement("td");
-								tdBudgetP2Sub2.textContent = "";
-								trP2Sub.appendChild(tdBudgetP2Sub2);
-
-								// 세부사업 칸(소계)
-								var tdDetailP2Sub2 = document.createElement("td");
-								tdDetailP2Sub2.textContent = "소계";
-								tdDetailP2Sub2.style.background = "rgb(247, 247, 247)";
-								trP2Sub.appendChild(tdDetailP2Sub2);
-
-								// 예산현황(A/B/A-B) + 비고
-								["", "", ""].forEach(function (v) {
-									var td = document.createElement("td");
-									td.textContent = v;
-									trP2Sub.appendChild(td);
+							} else {
+								leafIds.forEach(function (leafId) {
+									var tr = document.createElement("tr");
+									var nm = (items[leafId] && items[leafId].name) || "";
+									var tdx = document.createElement("td");
+									tdx.className = "left";
+									tdx.textContent = nm;
+									tr.appendChild(tdx);
+									for (var zi = 0; zi < 3; zi++) {
+										var e = document.createElement("td");
+										e.className = "left";
+										tr.appendChild(e);
+									}
+									var it = items[leafId] || {};
+									var m = moneyCells(it.alloc, it.spent);
+									tr.appendChild(tdNum(m.a));
+									tr.appendChild(tdNum(m.s));
+									tr.appendChild(tdNum(m.b));
+									tbody.appendChild(tr);
+									grandA += parseMoney(it.alloc);
+									grandS += parseMoney(it.spent);
 								});
+							}
 
-								// 비고
-								var tdNoteP2Sub2 = document.createElement("td");
-								tdNoteP2Sub2.textContent = "";
-								trP2Sub.appendChild(tdNoteP2Sub2);
+							var trG = document.createElement("tr");
+							trG.className = "row-matrix-grand";
+							var tdGx = document.createElement("td");
+							tdGx.colSpan = 4;
+							tdGx.textContent = "합계";
+							tdGx.style.textAlign = "center";
+							trG.appendChild(tdGx);
+							trG.appendChild(tdNum(formatMoney(grandA)));
+							trG.appendChild(tdNum(formatMoney(grandS)));
+							trG.appendChild(tdNum(formatMoney(grandA - grandS)));
+							tbody.appendChild(trG);
 
-								tbody.appendChild(trP2Sub);
+							updateDepthButtons();
+						}
+
+						function updateDepthButtons() {
+							var d = window.__expenseMatrixMaxDepth || 4;
+							document.querySelectorAll(".budget-depth-filter .btnBudgetDepth").forEach(function (btn) {
+								var md = parseInt(btn.getAttribute("data-max-depth"), 10);
+								btn.classList.toggle("is-active", md === d);
+							});
+						}
+
+						document.querySelectorAll(".budget-depth-filter .btnBudgetDepth").forEach(function (btn) {
+							btn.addEventListener("click", function (e) {
+								e.preventDefault();
+								var md = parseInt(btn.getAttribute("data-max-depth"), 10);
+								if (isNaN(md)) return;
+								window.__expenseMatrixMaxDepth = md;
+								renderMatrix();
 							});
 						});
+
+						renderMatrix();
 					})();
 				</script>
+
+
 </div>
 
 <div class="tableListWrap">

@@ -1047,8 +1047,23 @@ li a {
 		var expIdx = 0;
 		while (expIdx < displayIds.length) {
 			var lid0 = displayIds[expIdx];
-			if (depthFromId(lid0) >= 3) {
-				var mokG = parentDepth2(lid0);
+			var d0 = depthFromId(lid0);
+
+			if (d0 === 2) {
+				var mokG = lid0;
+				var hasChildAhead = false;
+				for (var ja = expIdx + 1; ja < displayIds.length; ja++) {
+					var lja = displayIds[ja];
+					if (lja !== mokG && belongsToMokSubtree(lja, mokG)) {
+						hasChildAhead = true;
+						break;
+					}
+				}
+				if (!hasChildAhead) {
+					expanded.push({ type: "line", lid: lid0 });
+					expIdx++;
+					continue;
+				}
 				var start = expIdx;
 				var end = expIdx;
 				while (end < displayIds.length && belongsToMokSubtree(displayIds[end], mokG)) {
@@ -1072,6 +1087,33 @@ li a {
 				expIdx = end;
 				continue;
 			}
+
+			if (d0 >= 3) {
+				var mokG2 = parentDepth2(lid0);
+				var start2 = expIdx;
+				var end2 = expIdx;
+				while (end2 < displayIds.length && belongsToMokSubtree(displayIds[end2], mokG2)) {
+					end2++;
+				}
+				var n2 = end2 - start2;
+				var extra2 = includeSemokAddRow ? 1 : 0;
+				var mokRowspan2 = n2 + extra2;
+				for (var g2 = start2; g2 < end2; g2++) {
+					expanded.push({
+						type: "line",
+						lid: displayIds[g2],
+						mokParent: mokG2,
+						mokRowspan: mokRowspan2,
+						isFirstInMokGroup: g2 === start2
+					});
+				}
+				if (includeSemokAddRow) {
+					expanded.push({ type: "semok-add", mokId: mokG2 });
+				}
+				expIdx = end2;
+				continue;
+			}
+
 			expanded.push({ type: "line", lid: lid0 });
 			expIdx++;
 		}
@@ -1192,6 +1234,9 @@ li a {
 				var lc = labelColsForLine(lid);
 				var showB2 = expensePlanInputMode && lc.d === 1 && lid === p1 && getChildIds(plObj, 2, lid).length;
 				var showB3 = expensePlanInputMode && lc.d === 2 && getChildIds(plObj, 3, lid).length;
+				if (entry.mokParent && entry.isFirstInMokGroup && lc.d === 2) {
+					showB3 = false;
+				}
 				var showB4 = expensePlanInputMode && lc.d === 3 && getChildIds(plObj, 4, lid).length;
 				var showBs = false;
 				if (expensePlanInputMode && lc.d === 4) {

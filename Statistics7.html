@@ -344,7 +344,7 @@ li a {
 		window.location.href = url;
 	}
 </script>
-<div class="searchWrap" style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-bottom: 0;">
+<div class="searchWrap" style="display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-bottom: 0;">
 
         	<div class="mb5" style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; width:100%;">
 
@@ -376,10 +376,10 @@ li a {
 				    
 				</select>
 				<div class="budget-depth-filter" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:4px;">
-					<button type="button" class="btnBudgetDepth" data-max-depth="1" title="1뎁스만 표시">구분1</button>
-					<button type="button" class="btnBudgetDepth" data-max-depth="2" title="2뎁스까지 표시">구분2</button>
-					<button type="button" class="btnBudgetDepth" data-max-depth="3" title="3뎁스까지 표시">구분3</button>
-					<button type="button" class="btnBudgetDepth is-active" data-max-depth="4" title="4뎁스까지 표시">구분4</button>
+					<button type="button" class="btnBudgetDepth" data-max-depth="1" title="1뎁스만 표시">항</button>
+					<button type="button" class="btnBudgetDepth" data-max-depth="2" title="2뎁스까지 표시">목</button>
+					<button type="button" class="btnBudgetDepth" data-max-depth="3" title="3뎁스까지 표시">세목</button>
+					<button type="button" class="btnBudgetDepth is-active" data-max-depth="4" title="4뎁스까지 표시">세부사업</button>
 				</div>
 				<div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
 					<a href="javascript:exceldown();" class="btnLink btnBlueGr">엑셀 <i class="fa fa-download"></i></a>
@@ -393,13 +393,13 @@ li a {
 					#budgetStatsMatrixLikeWrap { overflow-x: auto; margin-top: 10px; }
 					#budgetStatsMatrixLikeTable { width: 100%; border-collapse: collapse; table-layout: fixed; }
 					#budgetStatsMatrixLikeTable th, #budgetStatsMatrixLikeTable td {
-						border: 1px solid #9a9a9a;
+						border: 1px solid #ccc;
 						padding: 6px 8px;
 						font-size: 12px;
 						text-align: center;
 						vertical-align: middle;
 					}
-					#budgetStatsMatrixLikeTable thead th { background: #f3f3f3; font-weight: 600; }
+					#budgetStatsMatrixLikeTable thead th { background: #ffffff; font-weight: 600; border-bottom: 1px solid #324c6c; border-top: 1px solid #324c6c;}
 					#budgetStatsMatrixLikeTable .left { text-align: center; }
 				</style>
 				<div id="budgetStatsMatrixLikeWrap">
@@ -678,8 +678,7 @@ li a {
 							labels.push("계획 예산", "집행", "잔액");
 							var n = labels.length;
 							thead.innerHTML =
-								"<tr>" + labels.map(function (t) { return "<th>" + t + "</th>"; }).join("") + "</tr>" +
-								'<tr><th colspan="' + n + '" style="text-align:right;font-weight:400;font-size:11px;">(단위: 원)</th></tr>';
+								"<tr>" + labels.map(function (t) { return "<th>" + t + "</th>"; }).join("") + "</tr>" ;
 						}
 
 						function renderMatrix() {

@@ -604,6 +604,12 @@ li a {
 		if (t === "") return "";
 		return fmtNum(parseNum(raw));
 	}
+	/** + 자리에서 이미 비운 경우 외, 보기 모드에서는 "—" 표시 안 함 */
+	function epLabelShown(raw, hideForPlus) {
+		var t = (raw === "—" && hideForPlus) ? "" : raw;
+		if (!expensePlanInputMode && t === "—") return "";
+		return t;
+	}
 
 	function parseCsv4(text) {
 		var rows = [];
@@ -992,6 +998,12 @@ li a {
 			if (!lineIds.length) return;
 
 			var displayIds = sortLineIdsForRender(lineIds, p1);
+			var hasMok = lineIds.some(function (lid) { return depthFromId(lid) >= 2; });
+			if (hasMok && !expensePlanInputMode) {
+				displayIds = displayIds.filter(function (id) {
+					return !(id === p1 && depthFromId(id) === 1);
+				});
+			}
 			var p1RowSpan = displayIds.length + 1;
 			var hang = itemLabel(items, p1);
 			var first = true;
@@ -1024,7 +1036,7 @@ li a {
 				}
 				var td2 = document.createElement("td");
 				var span2 = document.createElement("span");
-				span2.textContent = (lc.c2 === "—" && showB2) ? "" : lc.c2;
+				span2.textContent = epLabelShown(lc.c2, showB2);
 				td2.appendChild(span2);
 				if (expensePlanInputMode && lc.d === 2) {
 					td2.appendChild(makeRemoveLineBtn(bi, lid));
@@ -1042,7 +1054,7 @@ li a {
 
 				var td3 = document.createElement("td");
 				var span3 = document.createElement("span");
-				span3.textContent = (lc.c3 === "—" && showB3) ? "" : lc.c3;
+				span3.textContent = epLabelShown(lc.c3, showB3);
 				td3.appendChild(span3);
 				if (expensePlanInputMode && lc.d === 3) {
 					td3.appendChild(makeRemoveLineBtn(bi, lid));
@@ -1060,7 +1072,7 @@ li a {
 
 				var td4 = document.createElement("td");
 				var span4 = document.createElement("span");
-				span4.textContent = (lc.c4 === "—" && (showB4 || showBs)) ? "" : lc.c4;
+				span4.textContent = epLabelShown(lc.c4, showB4 || showBs);
 				td4.appendChild(span4);
 				if (expensePlanInputMode && lc.d === 4) {
 					td4.appendChild(makeRemoveLineBtn(bi, lid));

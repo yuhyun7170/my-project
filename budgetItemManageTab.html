@@ -137,8 +137,8 @@ li a { white-space: nowrap; }
 .bim-manage .tree-label { cursor: pointer; font-size: 13px; color: #111; word-break: keep-all; flex: 1 1 auto; min-width: 0; }
 .bim-manage .bim-tree-label-wrap--with-add .tree-label { flex: 0 1 auto; }
 .bim-manage .bim-tree-row.is-row-selected .tree-label { color: #111; font-weight: 400; }
-.bim-manage .btn-bim-add-child { flex: 0 0 auto; padding: 2px 10px; font-size: 11px; border: 1px solid #6b9bd1; background: #fff; color: #2563b8; border-radius: 2px; cursor: pointer; font-weight: 600; }
-.bim-manage .btn-bim-add-child:hover { background: #f2f7fd; }
+.bim-manage .btn-bim-add-child { flex: 0 0 auto; padding: 2px 8px; font-size: 11px; border: 1px solid #b8b8b8; background: #fff; color: #a3a3a3; border-radius: 3px; cursor: pointer; font-weight: 600; }
+.bim-manage .btn-bim-add-child:hover { background: #f0f0f0; }
 .bim-manage .bim-form-table { width: 100%; border-collapse: collapse; }
 .bim-manage .bim-form-table th { width: 100px; text-align: left; padding: 8px 10px 8px 0; vertical-align: top; font-weight: 600; color: #333; }
 .bim-manage .bim-form-table td { padding: 8px 0; vertical-align: top; }
@@ -225,18 +225,17 @@ li a { white-space: nowrap; }
 
 	<div class="bim-manage" id="bimManage">
 		<div class="bim-pane bim-pane-tree">
-			<h3 class="bim-tree-pane-title">항목관리</h3>
 			<div class="bim-tree-toolbar">
 				<button type="button" class="btnLink btnChaBg" id="bimBtnAddRoot">새그룹</button>
 				<div class="bim-tree-toolbar-right">
-					<button type="button" class="btn-bim-save-toolbar" id="bimBtnSave">저장</button>
-					<button type="button" class="btn-bim-fold" id="bimBtnToggleFold">접기</button>
+					<button type="button" class="btnLink btnBlueBg" id="bimBtnSave">저장</button>
+					<button type="button" class="btnLink btnBlueGr" id="bimBtnToggleFold">접기</button>
 				</div>
 			</div>
 			<div class="bim-tree-wrap" id="bimTreeRoot" aria-label="항목 목록"></div>
 		</div>
 		<div class="bim-pane bim-pane-detail">
-			<h3>항목 정보</h3>
+			<h3 style="font-size: 16px;margin-bottom: 10px;">항목 정보</h3>
 			<div id="bimDetailEmpty" class="bim-empty-hint">왼쪽 목록에서 항목을 선택하거나<br />「새그룹」으로 항목을 등록하세요.</div>
 			<form id="bimDetailForm" style="display:none;">
 				<table class="bim-form-table" summary="항목 정보">

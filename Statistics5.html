@@ -275,6 +275,10 @@ li a {
 	text-align: center;
 	vertical-align: middle;
 }
+#expensePlanTable tr.ep-row-sebu-add td.ep-td-sebu-add {
+	text-align: center;
+	vertical-align: middle;
+}
 #expPlanPickerModal {
 	display: none;
 	position: fixed;
@@ -1134,6 +1138,58 @@ li a {
 		return out;
 	}
 
+	function bumpMokRowspanInPlace(rows, mokId, delta) {
+		if (!delta || !mokId) return;
+		for (var r = 0; r < rows.length; r++) {
+			var row = rows[r];
+			if (row.type === "line" && row.mokParent === mokId && row.mokRowspan) {
+				row.mokRowspan += delta;
+			}
+		}
+	}
+
+	function bumpSemokRowspanInPlace(rows, semokId, delta) {
+		if (!delta || !semokId) return;
+		for (var r = 0; r < rows.length; r++) {
+			var row = rows[r];
+			if (row.type === "line" && row.semokParent === semokId && row.semokRowspan) {
+				row.semokRowspan += delta;
+			}
+		}
+	}
+
+	/** 세목 블록마다 세부 추가 전용 + 행 (입력 모드) */
+	function expandDisplayRowsForSebuAdd(rows, includeSebuAdd) {
+		if (!includeSebuAdd) return rows;
+		var out = [];
+		var i = 0;
+		while (i < rows.length) {
+			var row = rows[i];
+			if (row.type === "semok-add") {
+				out.push(row);
+				i++;
+				continue;
+			}
+			if (row.type !== "line" || !row.semokParent) {
+				out.push(row);
+				i++;
+				continue;
+			}
+			var semokG = row.semokParent;
+			var start = i;
+			while (i < rows.length && rows[i].type === "line" && rows[i].semokParent === semokG) {
+				i++;
+			}
+			for (var g = start; g < i; g++) {
+				out.push(rows[g]);
+			}
+			out.push({ type: "sebu-add", semokId: semokG });
+			bumpMokRowspanInPlace(out, parentDepth2(semokG), 1);
+			bumpSemokRowspanInPlace(out, semokG, 1);
+		}
+		return out;
+	}
+
 	function expandDisplayRowsForMokGroups(displayIds, includeSemokAddRow) {
 		var expanded = [];
 		var expIdx = 0;
@@ -1283,14 +1339,45 @@ li a {
 					return !(id === p1 && depthFromId(id) === 1);
 				});
 			}
-			var expandedRows = expandDisplayRowsForSemokGroups(
-				expandDisplayRowsForMokGroups(displayIds, expensePlanInputMode)
+			var expandedRows = expandDisplayRowsForSebuAdd(
+				expandDisplayRowsForSemokGroups(
+					expandDisplayRowsForMokGroups(displayIds, expensePlanInputMode)
+				),
+				expensePlanInputMode
 			);
 			var p1RowSpan = expandedRows.length + 1;
 			var hang = itemLabel(items, p1);
 			var first = true;
 
 			expandedRows.forEach(function (entry) {
+				if (entry.type === "sebu-add") {
+					var trSe = document.createElement("tr");
+					trSe.className = "ep-row-sebu-add";
+					var td4e = document.createElement("td");
+					td4e.className = "ep-td-sebu-add";
+					var bSe = document.createElement("button");
+					bSe.type = "button";
+					bSe.className = "ep-add";
+					bSe.textContent = "+";
+					bSe.title = "세부사업 추가(같은 세목)";
+					bSe.addEventListener("click", function () { onAddChild(bi, entry.semokId); });
+					td4e.appendChild(bSe);
+					var tdSe = document.createElement("td");
+					var tdBe = document.createElement("td");
+					var tdTe = document.createElement("td");
+					tdSe.className = "ep-num";
+					tdBe.className = "ep-num";
+					tdTe.className = "ep-num ep-total";
+					tdSe.textContent = "";
+					tdBe.textContent = "";
+					tdTe.textContent = fmtNum(0);
+					trSe.appendChild(td4e);
+					trSe.appendChild(tdSe);
+					trSe.appendChild(tdBe);
+					trSe.appendChild(tdTe);
+					tbody.appendChild(trSe);
+					return;
+				}
 				if (entry.type === "semok-add") {
 					var trSa = document.createElement("tr");
 					trSa.className = "ep-row-semok-add";
@@ -1304,7 +1391,7 @@ li a {
 					bSem.addEventListener("click", function () { onAddChild(bi, entry.mokId); });
 					td3a.appendChild(bSem);
 					var td4a = document.createElement("td");
-					td4a.textContent = "—";
+					td4a.textContent = "";
 					var tdSa = document.createElement("td");
 					var tdBa = document.createElement("td");
 					var tdTa = document.createElement("td");
@@ -1336,7 +1423,7 @@ li a {
 					showB4 = false;
 				}
 				var showBs = false;
-				if (expensePlanInputMode && lc.d === 4) {
+				if (expensePlanInputMode && lc.d === 4 && !entry.semokParent) {
 					var pidBs = parentIdFromBudgetId(lid);
 					var sibsBs = getChildIds(plObj, 4, pidBs);
 					showBs = sibsBs.some(function (sid) { return lineIds.indexOf(sid) === -1; });
@@ -1451,7 +1538,12 @@ li a {
 				var td4 = document.createElement("td");
 				var span4 = document.createElement("span");
 				span4.className = "ep-label-text";
-				span4.textContent = epLabelShown(lc.c4, showB4 || showBs);
+				var hideSebuPlaceholder =
+					lc.d === 3 &&
+					entry.semokParent &&
+					entry.isFirstInSemokGroup &&
+					entry.semokRowspan > 1;
+				span4.textContent = hideSebuPlaceholder ? "" : epLabelShown(lc.c4, showB4 || showBs);
 				var td4NeedsSplit = (expensePlanInputMode && lc.d === 4) || showB4 || showBs;
 				if (td4NeedsSplit) {
 					td4.className = "ep-td-split";

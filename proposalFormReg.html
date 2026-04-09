@@ -133,6 +133,7 @@
 	(function () {
 		var STORAGE_KEY_V1 = "budgetTreeItems_v1";
 		var STORAGE_KEY = "budgetTreeItems_v2";
+		var EXPENSE_PLAN_KEY = "statistics5_expensePlan_v1";
 
 		function getCsvSeedText() {
 			return `,,,
@@ -374,6 +375,47 @@
 			return id ? String(id).trim().split("-").length : 1;
 		}
 
+		function parentDepth1(id) {
+			return String(id).split("-")[0] || "";
+		}
+
+		/** 지출계획(Statistics5) 해당 항 블록의 줄 id 중 최대 깊이. 없거나 없으면 1 */
+		function requiredDepthFromExpensePlanForHang(hangId, yKey) {
+			if (!hangId) return 1;
+			var raw = localStorage.getItem(EXPENSE_PLAN_KEY);
+			if (!raw) return 1;
+			var eroot;
+			try {
+				eroot = JSON.parse(raw);
+			} catch (e) {
+				return 1;
+			}
+			var ys = String(yKey);
+			var epl = eroot.years && (eroot.years[ys] != null ? eroot.years[ys] : eroot.years[yKey]);
+			if (!epl || !epl.blocks || !epl.blocks.length) return 1;
+			var maxD = 0;
+			var h = String(hangId);
+			for (var bi = 0; bi < epl.blocks.length; bi++) {
+				var b = epl.blocks[bi];
+				if (String(b.p1) !== h) continue;
+				var lids = b.lineIds || [];
+				for (var i = 0; i < lids.length; i++) {
+					var lid = lids[i];
+					if (parentDepth1(lid) !== h) continue;
+					var d = depthFromId(lid);
+					if (d > maxD) maxD = d;
+				}
+			}
+			return maxD > 0 ? maxD : 1;
+		}
+
+		function depthRequirementLabel(d) {
+			if (d >= 4) return "세부사업";
+			if (d === 3) return "세목";
+			if (d === 2) return "목";
+			return "항";
+		}
+
 		function parentIdFromBudgetId(id) {
 			if (!id) return "";
 			var parts = String(id).split("-");
@@ -549,6 +591,18 @@
 
 			var targetId =
 				selDetail.value || selSemok.value || selMok.value || selHang.value;
+			var reqDepth = requiredDepthFromExpensePlanForHang(selHang.value, yearKey);
+			var selDepth = depthFromId(targetId);
+			if (reqDepth > 1 && selDepth < reqDepth) {
+				alert(
+					"지출계획에서 이 항에 " +
+						depthRequirementLabel(reqDepth) +
+						" 단계까지 등록되어 있습니다.\n비용처리 등록·수정 시 " +
+						depthRequirementLabel(reqDepth) +
+						"까지 선택해 주세요."
+				);
+				return;
+			}
 			var inpAmtVal = parseAmountPlain(document.getElementById("inpAmount").value);
 			var apprEl = document.getElementById("inpApprovalDate");
 			var apprVal = apprEl && apprEl.value ? String(apprEl.value).trim() : "";

@@ -110,7 +110,14 @@ li a {
 #content table:not(#budgetStatsMatrixLikeTable) col:nth-child(9) { width: 11% !important; }
 
 
-.btnChaBg.is-active {
+.btnChaBg.is-active,
+.budget-depth-filter .btnLink.btnCha.is-active {
+    background: #2b6cb0;
+    color: #fff;
+    border-color: #2b6cb0;
+}
+/* 선택 유지 시에도 호버와 같은 톤(외부 CSS :hover가 덮어쓰지 않도록) */
+.budget-depth-filter .btnLink.btnCha.is-active:hover {
     background: #2b6cb0;
     color: #fff;
     border-color: #2b6cb0;
@@ -980,13 +987,13 @@ li a {
 
 						function updateDepthButtons() {
 							var d = window.__expenseMatrixMaxDepth || 4;
-							document.querySelectorAll(".budget-depth-filter .btnBudgetDepth").forEach(function (btn) {
+							document.querySelectorAll(".budget-depth-filter button[data-max-depth]").forEach(function (btn) {
 								var md = parseInt(btn.getAttribute("data-max-depth"), 10);
 								btn.classList.toggle("is-active", md === d);
 							});
 						}
 
-						document.querySelectorAll(".budget-depth-filter .btnBudgetDepth").forEach(function (btn) {
+						document.querySelectorAll(".budget-depth-filter button[data-max-depth]").forEach(function (btn) {
 							btn.addEventListener("click", function (e) {
 								e.preventDefault();
 								var md = parseInt(btn.getAttribute("data-max-depth"), 10);

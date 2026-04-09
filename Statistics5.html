@@ -1055,6 +1055,14 @@ li a {
 				var lc = labelColsForLine(lid);
 				var showB2 = expensePlanInputMode && lc.d === 1 && lid === p1 && getChildIds(plObj, 2, lid).length;
 				var showB3 = expensePlanInputMode && lc.d === 2 && getChildIds(plObj, 3, lid).length;
+				var parentMokForSemokSib = lc.d === 3 ? parentDepth2(lid) : "";
+				var showB3sib =
+					expensePlanInputMode &&
+					lc.d === 3 &&
+					parentMokForSemokSib &&
+					getChildIds(plObj, 3, parentMokForSemokSib).some(function (sid) {
+						return lineIds.indexOf(sid) === -1;
+					});
 				var showB4 = expensePlanInputMode && lc.d === 3 && getChildIds(plObj, 4, lid).length;
 				var showBs = false;
 				if (expensePlanInputMode && lc.d === 4) {
@@ -1095,7 +1103,7 @@ li a {
 
 				var td3 = document.createElement("td");
 				var span3 = document.createElement("span");
-				span3.textContent = epLabelShown(lc.c3, showB3);
+				span3.textContent = epLabelShown(lc.c3, showB3 || showB3sib);
 				td3.appendChild(span3);
 				if (expensePlanInputMode && lc.d === 3) {
 					td3.appendChild(makeRemoveLineBtn(bi, lid));
@@ -1108,6 +1116,17 @@ li a {
 					b3.title = "세목 추가";
 					b3.addEventListener("click", function () { onAddChild(bi, lid); });
 					td3.appendChild(b3);
+				}
+				if (showB3sib) {
+					var b3s = document.createElement("button");
+					b3s.type = "button";
+					b3s.className = "ep-add";
+					b3s.textContent = "+";
+					b3s.title = "세목 추가(같은 목)";
+					b3s.addEventListener("click", function () {
+						onAddChild(bi, parentMokForSemokSib);
+					});
+					td3.appendChild(b3s);
 				}
 				tr.appendChild(td3);
 
@@ -1289,9 +1308,19 @@ li a {
 			var b2 = pl2.blocks[blockIdx];
 			if (!b2 || b2.lineIds.indexOf(id) >= 0) return;
 			if (parentDepth1(id) !== b2.p1) return;
+			ensureCell(pl2.cells, id);
+			/* 세목만 목 전용 행을 대체(한 행에 목·세목). 세부 추가 시에는 부모 세목 행 유지 */
+			if (childDepth === 3 && b2.lineIds.indexOf(parentLineId) !== -1) {
+				var pc = pl2.cells[parentLineId];
+				if (pc) {
+					if (!String(pl2.cells[id].self || "").trim() && pc.self) pl2.cells[id].self = pc.self;
+					if (!String(pl2.cells[id].sub || "").trim() && pc.sub) pl2.cells[id].sub = pc.sub;
+					delete pl2.cells[parentLineId];
+				}
+				b2.lineIds = b2.lineIds.filter(function (x) { return x !== parentLineId; });
+			}
 			b2.lineIds.push(id);
 			b2.lineIds.sort(sortIdByNumbers);
-			ensureCell(pl2.cells, id);
 			savePlan(getYear(), pl2);
 			render();
 		});

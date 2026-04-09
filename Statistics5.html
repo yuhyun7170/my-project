@@ -1725,37 +1725,24 @@ li a {
 				if (hangAmountLocked) {
 					tr.setAttribute("data-hang-locked", "1");
 				}
-				if (expensePlanInputMode) {
+				if (expensePlanInputMode && !hangAmountLocked) {
 					var inpS = document.createElement("input");
 					inpS.type = "text";
 					inpS.className = "ep-inp";
 					inpS.setAttribute("data-kind", "self");
+					inpS.value = cell.self || "";
 					var inpB = document.createElement("input");
 					inpB.type = "text";
 					inpB.className = "ep-inp";
 					inpB.setAttribute("data-kind", "sub");
-					if (hangAmountLocked) {
-						inpS.disabled = true;
-						inpB.disabled = true;
-						inpS.value = "";
-						inpB.value = "";
-						inpS.title = "목·세목·세부가 있으면 항 금액은 입력할 수 없습니다.";
-						inpB.title = inpS.title;
-						tdS.className = "ep-num";
-						tdB.className = "ep-num";
-					} else {
-						inpS.value = cell.self || "";
-						inpB.value = cell.sub || "";
-					}
+					inpB.value = cell.sub || "";
 					function recalcRow() {
 						var sn = parseNum(inpS.value);
 						var bn = parseNum(inpB.value);
 						tdT.textContent = fmtNum(sn + bn);
 					}
-					if (!hangAmountLocked) {
-						inpS.addEventListener("input", recalcRow);
-						inpB.addEventListener("input", recalcRow);
-					}
+					inpS.addEventListener("input", recalcRow);
+					inpB.addEventListener("input", recalcRow);
 					tdS.appendChild(inpS);
 					tdB.appendChild(inpB);
 				} else {

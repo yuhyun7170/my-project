@@ -1042,6 +1042,98 @@ li a {
 		return String(lid).indexOf(mokId + "-") === 0;
 	}
 
+	function belongsToSemokSubtree(lid, semokId) {
+		if (!semokId || lid == null) return false;
+		if (lid === semokId) return true;
+		return String(lid).indexOf(semokId + "-") === 0;
+	}
+
+	/** 목 병합 결과에 대해, 같은 세목 아래 세부만 있는 경우 세목 열 rowspan */
+	function expandDisplayRowsForSemokGroups(rows) {
+		var out = [];
+		var i = 0;
+		while (i < rows.length) {
+			var row = rows[i];
+			if (row.type !== "line") {
+				out.push(row);
+				i++;
+				continue;
+			}
+			var lid0 = row.lid;
+			var d0 = depthFromId(lid0);
+
+			if (d0 === 3) {
+				var semokG = lid0;
+				var hasSebuAhead = false;
+				for (var ja = i + 1; ja < rows.length; ja++) {
+					if (rows[ja].type !== "line") break;
+					var lja = rows[ja].lid;
+					if (lja !== semokG && belongsToSemokSubtree(lja, semokG)) {
+						hasSebuAhead = true;
+						break;
+					}
+				}
+				if (!hasSebuAhead) {
+					out.push(row);
+					i++;
+					continue;
+				}
+				var start = i;
+				var end = i;
+				while (end < rows.length && rows[end].type === "line" && belongsToSemokSubtree(rows[end].lid, semokG)) {
+					end++;
+				}
+				var n = end - start;
+				var semokRowspan = n;
+				for (var g = start; g < end; g++) {
+					var base = rows[g];
+					out.push({
+						type: "line",
+						lid: base.lid,
+						mokParent: base.mokParent,
+						mokRowspan: base.mokRowspan,
+						isFirstInMokGroup: base.isFirstInMokGroup,
+						semokParent: semokG,
+						semokRowspan: semokRowspan,
+						isFirstInSemokGroup: g === start
+					});
+				}
+				i = end;
+				continue;
+			}
+
+			if (d0 >= 4) {
+				var semokG2 = parentDepth3(lid0);
+				var start2 = i;
+				var end2 = i;
+				while (end2 < rows.length && rows[end2].type === "line" && belongsToSemokSubtree(rows[end2].lid, semokG2)) {
+					end2++;
+				}
+				var n2 = end2 - start2;
+				var semokRowspan2 = n2;
+				for (var g2 = start2; g2 < end2; g2++) {
+					var base2 = rows[g2];
+					out.push({
+						type: "line",
+						lid: base2.lid,
+						mokParent: base2.mokParent,
+						mokRowspan: base2.mokRowspan,
+						isFirstInMokGroup: base2.isFirstInMokGroup,
+						semokParent: semokG2,
+						semokRowspan: semokRowspan2,
+						isFirstInSemokGroup: g2 === start2
+					});
+				}
+				i = end2;
+				continue;
+			}
+
+			out.push(row);
+			i++;
+		}
+		return out;
+	}
+
 	function expandDisplayRowsForMokGroups(displayIds, includeSemokAddRow) {
 		var expanded = [];
 		var expIdx = 0;
@@ -1191,7 +1283,9 @@ li a {
 					return !(id === p1 && depthFromId(id) === 1);
 				});
 			}
-			var expandedRows = expandDisplayRowsForMokGroups(displayIds, expensePlanInputMode);
+			var expandedRows = expandDisplayRowsForSemokGroups(
+				expandDisplayRowsForMokGroups(displayIds, expensePlanInputMode)
+			);
 			var p1RowSpan = expandedRows.length + 1;
 			var hang = itemLabel(items, p1);
 			var first = true;
@@ -1238,6 +1332,9 @@ li a {
 					showB3 = false;
 				}
 				var showB4 = expensePlanInputMode && lc.d === 3 && getChildIds(plObj, 4, lid).length;
+				if (entry.semokParent && entry.isFirstInSemokGroup && lc.d === 3 && entry.semokRowspan > 1) {
+					showB4 = false;
+				}
 				var showBs = false;
 				if (expensePlanInputMode && lc.d === 4) {
 					var pidBs = parentIdFromBudgetId(lid);
@@ -1310,36 +1407,46 @@ li a {
 					tr.appendChild(td2);
 				}
 
-				var td3 = document.createElement("td");
-				var span3 = document.createElement("span");
-				span3.className = "ep-label-text";
-				span3.textContent = epLabelShown(lc.c3, showB3);
-				var td3NeedsSplit = (expensePlanInputMode && lc.d === 3) || showB3;
-				if (td3NeedsSplit) {
-					td3.className = "ep-td-split";
-					var act3 = document.createElement("span");
-					act3.className = "ep-cell-actions";
-					if (expensePlanInputMode && lc.d === 3) {
-						act3.appendChild(makeRemoveLineBtn(bi, lid));
+				var skipTd3 = entry.semokParent && !entry.isFirstInSemokGroup;
+				if (!skipTd3) {
+					var td3 = document.createElement("td");
+					var span3 = document.createElement("span");
+					span3.className = "ep-label-text";
+					if (entry.semokParent && entry.isFirstInSemokGroup) {
+						span3.textContent = epLabelShown(itemLabel(items, entry.semokParent), false);
+					} else {
+						span3.textContent = epLabelShown(lc.c3, showB3);
 					}
-					if (showB3) {
-						var b3 = document.createElement("button");
-						b3.type = "button";
-						b3.className = "ep-add";
-						b3.textContent = "+";
-						b3.title = "세목 추가";
-						b3.addEventListener("click", function () { onAddChild(bi, lid); });
-						act3.appendChild(b3);
+					if (entry.semokParent && entry.isFirstInSemokGroup) {
+						td3.rowSpan = entry.semokRowspan;
 					}
-					var inner3 = document.createElement("div");
-					inner3.className = "ep-td-split-inner";
-					inner3.appendChild(span3);
-					inner3.appendChild(act3);
-					td3.appendChild(inner3);
-				} else {
-					td3.appendChild(span3);
+					var td3NeedsSplit = (expensePlanInputMode && lc.d === 3) || showB3;
+					if (td3NeedsSplit) {
+						td3.className = "ep-td-split";
+						var act3 = document.createElement("span");
+						act3.className = "ep-cell-actions";
+						if (expensePlanInputMode && lc.d === 3) {
+							act3.appendChild(makeRemoveLineBtn(bi, lid));
+						}
+						if (showB3) {
+							var b3 = document.createElement("button");
+							b3.type = "button";
+							b3.className = "ep-add";
+							b3.textContent = "+";
+							b3.title = "세목 추가";
+							b3.addEventListener("click", function () { onAddChild(bi, lid); });
+							act3.appendChild(b3);
+						}
+						var inner3 = document.createElement("div");
+						inner3.className = "ep-td-split-inner";
+						inner3.appendChild(span3);
+						inner3.appendChild(act3);
+						td3.appendChild(inner3);
+					} else {
+						td3.appendChild(span3);
+					}
+					tr.appendChild(td3);
 				}
-				tr.appendChild(td3);
 
 				var td4 = document.createElement("td");
 				var span4 = document.createElement("span");

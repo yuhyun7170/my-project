@@ -407,6 +407,8 @@ li a {
 				<script>
 					(function () {
 						var STORAGE_KEY = "budgetTreeItems_v2";
+						/** Statistics5 지출계획 — cells[id].self/sub → 계획 예산 */
+						var EXPENSE_PLAN_KEY = "statistics5_expensePlan_v1";
 						var tbody = document.getElementById("budgetStatsMatrixLikeTbody");
 						if (!tbody) return;
 
@@ -450,10 +452,47 @@ li a {
 							var n = parseFloat(t.replace(/,/g, "").replace(/\s/g, ""));
 							return isNaN(n) ? 0 : n;
 						}
-						/** 계획 예산(alloc) 또는 집행(spent)이 있는 노드(항~세부사업)만 표시 */
-						function shouldShowExpenseMatrixLeaf(items, nodeId) {
+						function getMatrixYearStr() {
+							var y = "";
+							try {
+								var ys = document.getElementById("pFromDate") || document.getElementById("search_year");
+								y = ys && ys.value ? String(ys.value) : "";
+							} catch (e0) {}
+							return y || String(new Date().getFullYear());
+						}
+
+						/** 지출계획에 입력된 줄별 합계(자체조달+보조금). 키가 있으면 계획 예산에 우선 사용 */
+						function loadExpensePlanAllocByLineId(yearStr) {
+							var out = Object.create(null);
+							var raw = localStorage.getItem(EXPENSE_PLAN_KEY);
+							if (!raw) return out;
+							var root;
+							try {
+								root = JSON.parse(raw);
+							} catch (e1) {
+								return out;
+							}
+							var ys = String(yearStr);
+							var pl = root.years && (root.years[ys] != null ? root.years[ys] : root.years[yearStr]);
+							if (!pl) return out;
+							var cells = pl.cells || {};
+							Object.keys(cells).forEach(function (id) {
+								var c = cells[id] || {};
+								out[id] = parseMoney(c.self) + parseMoney(c.sub);
+							});
+							return out;
+						}
+
+						function plannedBudgetForLeaf(lid, items, planAlloc) {
+							if (planAlloc && Object.prototype.hasOwnProperty.call(planAlloc, lid)) return planAlloc[lid];
+							var it = items[lid] || {};
+							return parseMoney(it.alloc);
+						}
+
+						/** 계획 예산 또는 집행이 있는 노드(항~세부사업)만 표시 — 계획은 지출계획 입력이 있으면 반영 */
+						function shouldShowExpenseMatrixLeaf(items, nodeId, planAlloc) {
 							var it = items[nodeId] || {};
-							return parseMoney(it.alloc) > 0 || parseMoney(it.spent) > 0;
+							return plannedBudgetForLeaf(nodeId, items, planAlloc) > 0 || parseMoney(it.spent) > 0;
 						}
 						function formatMoney(n) {
 							if (!isFinite(n)) return "";
@@ -637,12 +676,12 @@ li a {
 							return { items: items, deleted: new Set(deleted) };
 						}
 
-						function sumLeavesMoney(items, leafIds) {
+						function sumLeavesMoney(items, leafIds, planAlloc) {
 							var sa = 0;
 							var ss = 0;
 							leafIds.forEach(function (lid) {
 								var it = items[lid] || {};
-								sa += parseMoney(it.alloc);
+								sa += plannedBudgetForLeaf(lid, items, planAlloc);
 								ss += parseMoney(it.spent);
 							});
 							return { sa: sa, ss: ss };
@@ -678,6 +717,7 @@ li a {
 							var pack = loadPayload();
 							var items = pack.items;
 							var deletedSet = pack.deleted;
+							var planAlloc = loadExpensePlanAllocByLineId(getMatrixYearStr());
 							var maxD = Math.min(4, Math.max(1, parseInt(window.__expenseMatrixMaxDepth, 10) || 4));
 							var labelCols = maxD;
 
@@ -689,7 +729,7 @@ li a {
 								if (!id || deletedSet.has(id)) return;
 								var d = depthFromId(id);
 								if (d < 1 || d > 4) return;
-								if (!shouldShowExpenseMatrixLeaf(items, id)) return;
+								if (!shouldShowExpenseMatrixLeaf(items, id, planAlloc)) return;
 								lineIds.push(id);
 							});
 							lineIds.sort(sortIdByNumbers);
@@ -760,7 +800,7 @@ li a {
 							if (maxD === 1) {
 								p1Ids.forEach(function (p1) {
 									var ids = idsUnderP1(p1);
-									var sm = sumLeavesMoney(items, ids);
+									var sm = sumLeavesMoney(items, ids, planAlloc);
 									grandA += sm.sa;
 									grandS += sm.ss;
 									var tr = document.createElement("tr");
@@ -804,7 +844,7 @@ li a {
 									var subS = 0;
 									var hangName = matrixItemLabel(p1);
 									p2Keys.forEach(function (p2k) {
-										var sm = sumLeavesMoney(items, buckets[p2k]);
+										var sm = sumLeavesMoney(items, buckets[p2k], planAlloc);
 										subA += sm.sa;
 										subS += sm.ss;
 										grandA += sm.sa;
@@ -877,7 +917,7 @@ li a {
 										if (sp.t === "g4") {
 											mok = matrixItemLabel(parentDepth2(sp.p3));
 											sem = matrixItemLabel(sp.p3);
-											sm = sumLeavesMoney(items, sp.leaves);
+											sm = sumLeavesMoney(items, sp.leaves, planAlloc);
 										} else {
 											var lid = sp.id;
 											var d0 = sp.d;
@@ -891,7 +931,7 @@ li a {
 												mok = matrixItemLabel(parentDepth2(lid));
 												sem = matrixItemLabel(lid);
 											}
-											sm = sumLeavesMoney(items, [lid]);
+											sm = sumLeavesMoney(items, [lid], planAlloc);
 										}
 										subA += sm.sa;
 										subS += sm.ss;
@@ -968,14 +1008,15 @@ li a {
 									td4.textContent = c4;
 									tr.appendChild(td4);
 									var it = items[lid] || {};
-									var m = moneyCells(it.alloc, it.spent);
+									var pa = plannedBudgetForLeaf(lid, items, planAlloc);
+									var m = moneyCells(pa, it.spent);
 									tr.appendChild(tdNum(m.a));
 									tr.appendChild(tdNum(m.s));
 									tr.appendChild(tdNum(m.b));
 									tbody.appendChild(tr);
-									subA += parseMoney(it.alloc);
+									subA += pa;
 									subS += parseMoney(it.spent);
-									grandA += parseMoney(it.alloc);
+									grandA += pa;
 									grandS += parseMoney(it.spent);
 								});
 								subtotalRow("소계", subA, subS, true);
@@ -1001,6 +1042,13 @@ li a {
 								window.__expenseMatrixMaxDepth = md;
 								renderMatrix();
 							});
+						});
+
+						window.addEventListener("storage", function () {
+							renderMatrix();
+						});
+						document.addEventListener("visibilitychange", function () {
+							if (!document.hidden) renderMatrix();
 						});
 
 						renderMatrix();

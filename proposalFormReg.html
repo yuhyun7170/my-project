@@ -509,10 +509,6 @@
 			if (noteEl0) noteEl0.value = itEdit.note != null ? String(itEdit.note) : "";
 			var taxEl0 = document.getElementById("selTaxManager");
 			if (taxEl0 && itEdit.taxManager) taxEl0.value = String(itEdit.taxManager);
-			selHang.disabled = true;
-			selMok.disabled = true;
-			selSemok.disabled = true;
-			selDetail.disabled = true;
 			var ttl = document.getElementById("expRegTitle");
 			if (ttl) ttl.innerHTML = '<i class="fa-solid fa-circle-dot"></i> 비용처리 수정';
 			var btnLb = document.getElementById("btnSubmitLabel");
@@ -553,10 +549,6 @@
 
 			var targetId =
 				selDetail.value || selSemok.value || selMok.value || selHang.value;
-			if (editMode && editBudgetId && targetId !== editBudgetId) {
-				alert("수정 중인 항목과 선택이 일치하지 않습니다.");
-				return;
-			}
 			var inpAmtVal = parseAmountPlain(document.getElementById("inpAmount").value);
 			var apprEl = document.getElementById("inpApprovalDate");
 			var apprVal = apprEl && apprEl.value ? String(apprEl.value).trim() : "";
@@ -568,6 +560,20 @@
 				if (!root.years) root.years = {};
 				var pl = root.years[yearKey] || { items: {}, deleted: [] };
 				pl.items = pl.items || {};
+				if (editMode && editBudgetId && targetId !== editBudgetId) {
+					var oldIt = pl.items[editBudgetId];
+					if (oldIt) {
+						pl.items[editBudgetId] = {
+							name: oldIt.name != null ? oldIt.name : itemName(editBudgetId),
+							alloc: oldIt.alloc != null ? oldIt.alloc : "",
+							spent: "",
+							approvalDate: "",
+							note: "",
+							taxManager: "",
+							active: oldIt.active !== false
+						};
+					}
+				}
 				var it0 = pl.items[targetId] || {};
 				var prevSpent = parseAmountPlain(it0.spent);
 				var newSpent = editMode ? inpAmtVal : prevSpent + inpAmtVal;

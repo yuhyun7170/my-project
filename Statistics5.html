@@ -226,6 +226,51 @@ li a {
 	background: #ffecec;
 	border-color: #c44;
 }
+/* td는 table-cell 유지 — flex는 내부 래퍼에만 (행 높이 어긋남 방지) */
+#expensePlanTable td.ep-td-split {
+	padding: 0;
+	vertical-align: middle;
+}
+#expensePlanTable td.ep-td-split > .ep-td-split-inner {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	min-height: 30px;
+	padding: 6px 8px;
+	box-sizing: border-box;
+}
+#expensePlanTable td.ep-td-split .ep-label-text {
+	flex: 0 1 auto;
+	min-width: 0;
+	max-width: 58%;
+	text-align: left;
+}
+#expensePlanTable td.ep-td-split .ep-cell-actions {
+	flex: 1;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+}
+#expensePlanTable td.ep-td-split .ep-cell-actions:has(.ep-add) {
+	justify-content: center;
+}
+#expensePlanTable td.ep-td-hang.ep-td-split > .ep-td-split-inner {
+	justify-content: space-between;
+}
+#expensePlanTable td.ep-td-split .ep-add,
+#expensePlanTable td.ep-td-split .ep-del {
+	margin-left: 0;
+}
+#expensePlanTable td.ep-td-add-only {
+	text-align: center;
+	vertical-align: middle;
+}
+#expensePlanTable td.ep-td-add-only .ep-add {
+	margin-left: 0;
+}
 #expPlanPickerModal {
 	display: none;
 	position: fixed;
@@ -1004,6 +1049,7 @@ li a {
 				var trD = document.createElement("tr");
 				trD.className = "ep-draft-row";
 				var tdH = document.createElement("td");
+				tdH.className = "ep-td-add-only";
 				var bPlus = document.createElement("button");
 				bPlus.type = "button";
 				bPlus.className = "ep-add";
@@ -1056,10 +1102,21 @@ li a {
 				var showB2 = expensePlanInputMode && lc.d === 1 && lid === p1 && getChildIds(plObj, 2, lid).length;
 				var showB3 = expensePlanInputMode && lc.d === 2 && getChildIds(plObj, 3, lid).length;
 				var parentMokForSemokSib = lc.d === 3 ? parentDepth2(lid) : "";
-				var showB3sib =
+				var semoksSameMok = [];
+				if (parentMokForSemokSib) {
+					semoksSameMok = lineIds
+						.filter(function (x) {
+							return depthFromId(x) === 3 && parentDepth2(x) === parentMokForSemokSib;
+						})
+						.sort(sortIdByNumbers);
+				}
+				var isLastSemokUnderMok =
+					lc.d === 3 && semoksSameMok.length && lid === semoksSameMok[semoksSameMok.length - 1];
+				var showSemokPlusOnMokCol =
 					expensePlanInputMode &&
 					lc.d === 3 &&
 					parentMokForSemokSib &&
+					isLastSemokUnderMok &&
 					getChildIds(plObj, 3, parentMokForSemokSib).some(function (sid) {
 						return lineIds.indexOf(sid) === -1;
 					});
@@ -1076,84 +1133,130 @@ li a {
 					td1.rowSpan = p1RowSpan;
 					var spHang = document.createElement("span");
 					spHang.textContent = hang;
-					td1.appendChild(spHang);
 					if (expensePlanInputMode && lid === p1 && lc.d === 1) {
-						td1.appendChild(makeRemoveLineBtn(bi, lid));
+						td1.classList.add("ep-td-split");
+						var inner1 = document.createElement("div");
+						inner1.className = "ep-td-split-inner";
+						inner1.appendChild(spHang);
+						inner1.appendChild(makeRemoveLineBtn(bi, lid));
+						td1.appendChild(inner1);
+					} else {
+						td1.appendChild(spHang);
 					}
 					tr.appendChild(td1);
 					first = false;
 				}
 				var td2 = document.createElement("td");
 				var span2 = document.createElement("span");
+				span2.className = "ep-label-text";
 				span2.textContent = epLabelShown(lc.c2, showB2);
-				td2.appendChild(span2);
-				if (expensePlanInputMode && lc.d === 2) {
-					td2.appendChild(makeRemoveLineBtn(bi, lid));
-				}
-				if (showB2) {
-					var b2 = document.createElement("button");
-					b2.type = "button";
-					b2.className = "ep-add";
-					b2.textContent = "+";
-					b2.title = "목 추가";
-					b2.addEventListener("click", function () { onAddChild(bi, lid); });
-					td2.appendChild(b2);
+				var td2NeedsSplit =
+					showSemokPlusOnMokCol || (expensePlanInputMode && lc.d === 2) || showB2;
+				if (td2NeedsSplit) {
+					td2.className = "ep-td-split";
+					var act2 = document.createElement("span");
+					act2.className = "ep-cell-actions";
+					if (expensePlanInputMode && lc.d === 2) {
+						act2.appendChild(makeRemoveLineBtn(bi, lid));
+					}
+					if (showB2) {
+						var b2 = document.createElement("button");
+						b2.type = "button";
+						b2.className = "ep-add";
+						b2.textContent = "+";
+						b2.title = "목 추가";
+						b2.addEventListener("click", function () { onAddChild(bi, lid); });
+						act2.appendChild(b2);
+					}
+					if (showSemokPlusOnMokCol) {
+						var b2s = document.createElement("button");
+						b2s.type = "button";
+						b2s.className = "ep-add";
+						b2s.textContent = "+";
+						b2s.title = "세목 추가(같은 목)";
+						b2s.addEventListener("click", function () {
+							onAddChild(bi, parentMokForSemokSib);
+						});
+						act2.appendChild(b2s);
+					}
+					var inner2 = document.createElement("div");
+					inner2.className = "ep-td-split-inner";
+					inner2.appendChild(span2);
+					inner2.appendChild(act2);
+					td2.appendChild(inner2);
+				} else {
+					td2.appendChild(span2);
 				}
 				tr.appendChild(td2);
 
 				var td3 = document.createElement("td");
 				var span3 = document.createElement("span");
-				span3.textContent = epLabelShown(lc.c3, showB3 || showB3sib);
-				td3.appendChild(span3);
-				if (expensePlanInputMode && lc.d === 3) {
-					td3.appendChild(makeRemoveLineBtn(bi, lid));
-				}
-				if (showB3) {
-					var b3 = document.createElement("button");
-					b3.type = "button";
-					b3.className = "ep-add";
-					b3.textContent = "+";
-					b3.title = "세목 추가";
-					b3.addEventListener("click", function () { onAddChild(bi, lid); });
-					td3.appendChild(b3);
-				}
-				if (showB3sib) {
-					var b3s = document.createElement("button");
-					b3s.type = "button";
-					b3s.className = "ep-add";
-					b3s.textContent = "+";
-					b3s.title = "세목 추가(같은 목)";
-					b3s.addEventListener("click", function () {
-						onAddChild(bi, parentMokForSemokSib);
-					});
-					td3.appendChild(b3s);
+				span3.className = "ep-label-text";
+				span3.textContent = epLabelShown(lc.c3, showB3);
+				var td3NeedsSplit = (expensePlanInputMode && lc.d === 3) || showB3;
+				if (td3NeedsSplit) {
+					td3.className = "ep-td-split";
+					var act3 = document.createElement("span");
+					act3.className = "ep-cell-actions";
+					if (expensePlanInputMode && lc.d === 3) {
+						act3.appendChild(makeRemoveLineBtn(bi, lid));
+					}
+					if (showB3) {
+						var b3 = document.createElement("button");
+						b3.type = "button";
+						b3.className = "ep-add";
+						b3.textContent = "+";
+						b3.title = "세목 추가";
+						b3.addEventListener("click", function () { onAddChild(bi, lid); });
+						act3.appendChild(b3);
+					}
+					var inner3 = document.createElement("div");
+					inner3.className = "ep-td-split-inner";
+					inner3.appendChild(span3);
+					inner3.appendChild(act3);
+					td3.appendChild(inner3);
+				} else {
+					td3.appendChild(span3);
 				}
 				tr.appendChild(td3);
 
 				var td4 = document.createElement("td");
 				var span4 = document.createElement("span");
+				span4.className = "ep-label-text";
 				span4.textContent = epLabelShown(lc.c4, showB4 || showBs);
-				td4.appendChild(span4);
-				if (expensePlanInputMode && lc.d === 4) {
-					td4.appendChild(makeRemoveLineBtn(bi, lid));
-				}
-				if (showB4) {
-					var b4 = document.createElement("button");
-					b4.type = "button";
-					b4.className = "ep-add";
-					b4.textContent = "+";
-					b4.title = "세부사업 추가";
-					b4.addEventListener("click", function () { onAddChild(bi, lid); });
-					td4.appendChild(b4);
-				}
-				if (showBs) {
-					var bs = document.createElement("button");
-					bs.type = "button";
-					bs.className = "ep-add";
-					bs.textContent = "+";
-					bs.title = "세부사업 추가(형제)";
-					bs.addEventListener("click", function () { onAddSibling(bi, lid); });
-					td4.appendChild(bs);
+				var td4NeedsSplit = (expensePlanInputMode && lc.d === 4) || showB4 || showBs;
+				if (td4NeedsSplit) {
+					td4.className = "ep-td-split";
+					var act4 = document.createElement("span");
+					act4.className = "ep-cell-actions";
+					if (expensePlanInputMode && lc.d === 4) {
+						act4.appendChild(makeRemoveLineBtn(bi, lid));
+					}
+					if (showB4) {
+						var b4 = document.createElement("button");
+						b4.type = "button";
+						b4.className = "ep-add";
+						b4.textContent = "+";
+						b4.title = "세부사업 추가";
+						b4.addEventListener("click", function () { onAddChild(bi, lid); });
+						act4.appendChild(b4);
+					}
+					if (showBs) {
+						var bs = document.createElement("button");
+						bs.type = "button";
+						bs.className = "ep-add";
+						bs.textContent = "+";
+						bs.title = "세부사업 추가(형제)";
+						bs.addEventListener("click", function () { onAddSibling(bi, lid); });
+						act4.appendChild(bs);
+					}
+					var inner4 = document.createElement("div");
+					inner4.className = "ep-td-split-inner";
+					inner4.appendChild(span4);
+					inner4.appendChild(act4);
+					td4.appendChild(inner4);
+				} else {
+					td4.appendChild(span4);
 				}
 				tr.appendChild(td4);
 
@@ -1228,6 +1331,7 @@ li a {
 			var trN = document.createElement("tr");
 			trN.className = "ep-add-hang-row";
 			var tdAdd1 = document.createElement("td");
+			tdAdd1.className = "ep-td-add-only";
 			var bAdd = document.createElement("button");
 			bAdd.type = "button";
 			bAdd.className = "ep-add";

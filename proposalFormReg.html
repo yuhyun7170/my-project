@@ -50,7 +50,7 @@
 	</style>
 </head>
 <body class="popBody" style="width:436px;">
-	<h2 class="popTitle"><i class="fa-solid fa-circle-dot"></i> 비용처리등록</h2>
+	<h2 class="popTitle" id="expRegTitle"><i class="fa-solid fa-circle-dot"></i> 비용처리등록</h2>
 	<div class="popCon">
 		<form id="expenseRegForm" action="javascript:void(0);" method="post">
 			<div class="table_write">
@@ -120,7 +120,7 @@
 			</div>
 			<ul class="btnList mt20 exp-reg-btns">
 				<li class="mr5">
-					<a href="javascript:void(0);" id="btnSubmit" class="btnLink btnBlueBg"><i class="fa-solid fa-plus"></i> 등 록</a>
+					<a href="javascript:void(0);" id="btnSubmit" class="btnLink btnBlueBg"><i class="fa-solid fa-plus"></i> <span id="btnSubmitLabel">등 록</span></a>
 				</li>
 				<li>
 					<a href="javascript:self.close();" class="btnLink btnRedBg"><i class="fa-solid fa-times"></i> 닫 기</a>
@@ -338,6 +338,17 @@
 			writeRoot(root);
 		}
 
+		function getUrlBudgetEdit() {
+			try {
+				var u = new URLSearchParams(window.location.search || "");
+				var bid = u.get("budgetId") || u.get("id") || "";
+				var ed = u.get("edit") === "1" || u.get("mode") === "edit";
+				return { budgetId: bid, edit: ed && !!bid };
+			} catch (e0) {
+				return { budgetId: "", edit: false };
+			}
+		}
+
 		function resolveYear() {
 			try {
 				var u = new URLSearchParams(window.location.search || "");
@@ -466,6 +477,53 @@
 		selMok.addEventListener("change", refreshSemok);
 		selSemok.addEventListener("change", refreshDetail);
 
+		var urlBe = getUrlBudgetEdit();
+		var editMode = urlBe.edit;
+		var editBudgetId = urlBe.budgetId || "";
+
+		function applyBudgetIdToSelects(bid) {
+			var p = String(bid).split("-").filter(function (x) { return x !== ""; });
+			var d = p.length;
+			if (d < 1) return;
+			selHang.value = p[0];
+			refreshMok();
+			if (d >= 2) {
+				selMok.value = p.slice(0, 2).join("-");
+				refreshSemok();
+			}
+			if (d >= 3) {
+				selSemok.value = p.slice(0, 3).join("-");
+				refreshDetail();
+			}
+			if (d >= 4) selDetail.value = bid;
+		}
+
+		if (editMode && editBudgetId) {
+			applyBudgetIdToSelects(editBudgetId);
+			var itEdit = items[editBudgetId] || {};
+			var inpAmt = document.getElementById("inpAmount");
+			if (inpAmt) inpAmt.value = itEdit.spent != null ? String(itEdit.spent) : "";
+			var apprEl0 = document.getElementById("inpApprovalDate");
+			if (apprEl0 && itEdit.approvalDate) apprEl0.value = String(itEdit.approvalDate).trim();
+			var noteEl0 = document.getElementById("inpNote");
+			if (noteEl0) noteEl0.value = itEdit.note != null ? String(itEdit.note) : "";
+			var taxEl0 = document.getElementById("selTaxManager");
+			if (taxEl0 && itEdit.taxManager) taxEl0.value = String(itEdit.taxManager);
+			selHang.disabled = true;
+			selMok.disabled = true;
+			selSemok.disabled = true;
+			selDetail.disabled = true;
+			var ttl = document.getElementById("expRegTitle");
+			if (ttl) ttl.innerHTML = '<i class="fa-solid fa-circle-dot"></i> 비용처리 수정';
+			var btnLb = document.getElementById("btnSubmitLabel");
+			if (btnLb) btnLb.textContent = "수 정";
+			var btnIc = document.querySelector("#btnSubmit .fa-plus");
+			if (btnIc) {
+				btnIc.classList.remove("fa-plus");
+				btnIc.classList.add("fa-check");
+			}
+		}
+
 		function itemName(id) {
 			var it = items[id];
 			return it && it.name != null ? String(it.name).trim() : "";
@@ -495,9 +553,15 @@
 
 			var targetId =
 				selDetail.value || selSemok.value || selMok.value || selHang.value;
-			var addAmt = parseAmountPlain(document.getElementById("inpAmount").value);
+			if (editMode && editBudgetId && targetId !== editBudgetId) {
+				alert("수정 중인 항목과 선택이 일치하지 않습니다.");
+				return;
+			}
+			var inpAmtVal = parseAmountPlain(document.getElementById("inpAmount").value);
 			var apprEl = document.getElementById("inpApprovalDate");
 			var apprVal = apprEl && apprEl.value ? String(apprEl.value).trim() : "";
+			var noteVal = document.getElementById("inpNote") ? String(document.getElementById("inpNote").value || "").trim() : "";
+			var taxVal = document.getElementById("selTaxManager") ? String(document.getElementById("selTaxManager").value || "") : "";
 
 			try {
 				var root = readRoot();
@@ -506,13 +570,17 @@
 				pl.items = pl.items || {};
 				var it0 = pl.items[targetId] || {};
 				var prevSpent = parseAmountPlain(it0.spent);
-				var newSpent = prevSpent + addAmt;
+				var newSpent = editMode ? inpAmtVal : prevSpent + inpAmtVal;
+				var outAppr = editMode ? apprVal : apprVal || (it0.approvalDate != null ? String(it0.approvalDate) : "");
+				var outNote = editMode ? noteVal : noteVal !== "" ? noteVal : it0.note != null ? String(it0.note) : "";
+				var outTax = editMode ? taxVal : taxVal || (it0.taxManager != null ? String(it0.taxManager) : "");
 				pl.items[targetId] = {
 					name: it0.name != null ? it0.name : itemName(targetId),
 					alloc: it0.alloc != null ? it0.alloc : "",
 					spent: Math.round(newSpent).toLocaleString("ko-KR"),
-					approvalDate: apprVal || (it0.approvalDate != null ? String(it0.approvalDate) : ""),
-					note: it0.note != null ? String(it0.note) : "",
+					approvalDate: outAppr,
+					note: outNote,
+					taxManager: outTax,
 					active: it0.active !== false
 				};
 				root.years[yearKey] = pl;
@@ -526,11 +594,14 @@
 			if (selDetail.value) pathParts.push(itemName(selDetail.value));
 
 			alert(
-				"등록되었습니다.\n" +
+				(editMode ? "수정되었습니다.\n" : "등록되었습니다.\n") +
 					pathParts.join(" → ") +
 					(apprVal ? "\n결재일: " + apprVal : "")
 			);
 			try {
+				if (window.opener && typeof window.opener.renderExpenseDetailFromStorage === "function") {
+					window.opener.renderExpenseDetailFromStorage();
+				}
 				if (window.opener && window.opener.applyBudgetTreeFromStorage) {
 					window.opener.applyBudgetTreeFromStorage();
 				} else if (window.opener && window.opener.location) {

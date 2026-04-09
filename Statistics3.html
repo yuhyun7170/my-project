@@ -443,7 +443,7 @@ li a {
 
 <div class="tableBot_list">
     <ul class="btnList flxcol" style="justify-content: right;">
-        <li><a class="btnLink btnGrayBg" href="javascript:openGroupGogiseo();">삭제</a></li>
+        <li><a class="btnLink btnGrayBg" href="javascript:deleteSelectedExpenseDetails();">삭제</a></li>
         <li style="margin-left: 5px;"><a class="btnLink btnBlueBg" href="javascript:openExpenseRegPopup();">비용처리등록</a></li>
     </ul>
 </div>
@@ -531,6 +531,37 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 		var url = "proposalFormReg.html";
 		var yrEl = document.getElementById("pFromDate");
 		if (yrEl && yrEl.value) url += "?year=" + encodeURIComponent(yrEl.value);
+		window.open(url, "proposalFormReg", opts);
+	}
+
+	function openExpenseEditPopup(budgetId) {
+		if (!budgetId) return;
+		var w = 450;
+		var h = 456;
+		var sw = window.screen ? window.screen.availWidth : w;
+		var sh = window.screen ? window.screen.availHeight : h;
+		var left = Math.max(0, Math.round((sw - w) / 2));
+		var top = Math.max(0, Math.round((sh - h) / 2));
+		var opts = [
+			"width=" + w,
+			"height=" + h,
+			"left=" + left,
+			"top=" + top,
+			"scrollbars=yes",
+			"resizable=yes",
+			"status=no",
+			"menubar=no",
+			"toolbar=no",
+			"location=no"
+		].join(",");
+		var yrEl = document.getElementById("pFromDate");
+		var y = yrEl && yrEl.value ? String(yrEl.value) : String(new Date().getFullYear());
+		var url =
+			"proposalFormReg.html?year=" +
+			encodeURIComponent(y) +
+			"&budgetId=" +
+			encodeURIComponent(budgetId) +
+			"&edit=1";
 		window.open(url, "proposalFormReg", opts);
 	}
 
@@ -676,6 +707,41 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 			};
 		}
 
+		window.deleteSelectedExpenseDetails = function () {
+			var tbody = document.getElementById("expenseDetailTbody");
+			if (!tbody) return;
+			var boxes = tbody.querySelectorAll('input[type="checkbox"][name="studentCheckbox"]:checked');
+			if (!boxes.length) {
+				alert("삭제할 항목을 선택하세요.");
+				return;
+			}
+			if (!confirm("선택한 비용처리 내역을 삭제할까요?\n집행액·결재일·비고·세무담당자 정보가 초기화됩니다.")) return;
+			var pack = loadPayload();
+			var year = pack.year;
+			try {
+				var raw = localStorage.getItem(STORAGE_KEY);
+				if (!raw) return;
+				var root = JSON.parse(raw);
+				if (!root.years) root.years = {};
+				var pl = root.years[year] || { items: {}, deleted: [] };
+				pl.items = pl.items || {};
+				for (var i = 0; i < boxes.length; i++) {
+					var bid = boxes[i].getAttribute("data-budget-id");
+					if (!bid) continue;
+					var it = pl.items[bid];
+					if (!it) continue;
+					it.spent = "";
+					it.approvalDate = "";
+					it.note = "";
+					it.taxManager = "";
+					pl.items[bid] = it;
+				}
+				root.years[year] = pl;
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(root));
+			} catch (eDel) {}
+			window.renderExpenseDetailFromStorage();
+		};
+
 		window.renderExpenseDetailFromStorage = function () {
 			var tbody = document.getElementById("expenseDetailTbody");
 			if (!tbody) return;
@@ -711,6 +777,15 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 					var it = items[bid] || {};
 					var pc = pathColumns(items, bid);
 					var tr = document.createElement("tr");
+					tr.style.cursor = "pointer";
+					tr.setAttribute("data-budget-id", bid);
+					tr.title = "클릭하면 비용처리 내용을 수정할 수 있습니다.";
+					tr.addEventListener("click", function (ev) {
+						if (ev.target.closest('input[type="checkbox"]')) return;
+						var td0 = ev.target.closest("td");
+						if (td0 && td0.cellIndex === 0) return;
+						if (typeof openExpenseEditPopup === "function") openExpenseEditPopup(bid);
+					});
 
 					function tdSpan(txt, strongDet) {
 						var td = document.createElement("td");
@@ -733,6 +808,9 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 					inp.className = "inputVm";
 					inp.name = "studentCheckbox";
 					inp.setAttribute("data-budget-id", bid);
+					inp.addEventListener("click", function (e) {
+						e.stopPropagation();
+					});
 					spanW.appendChild(inp);
 					tdChk.appendChild(spanW);
 					tr.appendChild(tdChk);
@@ -743,7 +821,7 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 					tr.appendChild(tdSpan(pc.det, true));
 					tr.appendChild(tdSpan(it.spent != null ? String(it.spent) : "", false));
 					tr.appendChild(tdSpan(formatApprovalDate(it.approvalDate), false));
-					tr.appendChild(tdSpan("—", false));
+					tr.appendChild(tdSpan(it.taxManager != null ? String(it.taxManager) : "", false));
 					tr.appendChild(tdSpan(it.note != null ? String(it.note) : "", false));
 					tbody.appendChild(tr);
 				});

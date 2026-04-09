@@ -959,6 +959,15 @@ li a {
 		return false;
 	}
 
+	/** 블록에 목·세목·세부(깊이 ≥2)가 하나라도 있으면 항(p1) 단독 금액 입력 불가 */
+	function blockHasMokOrDeeper(lineIds) {
+		if (!lineIds || !lineIds.length) return false;
+		for (var i = 0; i < lineIds.length; i++) {
+			if (depthFromId(lineIds[i]) >= 2) return true;
+		}
+		return false;
+	}
+
 	var epBudget = { items: {}, deleted: new Set() };
 
 	function itemLabel(items, id) {
@@ -1071,6 +1080,12 @@ li a {
 		for (var r = 0; r < rows.length; r++) {
 			var tr = rows[r];
 			var id = tr.getAttribute("data-node-id");
+			if (tr.getAttribute("data-hang-locked") === "1") {
+				ensureCell(plan.cells, id);
+				plan.cells[id].self = "";
+				plan.cells[id].sub = "";
+				continue;
+			}
 			var inpS = tr.querySelector("input[data-kind=self]");
 			var inpB = tr.querySelector("input[data-kind=sub]");
 			if (!inpS && !inpB) continue;
@@ -1545,6 +1560,7 @@ li a {
 					var sibsBs = getChildIds(plObj, 4, pidBs);
 					showBs = sibsBs.some(function (sid) { return lineIds.indexOf(sid) === -1; });
 				}
+				var hangAmountLocked = lc.d === 1 && lid === p1 && blockHasMokOrDeeper(lineIds);
 				if (first) {
 					var td1 = document.createElement("td");
 					td1.className = "ep-td-hang";
@@ -1698,39 +1714,60 @@ li a {
 				tr.appendChild(td4);
 
 				var cell = ensureCell(cells, lid);
-				var selfN = parseNum(cell.self);
-				var subN = parseNum(cell.sub);
+				var selfN = hangAmountLocked ? 0 : parseNum(cell.self);
+				var subN = hangAmountLocked ? 0 : parseNum(cell.sub);
 				var tdT = document.createElement("td");
 				tdT.className = "ep-num ep-total";
 				tdT.textContent = fmtNum(selfN + subN);
 
 				var tdS = document.createElement("td");
 				var tdB = document.createElement("td");
+				if (hangAmountLocked) {
+					tr.setAttribute("data-hang-locked", "1");
+				}
 				if (expensePlanInputMode) {
 					var inpS = document.createElement("input");
 					inpS.type = "text";
 					inpS.className = "ep-inp";
 					inpS.setAttribute("data-kind", "self");
-					inpS.value = cell.self || "";
 					var inpB = document.createElement("input");
 					inpB.type = "text";
 					inpB.className = "ep-inp";
 					inpB.setAttribute("data-kind", "sub");
-					inpB.value = cell.sub || "";
+					if (hangAmountLocked) {
+						inpS.disabled = true;
+						inpB.disabled = true;
+						inpS.value = "";
+						inpB.value = "";
+						inpS.title = "목·세목·세부가 있으면 항 금액은 입력할 수 없습니다.";
+						inpB.title = inpS.title;
+						tdS.className = "ep-num";
+						tdB.className = "ep-num";
+					} else {
+						inpS.value = cell.self || "";
+						inpB.value = cell.sub || "";
+					}
 					function recalcRow() {
 						var sn = parseNum(inpS.value);
 						var bn = parseNum(inpB.value);
 						tdT.textContent = fmtNum(sn + bn);
 					}
-					inpS.addEventListener("input", recalcRow);
-					inpB.addEventListener("input", recalcRow);
+					if (!hangAmountLocked) {
+						inpS.addEventListener("input", recalcRow);
+						inpB.addEventListener("input", recalcRow);
+					}
 					tdS.appendChild(inpS);
 					tdB.appendChild(inpB);
 				} else {
 					tdS.className = "ep-num";
 					tdB.className = "ep-num";
-					tdS.textContent = fmtPlanCell(cell.self);
-					tdB.textContent = fmtPlanCell(cell.sub);
+					if (hangAmountLocked) {
+						tdS.textContent = "";
+						tdB.textContent = "";
+					} else {
+						tdS.textContent = fmtPlanCell(cell.self);
+						tdB.textContent = fmtPlanCell(cell.sub);
+					}
 				}
 				tr.appendChild(tdS);
 				tr.appendChild(tdB);
@@ -1866,6 +1903,11 @@ li a {
 			}
 			b2.lineIds.push(id);
 			b2.lineIds = orderLineIdsForExpensePlan(b2.lineIds, b2.p1);
+			if (blockHasMokOrDeeper(b2.lineIds)) {
+				ensureCell(pl2.cells, b2.p1);
+				pl2.cells[b2.p1].self = "";
+				pl2.cells[b2.p1].sub = "";
+			}
 			savePlan(getYear(), pl2);
 			render();
 		});
@@ -1889,6 +1931,11 @@ li a {
 			if (parentDepth1(id) !== b2.p1) return;
 			b2.lineIds.push(id);
 			b2.lineIds = orderLineIdsForExpensePlan(b2.lineIds, b2.p1);
+			if (blockHasMokOrDeeper(b2.lineIds)) {
+				ensureCell(pl2.cells, b2.p1);
+				pl2.cells[b2.p1].self = "";
+				pl2.cells[b2.p1].sub = "";
+			}
 			ensureCell(pl2.cells, id);
 			savePlan(getYear(), pl2);
 			render();

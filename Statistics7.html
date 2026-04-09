@@ -483,17 +483,62 @@ li a {
 							return out;
 						}
 
-						function plannedBudgetForLeaf(lid, items, planAlloc) {
-							if (planAlloc && Object.prototype.hasOwnProperty.call(planAlloc, lid)) return planAlloc[lid];
-							var it = items[lid] || {};
-							return parseMoney(it.alloc);
+						/** Statistics5 sumBlock 과 동일: 같은 블록 lineIds 안에 하위 줄이 있으면 상위 id는 제외 */
+						function isMaximalInExpensePlanBlock(id, lineIds) {
+							for (var j = 0; j < lineIds.length; j++) {
+								var o = lineIds[j];
+								if (o !== id && String(o).indexOf(id + "-") === 0) return false;
+							}
+							return true;
 						}
 
-						/** 계획 예산 또는 집행이 있는 노드(항~세부사업)만 표시 — 계획은 지출계획 입력이 있으면 반영 */
-						function shouldShowExpenseMatrixLeaf(items, nodeId, planAlloc) {
-							var it = items[nodeId] || {};
-							return plannedBudgetForLeaf(nodeId, items, planAlloc) > 0 || parseMoney(it.spent) > 0;
+						/**
+						 * 지출계획에 등록된 줄 id — 블록별로 잎(최하위 표시 줄)만 포함해 목/세목만 있는 중복 행 제거.
+						 * 블록 순서·lineIds 순서 유지, parentDepth1(lid)===p1 만 포함.
+						 */
+						function loadExpensePlanRegisteredLineIds(yearStr) {
+							var raw = localStorage.getItem(EXPENSE_PLAN_KEY);
+							if (!raw) return [];
+							var root;
+							try {
+								root = JSON.parse(raw);
+							} catch (e2) {
+								return [];
+							}
+							var ys = String(yearStr);
+							var pl = root.years && (root.years[ys] != null ? root.years[ys] : root.years[yearStr]);
+							if (!pl || !pl.blocks || !pl.blocks.length) return [];
+							var seen = Object.create(null);
+							var ordered = [];
+							for (var bi = 0; bi < pl.blocks.length; bi++) {
+								var block = pl.blocks[bi];
+								var p1 = block.p1;
+								var p1s = p1 != null ? String(p1) : "";
+								var lids = (block.lineIds || []).filter(function (lid) {
+									return parentDepth1(lid) === p1s;
+								});
+								for (var i = 0; i < lids.length; i++) {
+									var lid = lids[i];
+									if (!lid || seen[lid]) continue;
+									if (!isMaximalInExpensePlanBlock(lid, lids)) continue;
+									seen[lid] = true;
+									ordered.push(lid);
+								}
+							}
+							return ordered;
 						}
+
+						/** 계획 예산: 지출계획(Statistics5) cells 자체조달+보조금만. 없으면 0 — 항목 alloc 미사용 */
+						function plannedBudgetFromExpensePlan(lid, planAlloc) {
+							if (planAlloc && Object.prototype.hasOwnProperty.call(planAlloc, lid)) return planAlloc[lid];
+							return 0;
+						}
+
+						/** 집행: 지출내역 비용처리등록(budgetTreeItems_v2 items[].spent)만 */
+						function spentFromExpenseDetail(lid, items) {
+							return parseMoney((items[lid] || {}).spent);
+						}
+
 						function formatMoney(n) {
 							if (!isFinite(n)) return "";
 							return Math.round(n).toLocaleString("ko-KR");
@@ -680,9 +725,8 @@ li a {
 							var sa = 0;
 							var ss = 0;
 							leafIds.forEach(function (lid) {
-								var it = items[lid] || {};
-								sa += plannedBudgetForLeaf(lid, items, planAlloc);
-								ss += parseMoney(it.spent);
+								sa += plannedBudgetFromExpensePlan(lid, planAlloc);
+								ss += spentFromExpenseDetail(lid, items);
 							});
 							return { sa: sa, ss: ss };
 						}
@@ -717,22 +761,21 @@ li a {
 							var pack = loadPayload();
 							var items = pack.items;
 							var deletedSet = pack.deleted;
-							var planAlloc = loadExpensePlanAllocByLineId(getMatrixYearStr());
+							var yearStr = getMatrixYearStr();
+							var planAlloc = loadExpensePlanAllocByLineId(yearStr);
 							var maxD = Math.min(4, Math.max(1, parseInt(window.__expenseMatrixMaxDepth, 10) || 4));
 							var labelCols = maxD;
 
 							rebuildTableChrome(maxD);
 							tbody.innerHTML = "";
 
-							var lineIds = [];
-							Object.keys(items).forEach(function (id) {
-								if (!id || deletedSet.has(id)) return;
+							var lineIds = loadExpensePlanRegisteredLineIds(yearStr);
+							lineIds = lineIds.filter(function (id) {
+								if (!id || deletedSet.has(id)) return false;
 								var d = depthFromId(id);
-								if (d < 1 || d > 4) return;
-								if (!shouldShowExpenseMatrixLeaf(items, id, planAlloc)) return;
-								lineIds.push(id);
+								if (d < 1 || d > 4) return false;
+								return !!items[id];
 							});
-							lineIds.sort(sortIdByNumbers);
 
 							var grandA = 0;
 							var grandS = 0;
@@ -958,7 +1001,7 @@ li a {
 							}
 
 							p1Ids.forEach(function (p1) {
-								var ids = idsUnderP1(p1).sort(sortIdByNumbers);
+								var ids = idsUnderP1(p1);
 								var p1RowSpan = ids.length + 1;
 								var p1Done = false;
 								var subA = 0;
@@ -1007,17 +1050,17 @@ li a {
 									td4.className = "left";
 									td4.textContent = c4;
 									tr.appendChild(td4);
-									var it = items[lid] || {};
-									var pa = plannedBudgetForLeaf(lid, items, planAlloc);
-									var m = moneyCells(pa, it.spent);
+									var pa = plannedBudgetFromExpensePlan(lid, planAlloc);
+									var sp = spentFromExpenseDetail(lid, items);
+									var m = moneyCells(pa, sp);
 									tr.appendChild(tdNum(m.a));
 									tr.appendChild(tdNum(m.s));
 									tr.appendChild(tdNum(m.b));
 									tbody.appendChild(tr);
 									subA += pa;
-									subS += parseMoney(it.spent);
+									subS += sp;
 									grandA += pa;
-									grandS += parseMoney(it.spent);
+									grandS += sp;
 								});
 								subtotalRow("소계", subA, subS, true);
 							});

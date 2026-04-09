@@ -450,17 +450,22 @@ li a {
 				<script>
 				(function () {
 					var INCOME_LEGACY = "statistics4_incomePlan_v1";
+					/** Statistics4 수입계획: statistics4_incomePlan_v1_<연도> */
 					function incomeKey(y) { return "statistics4_incomePlan_v1_" + y; }
-					function expKey(y) { return "expenditurePlan_v1_" + y; }
+					/** Statistics5 지출계획: statistics5_expensePlan_v1 → years.<연도> */
+					var EXPENSE_PLAN_KEY = "statistics5_expensePlan_v1";
 
 					function parseNum(v) {
 						if (v == null || v === "") return 0;
-						var n = parseFloat(String(v).replace(/,/g, ""));
+						var t = String(v).replace(/[,\s]/g, "").trim();
+						if (t === "—" || t === "-" || t === "–") return 0;
+						var n = parseFloat(t);
 						return isFinite(n) ? n : 0;
 					}
 
 					function loadIncomeForYear(y) {
-						var raw = localStorage.getItem(incomeKey(y));
+						var ys = String(y);
+						var raw = localStorage.getItem(incomeKey(ys));
 						if (!raw) raw = localStorage.getItem(INCOME_LEGACY);
 						if (!raw) return { a: 0, b: 0, c: 0, e: 0 };
 						try {
@@ -479,33 +484,59 @@ li a {
 						}
 					}
 
-					function sumGroupExpense(g) {
-						var s = 0, b = 0;
-						var hangOnly = (g.leaves || []).length === 0 && !g.draft;
-						if (hangOnly) {
-							s += g.hangSelfAmt || 0;
-							b += g.hangSubsidyAmt || 0;
-						}
-						(g.leaves || []).forEach(function (L) {
-							s += L.selfAmt || 0;
-							b += L.subsidyAmt || 0;
-						});
-						if (g.draft && g.draft.mokId) {
-							s += g.draft.selfAmt || 0;
-							b += g.draft.subsidyAmt || 0;
-						}
-						return s + b;
+					function parentDepth1(id) {
+						return String(id).split("-")[0] || "";
 					}
 
-					function sumExpenseG(y) {
-						var raw = localStorage.getItem(expKey(y));
-						if (!raw) return 0;
-						var plan;
-						try { plan = JSON.parse(raw); } catch (e) { return 0; }
-						var groups = plan.groups || [];
-						var total = 0;
-						for (var gi = 0; gi < groups.length; gi++) total += sumGroupExpense(groups[gi]);
-						return total;
+					function isMaximalInBlock(id, lineIds) {
+						for (var i = 0; i < lineIds.length; i++) {
+							var o = lineIds[i];
+							if (o !== id && String(o).indexOf(id + "-") === 0) return false;
+						}
+						return true;
+					}
+
+					function sumBlockExpenseLine(lineIds, cells) {
+						var s = 0;
+						var b = 0;
+						for (var i = 0; i < lineIds.length; i++) {
+							var id = lineIds[i];
+							if (!isMaximalInBlock(id, lineIds)) continue;
+							var c = (cells && cells[id]) || {};
+							s += parseNum(c.self);
+							b += parseNum(c.sub);
+						}
+						return { g: s, h: b };
+					}
+
+					/** 해당 연도 지출계획만 (Statistics5 loadPlan/savePlan 과 동일 구조) */
+					function loadExpenseForYear(y) {
+						var raw = localStorage.getItem(EXPENSE_PLAN_KEY);
+						if (!raw) return { g: 0, h: 0 };
+						var root;
+						try {
+							root = JSON.parse(raw);
+						} catch (e) {
+							return { g: 0, h: 0 };
+						}
+						var ys = String(y);
+						var pl = root.years && (root.years[ys] != null ? root.years[ys] : root.years[y]);
+						if (!pl) return { g: 0, h: 0 };
+						var blocks = pl.blocks || [];
+						var cells = pl.cells || {};
+						var gTot = 0;
+						var hTot = 0;
+						for (var bi = 0; bi < blocks.length; bi++) {
+							var block = blocks[bi];
+							var p1 = block.p1;
+							var lineIds = (block.lineIds || []).filter(function (lid) {
+								return parentDepth1(lid) === p1;
+							});
+							var sm = sumBlockExpenseLine(lineIds, cells);
+							gTot += sm.g;
+							hTot += sm.h;
+						}
+						return { g: gTot, h: hTot };
 					}
 
 					function fmt(n) {
@@ -523,8 +554,9 @@ li a {
 							var inc = loadIncomeForYear(y);
 							var d = inc.a + inc.b + inc.c;
 							var f = d + inc.e;
-							var gVal = sumExpenseG(y);
-							var hVal = 0;
+							var exp = loadExpenseForYear(y);
+							var gVal = exp.g;
+							var hVal = exp.h;
 							var iVal = gVal + hVal;
 							var tr = document.createElement("tr");
 							tr.innerHTML =
@@ -550,8 +582,9 @@ li a {
 							var inc = loadIncomeForYear(y);
 							var d = inc.a + inc.b + inc.c;
 							var f = d + inc.e;
-							var gVal = sumExpenseG(y);
-							var hVal = 0;
+							var exp = loadExpenseForYear(y);
+							var gVal = exp.g;
+							var hVal = exp.h;
 							var iVal = gVal + hVal;
 							rows.push([y, inc.a, inc.b, inc.c, d, inc.e, f, gVal, hVal, iVal]);
 						}

@@ -237,31 +237,56 @@ li a {
 	padding: 16px;
 }
 #expPlanPickerModal.is-open { display: flex; }
-.ep-modal-panel {
-	background: #fff;
-	border-radius: 8px;
-	max-width: 420px;
-	width: 100%;
-	max-height: 80vh;
+/* proposalFormReg.html「비용처리등록」 팝업 레이아웃과 동일 톤 (해당 파일은 수정하지 않음) */
+#expPlanPickerModal .ep-picker-inner {
+	width: 436px;
+	max-width: calc(100vw - 32px);
+	max-height: 85vh;
 	overflow: auto;
-	box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-	padding: 16px 18px 14px;
+	background: #fff;
+	box-sizing: border-box;
+	padding: 12px 14px 14px;
+	box-shadow: 0 8px 28px rgba(0,0,0,0.18);
 }
-.ep-modal-panel h3 { margin: 0 0 12px; font-size: 16px; }
-#expPlanPickerList { list-style: none; margin: 0; padding: 0; }
-#expPlanPickerList li { margin: 0 0 6px; }
-#expPlanPickerList button {
+#expPlanPickerModal .ep-picker-inner .popTitle {
+	margin-bottom: 6px;
+	font-size: 1.1em;
+	font-weight: 600;
+}
+#expPlanPickerModal .ep-picker-inner .popCon { margin: 0; }
+#expPlanPickerModal .ep-picker-inner .table_write table {
 	width: 100%;
+	border-collapse: collapse;
+}
+#expPlanPickerModal .ep-picker-inner .table_write th,
+#expPlanPickerModal .ep-picker-inner .table_write td {
+	vertical-align: middle;
+	padding: 4px 6px !important;
 	text-align: left;
-	padding: 10px 12px;
+}
+#expPlanPickerModal .ep-picker-inner .table_write {
+	max-height: 52vh;
+	overflow-y: auto;
+}
+#expPlanPickerModal .ep-picker-inner .ep-picker-item-btn {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+	text-align: left;
+	padding: 6px 8px;
+	font-size: 13px;
 	border: 1px solid #ccc;
-	border-radius: 4px;
 	background: #fafafa;
 	cursor: pointer;
-	font-size: 14px;
 }
-#expPlanPickerList button:hover { background: #e8f2fa; border-color: #69c; }
-.ep-modal-actions { margin-top: 12px; text-align: right; }
+#expPlanPickerModal .ep-picker-inner .ep-picker-item-btn:hover {
+	background: #e8f2fa;
+	border-color: #69c;
+}
+#expPlanPickerModal .ep-picker-inner ul.ep-picker-btns {
+	margin-top: 8px !important;
+	margin-bottom: 0;
+}
 </style>
 <body>
 
@@ -536,11 +561,22 @@ li a {
 				</div>
 
 				<div id="expPlanPickerModal" aria-hidden="true">
-					<div class="ep-modal-panel">
-						<h3 id="expPlanPickerTitle">항목 선택</h3>
-						<ul id="expPlanPickerList"></ul>
-						<div class="ep-modal-actions">
-							<a href="javascript:void(0);" class="btnLink btnGrayBg" id="expPlanPickerClose">닫기</a>
+					<div class="ep-picker-inner">
+						<h2 class="popTitle">
+							<i class="fa-solid fa-circle-dot"></i>
+							<span id="expPlanPickerTitle">항목 선택</span>
+						</h2>
+						<div class="popCon">
+							<div class="table_write">
+								<table cellpadding="5" border="1">
+									<tbody id="expPlanPickerList"></tbody>
+								</table>
+							</div>
+							<ul class="btnList mt20 ep-picker-btns">
+								<li>
+									<a href="javascript:void(0);" class="btnLink btnRedBg" id="expPlanPickerClose"><i class="fa-solid fa-times"></i> 닫 기</a>
+								</li>
+							</ul>
 						</div>
 					</div>
 				</div>
@@ -847,27 +883,32 @@ li a {
 
 	function openPicker(title, ids, items, onPick) {
 		var m = document.getElementById("expPlanPickerModal");
-		var ul = document.getElementById("expPlanPickerList");
+		var tb = document.getElementById("expPlanPickerList");
 		var tt = document.getElementById("expPlanPickerTitle");
-		if (!m || !ul || !tt) return;
+		if (!m || !tb || !tt) return;
 		tt.textContent = title;
-		ul.innerHTML = "";
+		tb.innerHTML = "";
 		if (!ids.length) {
-			var li0 = document.createElement("li");
-			li0.textContent = "(선택 가능한 하위 항목이 없습니다)";
-			ul.appendChild(li0);
+			var tr0 = document.createElement("tr");
+			var td0 = document.createElement("td");
+			td0.textContent = "(선택 가능한 하위 항목이 없습니다)";
+			tr0.appendChild(td0);
+			tb.appendChild(tr0);
 		} else {
 			ids.forEach(function (id) {
-				var li = document.createElement("li");
+				var tr = document.createElement("tr");
+				var td = document.createElement("td");
 				var btn = document.createElement("button");
 				btn.type = "button";
+				btn.className = "ep-picker-item-btn";
 				btn.textContent = itemLabel(items, id) || id;
 				btn.addEventListener("click", function () {
 					onPick(id);
 					closePicker();
 				});
-				li.appendChild(btn);
-				ul.appendChild(li);
+				td.appendChild(btn);
+				tr.appendChild(td);
+				tb.appendChild(tr);
 			});
 		}
 		m.classList.add("is-open");

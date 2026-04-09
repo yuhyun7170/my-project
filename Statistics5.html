@@ -873,6 +873,16 @@ li a {
 		writePlanRoot(root);
 	}
 
+	/** 해당 연도 지출계획 전체(모든 항 블록)에서 이미 쓰인 줄 id인지 */
+	function isExpenseLineIdTakenInPlan(plan, id) {
+		if (!id || !plan || !plan.blocks) return false;
+		for (var bi = 0; bi < plan.blocks.length; bi++) {
+			var lineIds = plan.blocks[bi].lineIds || [];
+			if (lineIds.indexOf(id) >= 0) return true;
+		}
+		return false;
+	}
+
 	var epBudget = { items: {}, deleted: new Set() };
 
 	function itemLabel(items, id) {
@@ -1722,10 +1732,10 @@ li a {
 		var plObj = { items: pack.items, deleted: Array.from(pack.deleted) };
 		var ids = getChildIds(plObj, 1, "");
 		var plan = loadPlan(pack.year);
-		var existing = plan.blocks.map(function (b) { return b.p1; });
-		openPicker("\"항\" 항목 선택", ids.filter(function (id) { return existing.indexOf(id) === -1; }), pack.items, function (id) {
+		openPicker("\"항\" 항목 선택", ids.filter(function (id) { return !isExpenseLineIdTakenInPlan(plan, id); }), pack.items, function (id) {
 			var pl2 = loadPlan(getYear());
 			syncPlanCellsFromDom(pl2);
+			if (isExpenseLineIdTakenInPlan(pl2, id)) return;
 			pl2.blocks.push({ p1: id, lineIds: [id] });
 			ensureCell(pl2.cells, id);
 			savePlan(getYear(), pl2);
@@ -1744,13 +1754,12 @@ li a {
 		if (!block || parentDepth1(parentLineId) !== block.p1) return;
 		var childDepth = d + 1;
 		var ids = getChildIds(plObj, childDepth, parentLineId);
-		var taken = block.lineIds || [];
 		var pickTitle = childDepth === 2 ? "\"목\" 항목 선택" : childDepth === 3 ? "\"세목\" 항목 선택" : "\"세부사업\" 항목 선택";
-		openPicker(pickTitle, ids.filter(function (id) { return taken.indexOf(id) === -1; }), pack.items, function (id) {
+		openPicker(pickTitle, ids.filter(function (id) { return !isExpenseLineIdTakenInPlan(plan, id); }), pack.items, function (id) {
 			var pl2 = loadPlan(getYear());
 			syncPlanCellsFromDom(pl2);
 			var b2 = pl2.blocks[blockIdx];
-			if (!b2 || b2.lineIds.indexOf(id) >= 0) return;
+			if (!b2 || isExpenseLineIdTakenInPlan(pl2, id)) return;
 			if (parentDepth1(id) !== b2.p1) return;
 			ensureCell(pl2.cells, id);
 			/* 세목만 목 전용 행을 대체(한 행에 목·세목). 세부 추가 시에는 부모 세목 행 유지 */
@@ -1780,12 +1789,11 @@ li a {
 		var block = plan.blocks[blockIdx];
 		if (!block || parentDepth1(lineId) !== block.p1) return;
 		var ids = getChildIds(plObj, d, pid);
-		var taken = block.lineIds || [];
-		openPicker("\"세부사업\" 항목 선택", ids.filter(function (id) { return taken.indexOf(id) === -1; }), pack.items, function (id) {
+		openPicker("\"세부사업\" 항목 선택", ids.filter(function (id) { return !isExpenseLineIdTakenInPlan(plan, id); }), pack.items, function (id) {
 			var pl2 = loadPlan(getYear());
 			syncPlanCellsFromDom(pl2);
 			var b2 = pl2.blocks[blockIdx];
-			if (!b2 || b2.lineIds.indexOf(id) >= 0) return;
+			if (!b2 || isExpenseLineIdTakenInPlan(pl2, id)) return;
 			if (parentDepth1(id) !== b2.p1) return;
 			b2.lineIds.push(id);
 			b2.lineIds.sort(sortIdByNumbers);

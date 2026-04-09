@@ -271,6 +271,10 @@ li a {
 #expensePlanTable td.ep-td-add-only .ep-add {
 	margin-left: 0;
 }
+#expensePlanTable tr.ep-row-semok-add td.ep-td-semok-add {
+	text-align: center;
+	vertical-align: middle;
+}
 #expPlanPickerModal {
 	display: none;
 	position: fixed;
@@ -1020,6 +1024,60 @@ li a {
 		return btn;
 	}
 
+	function makeRemoveMokSubtreeBtn(blockIdx, mokId) {
+		var btn = document.createElement("button");
+		btn.type = "button";
+		btn.className = "ep-del";
+		btn.textContent = "\u2212";
+		btn.title = "이 목과 하위 세목·세부 삭제";
+		btn.addEventListener("click", function () {
+			onRemoveMokSubtree(blockIdx, mokId);
+		});
+		return btn;
+	}
+
+	function belongsToMokSubtree(lid, mokId) {
+		if (!mokId || lid == null) return false;
+		if (lid === mokId) return true;
+		return String(lid).indexOf(mokId + "-") === 0;
+	}
+
+	function expandDisplayRowsForMokGroups(displayIds, includeSemokAddRow) {
+		var expanded = [];
+		var expIdx = 0;
+		while (expIdx < displayIds.length) {
+			var lid0 = displayIds[expIdx];
+			if (depthFromId(lid0) >= 3) {
+				var mokG = parentDepth2(lid0);
+				var start = expIdx;
+				var end = expIdx;
+				while (end < displayIds.length && belongsToMokSubtree(displayIds[end], mokG)) {
+					end++;
+				}
+				var n = end - start;
+				var extra = includeSemokAddRow ? 1 : 0;
+				var mokRowspan = n + extra;
+				for (var g = start; g < end; g++) {
+					expanded.push({
+						type: "line",
+						lid: displayIds[g],
+						mokParent: mokG,
+						mokRowspan: mokRowspan,
+						isFirstInMokGroup: g === start
+					});
+				}
+				if (includeSemokAddRow) {
+					expanded.push({ type: "semok-add", mokId: mokG });
+				}
+				expIdx = end;
+				continue;
+			}
+			expanded.push({ type: "line", lid: lid0 });
+			expIdx++;
+		}
+		return expanded;
+	}
+
 	function render() {
 		var pack = loadBudgetPack();
 		epBudget.items = pack.items;
@@ -1091,35 +1149,49 @@ li a {
 					return !(id === p1 && depthFromId(id) === 1);
 				});
 			}
-			var p1RowSpan = displayIds.length + 1;
+			var expandedRows = expandDisplayRowsForMokGroups(displayIds, expensePlanInputMode);
+			var p1RowSpan = expandedRows.length + 1;
 			var hang = itemLabel(items, p1);
 			var first = true;
 
-			displayIds.forEach(function (lid) {
+			expandedRows.forEach(function (entry) {
+				if (entry.type === "semok-add") {
+					var trSa = document.createElement("tr");
+					trSa.className = "ep-row-semok-add";
+					var td3a = document.createElement("td");
+					td3a.className = "ep-td-semok-add";
+					var bSem = document.createElement("button");
+					bSem.type = "button";
+					bSem.className = "ep-add";
+					bSem.textContent = "+";
+					bSem.title = "세목 추가(같은 목)";
+					bSem.addEventListener("click", function () { onAddChild(bi, entry.mokId); });
+					td3a.appendChild(bSem);
+					var td4a = document.createElement("td");
+					td4a.textContent = "—";
+					var tdSa = document.createElement("td");
+					var tdBa = document.createElement("td");
+					var tdTa = document.createElement("td");
+					tdSa.className = "ep-num";
+					tdBa.className = "ep-num";
+					tdTa.className = "ep-num ep-total";
+					tdSa.textContent = "";
+					tdBa.textContent = "";
+					tdTa.textContent = fmtNum(0);
+					trSa.appendChild(td3a);
+					trSa.appendChild(td4a);
+					trSa.appendChild(tdSa);
+					trSa.appendChild(tdBa);
+					trSa.appendChild(tdTa);
+					tbody.appendChild(trSa);
+					return;
+				}
+				var lid = entry.lid;
 				var tr = document.createElement("tr");
 				tr.setAttribute("data-node-id", lid);
 				var lc = labelColsForLine(lid);
 				var showB2 = expensePlanInputMode && lc.d === 1 && lid === p1 && getChildIds(plObj, 2, lid).length;
 				var showB3 = expensePlanInputMode && lc.d === 2 && getChildIds(plObj, 3, lid).length;
-				var parentMokForSemokSib = lc.d === 3 ? parentDepth2(lid) : "";
-				var semoksSameMok = [];
-				if (parentMokForSemokSib) {
-					semoksSameMok = lineIds
-						.filter(function (x) {
-							return depthFromId(x) === 3 && parentDepth2(x) === parentMokForSemokSib;
-						})
-						.sort(sortIdByNumbers);
-				}
-				var isLastSemokUnderMok =
-					lc.d === 3 && semoksSameMok.length && lid === semoksSameMok[semoksSameMok.length - 1];
-				var showSemokPlusOnMokCol =
-					expensePlanInputMode &&
-					lc.d === 3 &&
-					parentMokForSemokSib &&
-					isLastSemokUnderMok &&
-					getChildIds(plObj, 3, parentMokForSemokSib).some(function (sid) {
-						return lineIds.indexOf(sid) === -1;
-					});
 				var showB4 = expensePlanInputMode && lc.d === 3 && getChildIds(plObj, 4, lid).length;
 				var showBs = false;
 				if (expensePlanInputMode && lc.d === 4) {
@@ -1146,48 +1218,52 @@ li a {
 					tr.appendChild(td1);
 					first = false;
 				}
-				var td2 = document.createElement("td");
-				var span2 = document.createElement("span");
-				span2.className = "ep-label-text";
-				span2.textContent = epLabelShown(lc.c2, showB2);
-				var td2NeedsSplit =
-					showSemokPlusOnMokCol || (expensePlanInputMode && lc.d === 2) || showB2;
-				if (td2NeedsSplit) {
-					td2.className = "ep-td-split";
-					var act2 = document.createElement("span");
-					act2.className = "ep-cell-actions";
-					if (expensePlanInputMode && lc.d === 2) {
-						act2.appendChild(makeRemoveLineBtn(bi, lid));
+				var skipTd2 = entry.mokParent && !entry.isFirstInMokGroup;
+				if (!skipTd2) {
+					var td2 = document.createElement("td");
+					var span2 = document.createElement("span");
+					span2.className = "ep-label-text";
+					if (entry.mokParent && entry.isFirstInMokGroup) {
+						span2.textContent = epLabelShown(itemLabel(items, entry.mokParent), false);
+					} else {
+						span2.textContent = epLabelShown(lc.c2, showB2);
 					}
-					if (showB2) {
-						var b2 = document.createElement("button");
-						b2.type = "button";
-						b2.className = "ep-add";
-						b2.textContent = "+";
-						b2.title = "목 추가";
-						b2.addEventListener("click", function () { onAddChild(bi, lid); });
-						act2.appendChild(b2);
+					var td2NeedsSplit =
+						(expensePlanInputMode && entry.mokParent && entry.isFirstInMokGroup) ||
+						(expensePlanInputMode && lc.d === 2 && !entry.mokParent) ||
+						showB2;
+					if (entry.mokParent && entry.isFirstInMokGroup) {
+						td2.rowSpan = entry.mokRowspan;
 					}
-					if (showSemokPlusOnMokCol) {
-						var b2s = document.createElement("button");
-						b2s.type = "button";
-						b2s.className = "ep-add";
-						b2s.textContent = "+";
-						b2s.title = "세목 추가(같은 목)";
-						b2s.addEventListener("click", function () {
-							onAddChild(bi, parentMokForSemokSib);
-						});
-						act2.appendChild(b2s);
+					if (td2NeedsSplit) {
+						td2.className = "ep-td-split";
+						var act2 = document.createElement("span");
+						act2.className = "ep-cell-actions";
+						if (expensePlanInputMode && lc.d === 2 && !entry.mokParent) {
+							act2.appendChild(makeRemoveLineBtn(bi, lid));
+						}
+						if (expensePlanInputMode && entry.mokParent && entry.isFirstInMokGroup) {
+							act2.appendChild(makeRemoveMokSubtreeBtn(bi, entry.mokParent));
+						}
+						if (showB2) {
+							var b2 = document.createElement("button");
+							b2.type = "button";
+							b2.className = "ep-add";
+							b2.textContent = "+";
+							b2.title = "목 추가";
+							b2.addEventListener("click", function () { onAddChild(bi, lid); });
+							act2.appendChild(b2);
+						}
+						var inner2 = document.createElement("div");
+						inner2.className = "ep-td-split-inner";
+						inner2.appendChild(span2);
+						inner2.appendChild(act2);
+						td2.appendChild(inner2);
+					} else {
+						td2.appendChild(span2);
 					}
-					var inner2 = document.createElement("div");
-					inner2.className = "ep-td-split-inner";
-					inner2.appendChild(span2);
-					inner2.appendChild(act2);
-					td2.appendChild(inner2);
-				} else {
-					td2.appendChild(span2);
+					tr.appendChild(td2);
 				}
-				tr.appendChild(td2);
 
 				var td3 = document.createElement("td");
 				var span3 = document.createElement("span");
@@ -1453,6 +1529,34 @@ li a {
 			savePlan(getYear(), pl2);
 			render();
 		});
+	}
+
+	function onRemoveMokSubtree(blockIdx, mokId) {
+		if (!expensePlanInputMode) return;
+		if (!confirm("이 목과 연결된 세목·세부 항목을 모두 삭제할까요?")) return;
+		var pack = loadBudgetPack();
+		var plan = loadPlan(pack.year);
+		syncPlanCellsFromDom(plan);
+		var block = plan.blocks[blockIdx];
+		if (!block) return;
+		var p1 = block.p1;
+		if (parentDepth1(mokId) !== p1) return;
+		var lineIds = block.lineIds || [];
+		var remove = {};
+		lineIds.forEach(function (id) {
+			if (id === mokId || String(id).indexOf(mokId + "-") === 0) remove[id] = true;
+		});
+		var newLineIds = lineIds.filter(function (id) { return !remove[id]; });
+		Object.keys(remove).forEach(function (id) {
+			if (plan.cells[id]) delete plan.cells[id];
+		});
+		if (newLineIds.length === 0) {
+			plan.blocks.splice(blockIdx, 1);
+		} else {
+			block.lineIds = newLineIds;
+		}
+		savePlan(pack.year, plan);
+		render();
 	}
 
 	function onRemoveLine(blockIdx, lineId) {

@@ -109,22 +109,8 @@ li a {
 #content table:not(#budgetStatsMatrixLikeTable) col:nth-child(8) { width: 11% !important; }
 #content table:not(#budgetStatsMatrixLikeTable) col:nth-child(9) { width: 11% !important; }
 
-.btnBudgetDepth {
-    padding: 5px 12px;
-    font-size: 12px;
-    border: 1px solid #ccc;
-    background: #fff;
-    color: #313131;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: inherit;
-    line-height: 1.3;
-}
-.btnBudgetDepth:hover {
-    background: #f0f6fc;
-    border-color: #90b4d9;
-}
-.btnBudgetDepth.is-active {
+
+.btnChaBg.is-active {
     background: #2b6cb0;
     color: #fff;
     border-color: #2b6cb0;
@@ -376,10 +362,10 @@ li a {
 				    
 				</select>
 				<div class="budget-depth-filter" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:4px;">
-					<button type="button" class="btnBudgetDepth" data-max-depth="1" title="1뎁스만 표시">항</button>
-					<button type="button" class="btnBudgetDepth" data-max-depth="2" title="2뎁스까지 표시">목</button>
-					<button type="button" class="btnBudgetDepth" data-max-depth="3" title="3뎁스까지 표시">세목</button>
-					<button type="button" class="btnBudgetDepth is-active" data-max-depth="4" title="4뎁스까지 표시">세부사업</button>
+					<button type="button" class="btnLink btnCha" data-max-depth="1" title="1뎁스만 표시">항</button>
+					<button type="button" class="btnLink btnCha" data-max-depth="2" title="2뎁스까지 표시">목</button>
+					<button type="button" class="btnLink btnCha" data-max-depth="3" title="3뎁스까지 표시">세목</button>
+					<button type="button" class="btnLink btnCha is-active" data-max-depth="4" title="4뎁스까지 표시">세부사업</button>
 				</div>
 				<div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
 					<a href="javascript:exceldown();" class="btnLink btnBlueGr">엑셀 <i class="fa fa-download"></i></a>

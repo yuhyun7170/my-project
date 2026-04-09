@@ -180,6 +180,15 @@ li a {
 	padding: 4px 6px;
 	font-size: 12px;
 }
+#expensePlanTable .ep-inp:disabled {
+	background: #f5f5f5;
+	color: #555;
+	cursor: not-allowed;
+	opacity: 1;
+}
+#expensePlanTable td.ep-td-hang {
+	background-color: #f0f0f0;
+}
 #expensePlanTable tr.ep-row-subtotal td,
 #expensePlanTable tr.ep-row-grand td { background: #f0f0f0; font-weight: 600; }
 #expensePlanTable .ep-add {
@@ -971,6 +980,7 @@ li a {
 				}
 				if (first) {
 					var td1 = document.createElement("td");
+					td1.className = "ep-td-hang";
 					td1.rowSpan = p1RowSpan;
 					var spHang = document.createElement("span");
 					spHang.textContent = hang;
@@ -1050,13 +1060,13 @@ li a {
 				inpS.className = "ep-inp";
 				inpS.setAttribute("data-kind", "self");
 				inpS.value = cell.self || "";
-				inpS.readOnly = !expensePlanInputMode;
+				inpS.disabled = !expensePlanInputMode;
 				var inpB = document.createElement("input");
 				inpB.type = "text";
 				inpB.className = "ep-inp";
 				inpB.setAttribute("data-kind", "sub");
 				inpB.value = cell.sub || "";
-				inpB.readOnly = !expensePlanInputMode;
+				inpB.disabled = !expensePlanInputMode;
 				var selfN = parseNum(cell.self);
 				var subN = parseNum(cell.sub);
 				var tdT = document.createElement("td");

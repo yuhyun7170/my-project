@@ -185,22 +185,30 @@ li a {
 }
 #expensePlanTable tr.ep-row-subtotal td,
 #expensePlanTable tr.ep-row-grand td { background: #f0f0f0; font-weight: 600; }
+/* 수입계획(Statistics4) #incomePlanWrap .btn-levy / .btn-levy-add 와 동일 */
 #expensePlanTable .ep-add {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 22px;
-	height: 22px;
+	flex-shrink: 0;
+	width: 26px;
+	height: 26px;
+	line-height: 22px;
 	margin-left: 4px;
-	border: 1px solid #888;
-	border-radius: 3px;
-	background: #fff;
+	padding: 0;
+	border: 1px solid rgb(124, 196, 255);
+	color: rgb(124, 196, 255);
+	background: rgb(236, 250, 255);
+	border-radius: 4px;
 	cursor: pointer;
-	font-size: 14px;
-	line-height: 1;
+	font-weight: bold;
+	font-size: 16px;
 	vertical-align: middle;
+	box-sizing: border-box;
 }
-#expensePlanTable .ep-add:hover:not(:disabled) { background: #eef6ff; }
+#expensePlanTable .ep-add:hover:not(:disabled) {
+	background: rgb(196, 237, 255);
+}
 #expensePlanTable .ep-add:disabled {
 	opacity: 0.35;
 	cursor: not-allowed;
@@ -210,21 +218,24 @@ li a {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 22px;
-	height: 22px;
+	flex-shrink: 0;
+	width: 26px;
+	height: 26px;
+	line-height: 22px;
 	margin-left: 4px;
-	border: 1px solid #888;
-	border-radius: 3px;
-	background: #fff;
+	padding: 0;
+	border: 1px solid rgb(255, 138, 138);
+	color: rgb(255, 138, 138);
+	background: rgb(255, 236, 236);
+	border-radius: 4px;
 	cursor: pointer;
-	font-size: 14px;
-	line-height: 1;
+	font-weight: bold;
+	font-size: 16px;
 	vertical-align: middle;
-	color: #a33;
+	box-sizing: border-box;
 }
 #expensePlanTable .ep-del:hover {
-	background: #ffecec;
-	border-color: #c44;
+	background: rgb(255, 189, 189);
 }
 /* td는 table-cell 유지 — flex는 내부 래퍼에만 (행 높이 어긋남 방지) */
 #expensePlanTable td.ep-td-split {

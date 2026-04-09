@@ -394,6 +394,7 @@ li a {
 					}
 					#budgetStatsMatrixLikeTable thead th { background: #ffffff; font-weight: 600; border-bottom: 1px solid #324c6c; border-top: 1px solid #324c6c;}
 					#budgetStatsMatrixLikeTable .left { text-align: center; }
+					#budgetStatsMatrixLikeTable td.matrix-hang-cell { background-color: #ececec; }
 				</style>
 				<div id="budgetStatsMatrixLikeWrap">
 					<table id="budgetStatsMatrixLikeTable">
@@ -830,7 +831,6 @@ li a {
 									p1Ids.push(p1);
 								}
 							});
-							p1Ids.sort(function (a, b) { return parseInt(a, 10) - parseInt(b, 10); });
 
 							function idsUnderP1(p1) {
 								var r = [];
@@ -848,7 +848,7 @@ li a {
 									grandS += sm.ss;
 									var tr = document.createElement("tr");
 									var td1 = document.createElement("td");
-									td1.className = "left";
+									td1.className = "left matrix-hang-cell";
 									td1.textContent = matrixItemLabel(p1) || "";
 									tr.appendChild(td1);
 									tr.appendChild(tdNum(formatMoney(sm.sa)));
@@ -896,7 +896,7 @@ li a {
 										if (!p1Done) {
 											var td1 = document.createElement("td");
 											td1.rowSpan = p1RowSpan;
-											td1.className = "left";
+											td1.className = "left matrix-hang-cell";
 											td1.textContent = hangName;
 											tr.appendChild(td1);
 											p1Done = true;
@@ -949,7 +949,7 @@ li a {
 										if (!p1Done) {
 											var td1 = document.createElement("td");
 											td1.rowSpan = p1RowSpan;
-											td1.className = "left";
+											td1.className = "left matrix-hang-cell";
 											td1.textContent = hangName;
 											tr.appendChild(td1);
 											p1Done = true;
@@ -1013,7 +1013,7 @@ li a {
 									if (!p1Done) {
 										var td1 = document.createElement("td");
 										td1.rowSpan = p1RowSpan;
-										td1.className = "left";
+										td1.className = "left matrix-hang-cell";
 										td1.textContent = hangName;
 										tr.appendChild(td1);
 										p1Done = true;

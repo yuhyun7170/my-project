@@ -942,6 +942,23 @@ li a {
 		return false;
 	}
 
+	/**
+	 * 세목 추가 시 목 줄 id가 lineIds에서 빠지므로, 해당 목 또는 그 하위(세목·세부)가 하나라도 있으면 목은 이미 사용 중.
+	 */
+	function isMokSubtreeUsedInPlan(plan, mokId) {
+		if (!mokId || depthFromId(mokId) !== 2) return false;
+		if (!plan || !plan.blocks) return false;
+		for (var bi = 0; bi < plan.blocks.length; bi++) {
+			var lineIds = plan.blocks[bi].lineIds || [];
+			for (var i = 0; i < lineIds.length; i++) {
+				var x = lineIds[i];
+				if (x === mokId) return true;
+				if (String(x).indexOf(mokId + "-") === 0) return true;
+			}
+		}
+		return false;
+	}
+
 	var epBudget = { items: {}, deleted: new Set() };
 
 	function itemLabel(items, id) {
@@ -1825,11 +1842,16 @@ li a {
 		var childDepth = d + 1;
 		var ids = getChildIds(plObj, childDepth, parentLineId);
 		var pickTitle = childDepth === 2 ? "\"목\" 항목 선택" : childDepth === 3 ? "\"세목\" 항목 선택" : "\"세부사업\" 항목 선택";
-		openPicker(pickTitle, ids.filter(function (id) { return !isExpenseLineIdTakenInPlan(plan, id); }), pack.items, function (id) {
+		openPicker(pickTitle, ids.filter(function (id) {
+			if (isExpenseLineIdTakenInPlan(plan, id)) return false;
+			if (childDepth === 2 && isMokSubtreeUsedInPlan(plan, id)) return false;
+			return true;
+		}), pack.items, function (id) {
 			var pl2 = loadPlan(getYear());
 			syncPlanCellsFromDom(pl2);
 			var b2 = pl2.blocks[blockIdx];
 			if (!b2 || isExpenseLineIdTakenInPlan(pl2, id)) return;
+			if (childDepth === 2 && isMokSubtreeUsedInPlan(pl2, id)) return;
 			if (parentDepth1(id) !== b2.p1) return;
 			ensureCell(pl2.cells, id);
 			/* 세목만 목 전용 행을 대체(한 행에 목·세목). 세부 추가 시에는 부모 세목 행 유지 */

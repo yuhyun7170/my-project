@@ -873,6 +873,37 @@ li a {
 		return cells[id];
 	}
 
+	/** 입력 중인 금액을 잃지 않도록, render/항목추가 전에 DOM → plan.cells 반영 */
+	function syncPlanCellsFromDom(plan) {
+		var tbody = document.getElementById("expensePlanTbody");
+		if (!tbody) return;
+		var rows = tbody.querySelectorAll("tr[data-node-id]");
+		for (var r = 0; r < rows.length; r++) {
+			var tr = rows[r];
+			var id = tr.getAttribute("data-node-id");
+			var inpS = tr.querySelector("input[data-kind=self]");
+			var inpB = tr.querySelector("input[data-kind=sub]");
+			if (!inpS && !inpB) continue;
+			ensureCell(plan.cells, id);
+			plan.cells[id].self = inpS ? inpS.value.trim() : "";
+			plan.cells[id].sub = inpB ? inpB.value.trim() : "";
+		}
+	}
+
+	/** 깊이 1(항) 줄은 같은 블록 안에서 맨 아래로 — 목 추가 + 행이 아래에 오도록 */
+	function sortLineIdsForRender(lineIds, p1) {
+		var root = [];
+		var rest = [];
+		for (var i = 0; i < lineIds.length; i++) {
+			var id = lineIds[i];
+			if (id === p1 && depthFromId(id) === 1) root.push(id);
+			else rest.push(id);
+		}
+		rest.sort(sortIdByNumbers);
+		root.sort(sortIdByNumbers);
+		return rest.concat(root);
+	}
+
 	function syncModeButton() {
 		var bin = document.getElementById("btnExpensePlanInput");
 		if (!bin) return;
@@ -960,11 +991,12 @@ li a {
 			lineIds.sort(sortIdByNumbers);
 			if (!lineIds.length) return;
 
-			var p1RowSpan = lineIds.length + 1;
+			var displayIds = sortLineIdsForRender(lineIds, p1);
+			var p1RowSpan = displayIds.length + 1;
 			var hang = itemLabel(items, p1);
 			var first = true;
 
-			lineIds.forEach(function (lid) {
+			displayIds.forEach(function (lid) {
 				var tr = document.createElement("tr");
 				tr.setAttribute("data-node-id", lid);
 				var lc = labelColsForLine(lid);
@@ -1177,6 +1209,7 @@ li a {
 		var existing = plan.blocks.map(function (b) { return b.p1; });
 		openPicker("\"항\" 항목 선택", ids.filter(function (id) { return existing.indexOf(id) === -1; }), pack.items, function (id) {
 			var pl2 = loadPlan(getYear());
+			syncPlanCellsFromDom(pl2);
 			pl2.blocks.push({ p1: id, lineIds: [id] });
 			ensureCell(pl2.cells, id);
 			savePlan(getYear(), pl2);
@@ -1199,6 +1232,7 @@ li a {
 		var pickTitle = childDepth === 2 ? "\"목\" 항목 선택" : childDepth === 3 ? "\"세목\" 항목 선택" : "\"세부사업\" 항목 선택";
 		openPicker(pickTitle, ids.filter(function (id) { return taken.indexOf(id) === -1; }), pack.items, function (id) {
 			var pl2 = loadPlan(getYear());
+			syncPlanCellsFromDom(pl2);
 			var b2 = pl2.blocks[blockIdx];
 			if (!b2 || b2.lineIds.indexOf(id) >= 0) return;
 			if (parentDepth1(id) !== b2.p1) return;
@@ -1223,6 +1257,7 @@ li a {
 		var taken = block.lineIds || [];
 		openPicker("\"세부사업\" 항목 선택", ids.filter(function (id) { return taken.indexOf(id) === -1; }), pack.items, function (id) {
 			var pl2 = loadPlan(getYear());
+			syncPlanCellsFromDom(pl2);
 			var b2 = pl2.blocks[blockIdx];
 			if (!b2 || b2.lineIds.indexOf(id) >= 0) return;
 			if (parentDepth1(id) !== b2.p1) return;
@@ -1239,6 +1274,7 @@ li a {
 		if (!confirm("이 항목 줄을 지출계획에서 삭제할까요?")) return;
 		var pack = loadBudgetPack();
 		var plan = loadPlan(pack.year);
+		syncPlanCellsFromDom(plan);
 		var block = plan.blocks[blockIdx];
 		if (!block) return;
 		var p1 = block.p1;
@@ -1265,18 +1301,7 @@ li a {
 	function saveFromDom() {
 		var pack = loadBudgetPack();
 		var plan = loadPlan(pack.year);
-		var tbody = document.getElementById("expensePlanTbody");
-		if (!tbody) return;
-		var rows = tbody.querySelectorAll("tr[data-node-id]");
-		for (var r = 0; r < rows.length; r++) {
-			var tr = rows[r];
-			var id = tr.getAttribute("data-node-id");
-			var inpS = tr.querySelector("input[data-kind=self]");
-			var inpB = tr.querySelector("input[data-kind=sub]");
-			ensureCell(plan.cells, id);
-			plan.cells[id].self = inpS ? inpS.value.trim() : "";
-			plan.cells[id].sub = inpB ? inpB.value.trim() : "";
-		}
+		syncPlanCellsFromDom(plan);
 		savePlan(pack.year, plan);
 		alert("저장되었습니다.");
 		expensePlanInputMode = false;

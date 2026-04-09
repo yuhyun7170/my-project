@@ -897,17 +897,17 @@ li a {
 		var c3 = "";
 		var c4 = "";
 		if (d === 1) {
-			c2 = "—";
-			c3 = "—";
-			c4 = "—";
+			c2 = "";
+			c3 = "";
+			c4 = "";
 		} else if (d === 2) {
 			c2 = itemLabel(items, lineId);
-			c3 = "—";
-			c4 = "—";
+			c3 = "";
+			c4 = "";
 		} else if (d === 3) {
 			c2 = itemLabel(items, parentDepth2(lineId));
 			c3 = itemLabel(items, lineId);
-			c4 = "—";
+			c4 = "";
 		} else {
 			c2 = itemLabel(items, parentDepth2(lineId));
 			c3 = itemLabel(items, parentDepth3(lineId));
@@ -1064,6 +1064,18 @@ li a {
 		if (!semokId || lid == null) return false;
 		if (lid === semokId) return true;
 		return String(lid).indexOf(semokId + "-") === 0;
+	}
+
+	/** 목(id)만 있는 줄은 세목·세부가 있으면 표시하지 않음(목 전용 행이 lineIds에 남는 경우) */
+	function hasSemokOrDeeperUnderMok(lineIds, mokId) {
+		if (depthFromId(mokId) !== 2) return false;
+		for (var i = 0; i < lineIds.length; i++) {
+			var x = lineIds[i];
+			if (x === mokId) continue;
+			if (depthFromId(x) < 3) continue;
+			if (belongsToMokSubtree(x, mokId)) return true;
+		}
+		return false;
 	}
 
 	/** 세목(id)만 있는 줄은 세부가 있으면 표시하지 않음(세부 추가 시 부모 세목 id가 남는 데이터 모델 대응) */
@@ -1360,6 +1372,7 @@ li a {
 
 			var displayIds = sortLineIdsForRender(lineIds, p1);
 			displayIds = displayIds.filter(function (id) {
+				if (depthFromId(id) === 2 && hasSemokOrDeeperUnderMok(lineIds, id)) return false;
 				if (depthFromId(id) !== 3) return true;
 				return !hasSebuChildUnderSemok(lineIds, id);
 			});

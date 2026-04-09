@@ -860,7 +860,7 @@ li a {
 										}
 										var td2 = document.createElement("td");
 										td2.className = "left";
-										td2.textContent = p2k === "__h" ? "—" : matrixItemLabel(p2k);
+										td2.textContent = p2k === "__h" ? "" : matrixItemLabel(p2k);
 										tr.appendChild(td2);
 										tr.appendChild(tdNum(formatMoney(sm.sa)));
 										tr.appendChild(tdNum(formatMoney(sm.ss)));
@@ -922,11 +922,11 @@ li a {
 											var lid = sp.id;
 											var d0 = sp.d;
 											if (d0 === 1) {
-												mok = "—";
-												sem = "—";
+												mok = "";
+												sem = "";
 											} else if (d0 === 2) {
 												mok = matrixItemLabel(lid);
-												sem = "—";
+												sem = "";
 											} else {
 												mok = matrixItemLabel(parentDepth2(lid));
 												sem = matrixItemLabel(lid);
@@ -979,17 +979,17 @@ li a {
 									var c3 = "";
 									var c4 = "";
 									if (d === 1) {
-										c2 = "—";
-										c3 = "—";
-										c4 = "—";
+										c2 = "";
+										c3 = "";
+										c4 = "";
 									} else if (d === 2) {
 										c2 = matrixItemLabel(lid);
-										c3 = "—";
-										c4 = "—";
+										c3 = "";
+										c4 = "";
 									} else if (d === 3) {
 										c2 = matrixItemLabel(parentDepth2(lid));
 										c3 = matrixItemLabel(lid);
-										c4 = "—";
+										c4 = "";
 									} else {
 										c2 = matrixItemLabel(parentDepth2(lid));
 										c3 = matrixItemLabel(parentDepth3(lid));

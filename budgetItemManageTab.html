@@ -343,6 +343,18 @@ li a { white-space: nowrap; }
 		if (el) el.textContent = name;
 	}
 
+	/** 항목명 입력 시 트리 데이터·왼쪽 라벨 즉시 반영(저장 버튼 없이 미리보기) */
+	function syncNameInputToTree() {
+		if (!selectedId) return;
+		var found = findNode(selectedId);
+		if (!found) return;
+		var inp = document.getElementById("bimName");
+		if (!inp) return;
+		var nameVal = (inp.value || "").trim() || "새 항목";
+		found.node.name = nameVal;
+		updateTreeLabelForNode(selectedId, nameVal);
+	}
+
 	/** 선택 노드에 폼 값을 반영하고 localStorage 저장 및 라벨 갱신 */
 	function flushFormToTree() {
 		if (!selectedId) return;
@@ -634,6 +646,10 @@ li a { white-space: nowrap; }
 	}
 
 	document.getElementById("bimBtnAddRoot").addEventListener("click", addRoot);
+	var bimNameEl = document.getElementById("bimName");
+	if (bimNameEl) {
+		bimNameEl.addEventListener("input", syncNameInputToTree);
+	}
 	document.getElementById("bimBtnSave").addEventListener("click", function () {
 		if (!selectedId) return;
 		flushFormToTree();

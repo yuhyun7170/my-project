@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- 항목관리 트리: 저장 버튼으로만 반영 · 미저장 시 알럿 없이 마지막 저장 상태로 되돌림 · localStorage: budgetItemManageTree_v1 -->
+<!-- 항목관리 트리: 저장으로 localStorage 반영 · 미저장 이탈 시 beforeunload 경고 · budgetItemManageTree_v1 -->
 <html lang="kr">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -303,9 +303,10 @@ li a { white-space: nowrap; }
 
 	/** 상세 폼에서 이름·사용여부·비고 값을 읽어 객체로 반환 */
 	function getFormState() {
+		var usedEl = document.querySelector('input[name="bimUsed"]:checked');
 		return {
 			name: (document.getElementById("bimName").value || "").trim() || "새 항목",
-			used: document.querySelector('input[name="bimUsed"]:checked').value === "1",
+			used: usedEl ? usedEl.value === "1" : true,
 			remark: document.getElementById("bimRemark").value || ""
 		};
 	}
@@ -569,7 +570,8 @@ li a { white-space: nowrap; }
 	/** 폼 입력값을 전달받은 노드 객체에 덮어씀 */
 	function readFormIntoNode(node) {
 		node.name = (document.getElementById("bimName").value || "").trim() || "새 항목";
-		node.used = document.querySelector('input[name="bimUsed"]:checked').value === "1";
+		var usedEl = document.querySelector('input[name="bimUsed"]:checked');
+		node.used = usedEl ? usedEl.value === "1" : !!node.used;
 		node.remark = document.getElementById("bimRemark").value || "";
 	}
 
@@ -645,21 +647,37 @@ li a { white-space: nowrap; }
 		syncFormFromSelection();
 	}
 
-	document.getElementById("bimBtnAddRoot").addEventListener("click", addRoot);
+	document.getElementById("bimBtnAddRoot").addEventListener("click", function (e) {
+		e.stopPropagation();
+		addRoot();
+	});
 	var bimNameEl = document.getElementById("bimName");
 	if (bimNameEl) {
 		bimNameEl.addEventListener("input", syncNameInputToTree);
 	}
-	document.getElementById("bimBtnSave").addEventListener("click", function () {
-		if (!selectedId) return;
-		flushFormToTree();
-		persistSnapshot();
-		renderTree();
-		syncFormFromSelection();
+	document.getElementById("bimBtnSave").addEventListener("click", function (e) {
+		e.stopPropagation();
+		try {
+			if (selectedId) {
+				flushFormToTree();
+			} else {
+				saveTree();
+			}
+			persistSnapshot();
+			renderTree();
+			syncFormFromSelection();
+		} catch (err) {
+			alert("저장 중 오류가 발생했습니다.");
+			if (window.console && console.error) console.error(err);
+		}
 	});
-	document.getElementById("bimBtnToggleFold").addEventListener("click", toggleFoldAll);
+	document.getElementById("bimBtnToggleFold").addEventListener("click", function (e) {
+		e.stopPropagation();
+		toggleFoldAll();
+	});
 
-	document.getElementById("bimBtnDelete").addEventListener("click", function () {
+	document.getElementById("bimBtnDelete").addEventListener("click", function (e) {
+		e.stopPropagation();
 		if (!selectedId) return;
 		if (isDirty()) {
 			revertTreeToPersisted();
@@ -674,6 +692,27 @@ li a { white-space: nowrap; }
 		persistSnapshot();
 		renderTree();
 		if (tree.length) selectId(tree[0].id, true); else syncFormFromSelection();
+	});
+
+	/** 상대경로 .html 이동 직전: 이미 confirm으로 이탈을 확정한 경우 beforeunload 중복 방지 */
+	window.__publMarkRelativeHtmlNavLeaving = function () {
+		window.__bimSkipBeforeUnloadOnce = true;
+	};
+	/** 사업관리 내 다른 HTML(사업계획·지출관리·항목관리 등)로 이동 시 미저장이면 확인 */
+	window.__publAllowRelativeHtmlNav = function () {
+		if (!isDirty()) return true;
+		return window.confirm("저장하지 않은 변경이 있습니다. 이동하시겠습니까?");
+	};
+
+	/** 미저장 변경이 있을 때 다른 사이트 메뉴·새로고침·창 닫기 등 시 브라우저 경고 */
+	window.addEventListener("beforeunload", function (e) {
+		if (window.__bimSkipBeforeUnloadOnce) {
+			window.__bimSkipBeforeUnloadOnce = false;
+			return;
+		}
+		if (!isDirty()) return;
+		e.preventDefault();
+		e.returnValue = "\u200b";
 	});
 
 	tree = loadTree();

@@ -971,6 +971,33 @@ li a {
 		return false;
 	}
 
+	/** 한 항 블록의 lineIds에 id가 있는지(문자열 일치) */
+	function isLineIdUsedInBlock(block, id) {
+		if (!block || id == null) return false;
+		var s = String(id);
+		var lineIds = block.lineIds || [];
+		for (var i = 0; i < lineIds.length; i++) {
+			if (String(lineIds[i]) === s) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 해당 항 블록 안에서만 목(mokId) 또는 그 하위(세목·세부)가 있는지.
+	 * 전 플랜(isMokSubtreeUsedInPlan) 기준이면 다른 항 블록과 섞여 오탐 → 세목 추가 팝업이 비는 현상 방지.
+	 */
+	function isMokSubtreeUsedInBlock(block, mokId) {
+		if (!mokId || depthFromId(mokId) !== 2 || !block) return false;
+		var prefix = String(mokId) + "-";
+		var lineIds = block.lineIds || [];
+		for (var i = 0; i < lineIds.length; i++) {
+			var x = lineIds[i];
+			if (String(x) === String(mokId)) return true;
+			if (String(x).indexOf(prefix) === 0) return true;
+		}
+		return false;
+	}
+
 	/** 블록에 목·세목·세부(깊이 ≥2)가 하나라도 있으면 항(p1) 단독 금액 입력 불가 */
 	function blockHasMokOrDeeper(lineIds) {
 		if (!lineIds || !lineIds.length) return false;
@@ -1879,15 +1906,15 @@ li a {
 		var ids = getChildIds(plObj, childDepth, parentLineId);
 		var pickTitle = childDepth === 2 ? "\"목\" 항목 선택" : childDepth === 3 ? "\"세목\" 항목 선택" : "\"세부사업\" 항목 선택";
 		openPicker(pickTitle, ids.filter(function (id) {
-			if (isExpenseLineIdTakenInPlan(plan, id)) return false;
-			if (childDepth === 2 && isMokSubtreeUsedInPlan(plan, id)) return false;
+			if (isLineIdUsedInBlock(block, id)) return false;
+			if (childDepth === 2 && isMokSubtreeUsedInBlock(block, id)) return false;
 			return true;
 		}), pack.items, function (id) {
 			var pl2 = loadPlan(getYear());
 			syncPlanCellsFromDom(pl2);
 			var b2 = pl2.blocks[blockIdx];
-			if (!b2 || isExpenseLineIdTakenInPlan(pl2, id)) return;
-			if (childDepth === 2 && isMokSubtreeUsedInPlan(pl2, id)) return;
+			if (!b2 || isLineIdUsedInBlock(b2, id)) return;
+			if (childDepth === 2 && isMokSubtreeUsedInBlock(b2, id)) return;
 			if (parentDepth1(id) !== b2.p1) return;
 			ensureCell(pl2.cells, id);
 			/* 세목만 목 전용 행을 대체(한 행에 목·세목). 세부 추가 시에는 부모 세목 행 유지 */
@@ -1922,11 +1949,11 @@ li a {
 		var block = plan.blocks[blockIdx];
 		if (!block || parentDepth1(lineId) !== block.p1) return;
 		var ids = getChildIds(plObj, d, pid);
-		openPicker("\"세부사업\" 항목 선택", ids.filter(function (id) { return !isExpenseLineIdTakenInPlan(plan, id); }), pack.items, function (id) {
+		openPicker("\"세부사업\" 항목 선택", ids.filter(function (id) { return !isLineIdUsedInBlock(block, id); }), pack.items, function (id) {
 			var pl2 = loadPlan(getYear());
 			syncPlanCellsFromDom(pl2);
 			var b2 = pl2.blocks[blockIdx];
-			if (!b2 || isExpenseLineIdTakenInPlan(pl2, id)) return;
+			if (!b2 || isLineIdUsedInBlock(b2, id)) return;
 			if (parentDepth1(id) !== b2.p1) return;
 			b2.lineIds.push(id);
 			b2.lineIds = orderLineIdsForExpensePlan(b2.lineIds, b2.p1);

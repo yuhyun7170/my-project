@@ -75,6 +75,36 @@
 			color: #c0392b;
 			background: rgba(0, 0, 0, 0.06);
 		}
+		.exp-attach-actions {
+			display: inline-flex;
+			align-items: center;
+			gap: 2px;
+			flex-shrink: 0;
+		}
+		.exp-attach-list li button.exp-attach-dl {
+			flex-shrink: 0;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 26px;
+			height: 26px;
+			padding: 0;
+			font-size: 13px;
+			line-height: 1;
+			cursor: pointer;
+			border: none;
+			background: transparent;
+			color: #1e4f9e;
+			border-radius: 2px;
+		}
+		.exp-attach-list li button.exp-attach-dl:hover:not(:disabled) {
+			background: rgba(30, 79, 158, 0.1);
+		}
+		.exp-attach-list li button.exp-attach-dl:disabled {
+			opacity: 0.35;
+			cursor: not-allowed;
+			color: #999;
+		}
 		.exp-attach-hint { margin-top: 4px; font-size: 11px; color: #666; }
 	</style>
 </head>
@@ -140,7 +170,7 @@
 							<th scope="row">첨부파일</th>
 							<td class="exp-attach-wrap">
 								<input type="file" id="inpAttachments" name="attachments" multiple />
-								<p class="exp-attach-hint">여러 파일을 한 번에 선택할 수 있습니다. (파일명·용량만 저장) X로 삭제한 뒤 하단 「등 록」·「수 정」으로 저장하세요.</p>
+								<p class="exp-attach-hint">여러 파일 선택 가능. 다시 받기용으로 파일당 최대 1MB까지 브라우저에 저장됩니다. X로 삭제 후 「등 록」·「수 정」으로 반영하세요.</p>
 								<ul class="exp-attach-list" id="expAttachList" aria-live="polite"></ul>
 							</td>
 						</tr>
@@ -559,6 +589,19 @@
 		var editBudgetId = urlBe.budgetId || "";
 
 		var attachmentList = [];
+		/** 다시 다운로드용 Data URL 저장 상한(원본 파일 크기, 약 1MB) */
+		var ATTACH_MAX_BYTES = 1024 * 1024;
+
+		function triggerAttachmentDownload(meta) {
+			if (!meta || !meta.dataUrl) return;
+			var a = document.createElement("a");
+			a.href = meta.dataUrl;
+			a.download = meta.name || "download";
+			a.rel = "noopener";
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+		}
 
 		function formatAttachSize(n) {
 			if (n == null || isNaN(n)) return "";
@@ -577,6 +620,26 @@
 				var span = document.createElement("span");
 				var sz = meta.size != null ? " (" + formatAttachSize(meta.size) + ")" : "";
 				span.textContent = (meta.name || "") + sz;
+				span.style.flex = "1";
+				span.style.minWidth = "0";
+
+				var actions = document.createElement("span");
+				actions.className = "exp-attach-actions";
+
+				var btnDl = document.createElement("button");
+				btnDl.type = "button";
+				btnDl.className = "exp-attach-dl";
+				btnDl.innerHTML = '<i class="fa-solid fa-download" aria-hidden="true"></i>';
+				btnDl.setAttribute("aria-label", "파일 다운로드");
+				var hasData = !!(meta && meta.dataUrl);
+				btnDl.disabled = !hasData;
+				btnDl.title = hasData ? "다운로드" : "다운로드용 데이터 없음(용량 초과 또는 이전에 메타만 저장됨)";
+				btnDl.addEventListener("click", function (e) {
+					e.preventDefault();
+					var m = attachmentList[idx];
+					if (m && m.dataUrl) triggerAttachmentDownload(m);
+				});
+
 				var btn = document.createElement("button");
 				btn.type = "button";
 				btn.className = "exp-attach-remove";
@@ -589,8 +652,11 @@
 					if (!isNaN(j)) attachmentList.splice(j, 1);
 					renderAttachList();
 				});
+
+				actions.appendChild(btnDl);
+				actions.appendChild(btn);
 				li.appendChild(span);
-				li.appendChild(btn);
+				li.appendChild(actions);
 				ul.appendChild(li);
 			});
 		}
@@ -637,7 +703,8 @@
 					return {
 						name: a && a.name != null ? String(a.name) : "",
 						size: a && a.size != null ? Number(a.size) : 0,
-						type: a && a.type != null ? String(a.type) : ""
+						type: a && a.type != null ? String(a.type) : "",
+						dataUrl: a && a.dataUrl != null ? String(a.dataUrl) : ""
 					};
 				});
 				renderAttachList();
@@ -649,12 +716,46 @@
 			inpAtt.addEventListener("change", function () {
 				var files = inpAtt.files;
 				if (!files || !files.length) return;
-				for (var fi = 0; fi < files.length; fi++) {
-					var f = files[fi];
-					attachmentList.push({ name: f.name, size: f.size, type: f.type || "" });
-				}
 				inpAtt.value = "";
-				renderAttachList();
+				var list = Array.prototype.slice.call(files, 0);
+				var i = 0;
+				function appendOne(f, dataUrl) {
+					attachmentList.push({
+						name: f.name,
+						size: f.size,
+						type: f.type || "",
+						dataUrl: dataUrl || ""
+					});
+				}
+				function next() {
+					if (i >= list.length) {
+						renderAttachList();
+						return;
+					}
+					var f = list[i++];
+					if (f.size > ATTACH_MAX_BYTES) {
+						alert(
+							"다운로드용 저장은 파일당 최대 " +
+								Math.round(ATTACH_MAX_BYTES / 1024 / 1024) +
+								"MB입니다.\n메타데이터만 저장됩니다: " +
+								f.name
+						);
+						appendOne(f, "");
+						next();
+						return;
+					}
+					var fr = new FileReader();
+					fr.onload = function () {
+						appendOne(f, fr.result || "");
+						next();
+					};
+					fr.onerror = function () {
+						appendOne(f, "");
+						next();
+					};
+					fr.readAsDataURL(f);
+				}
+				next();
 			});
 		}
 
@@ -747,7 +848,14 @@
 				};
 				root.years[yearKey] = pl;
 				writeRoot(root);
-			} catch (err1) {}
+			} catch (err1) {
+				if (err1 && err1.name === "QuotaExceededError") {
+					alert(
+						"브라우저 저장 공간이 부족합니다.\n첨부 개수·용량을 줄이거나 파일을 나눈 뒤 다시 저장하세요."
+					);
+				}
+				return;
+			}
 
 			var pathParts = [];
 			pathParts.push(itemName(selHang.value));

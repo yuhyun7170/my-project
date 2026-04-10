@@ -55,8 +55,25 @@
 			padding: 4px 6px; margin-bottom: 4px; background: #f5f7fa; border: 1px solid #e0e4ea; border-radius: 2px;
 			font-size: 12px; word-break: break-all;
 		}
-		.exp-attach-list li button {
-			flex-shrink: 0; padding: 2px 8px; font-size: 11px; cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 2px;
+		.exp-attach-list li button.exp-attach-remove {
+			flex-shrink: 0;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 26px;
+			height: 26px;
+			padding: 0;
+			font-size: 14px;
+			line-height: 1;
+			cursor: pointer;
+			border: none;
+			background: transparent;
+			color: #666;
+			border-radius: 2px;
+		}
+		.exp-attach-list li button.exp-attach-remove:hover {
+			color: #c0392b;
+			background: rgba(0, 0, 0, 0.06);
 		}
 		.exp-attach-hint { margin-top: 4px; font-size: 11px; color: #666; }
 	</style>
@@ -123,7 +140,7 @@
 							<th scope="row">첨부파일</th>
 							<td class="exp-attach-wrap">
 								<input type="file" id="inpAttachments" name="attachments" multiple />
-								<p class="exp-attach-hint">여러 파일을 한 번에 선택할 수 있습니다. (저장 시 파일명·용량만 보관)</p>
+								<p class="exp-attach-hint">여러 파일을 한 번에 선택할 수 있습니다. (파일명·용량만 저장) X로 삭제한 뒤 하단 「등 록」·「수 정」으로 저장하세요.</p>
 								<ul class="exp-attach-list" id="expAttachList" aria-live="polite"></ul>
 							</td>
 						</tr>
@@ -562,7 +579,10 @@
 				span.textContent = (meta.name || "") + sz;
 				var btn = document.createElement("button");
 				btn.type = "button";
-				btn.textContent = "제거";
+				btn.className = "exp-attach-remove";
+				btn.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+				btn.setAttribute("aria-label", "첨부 삭제");
+				btn.title = "삭제";
 				btn.setAttribute("data-i", String(idx));
 				btn.addEventListener("click", function () {
 					var j = parseInt(btn.getAttribute("data-i"), 10);

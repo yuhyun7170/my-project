@@ -593,14 +593,19 @@
 		var ATTACH_MAX_BYTES = 1024 * 1024;
 
 		function triggerAttachmentDownload(meta) {
-			if (!meta || !meta.dataUrl) return;
-			var a = document.createElement("a");
-			a.href = meta.dataUrl;
-			a.download = meta.name || "download";
-			a.rel = "noopener";
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
+			var url = meta && meta.dataUrl != null ? String(meta.dataUrl).trim() : "";
+			if (!url || url.indexOf("data:") !== 0) return;
+			try {
+				var a = document.createElement("a");
+				a.href = url;
+				a.download = (meta && meta.name) || "download";
+				a.rel = "noopener";
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+			} catch (eDl) {
+				alert("다운로드를 시작할 수 없습니다. 브라우저 설정을 확인하거나 파일을 다시 첨부해 주세요.");
+			}
 		}
 
 		function formatAttachSize(n) {
@@ -631,13 +636,24 @@
 				btnDl.className = "exp-attach-dl";
 				btnDl.innerHTML = '<i class="fa-solid fa-download" aria-hidden="true"></i>';
 				btnDl.setAttribute("aria-label", "파일 다운로드");
-				var hasData = !!(meta && meta.dataUrl);
-				btnDl.disabled = !hasData;
-				btnDl.title = hasData ? "다운로드" : "다운로드용 데이터 없음(용량 초과 또는 이전에 메타만 저장됨)";
+				var urlOk =
+					meta &&
+					String(meta.dataUrl || "")
+						.trim()
+						.indexOf("data:") === 0;
+				btnDl.disabled = !urlOk;
+				btnDl.title = urlOk
+					? "다운로드"
+					: "다운로드용 데이터 없음(1MB 초과 또는 예전에 이름만 저장됨)";
+				btnDl.setAttribute("data-idx", String(idx));
 				btnDl.addEventListener("click", function (e) {
 					e.preventDefault();
-					var m = attachmentList[idx];
-					if (m && m.dataUrl) triggerAttachmentDownload(m);
+					e.stopPropagation();
+					var di = parseInt(btnDl.getAttribute("data-idx"), 10);
+					var m = !isNaN(di) ? attachmentList[di] : null;
+					if (m && String(m.dataUrl || "").trim().indexOf("data:") === 0) {
+						triggerAttachmentDownload(m);
+					}
 				});
 
 				var btn = document.createElement("button");
@@ -647,7 +663,9 @@
 				btn.setAttribute("aria-label", "첨부 삭제");
 				btn.title = "삭제";
 				btn.setAttribute("data-i", String(idx));
-				btn.addEventListener("click", function () {
+				btn.addEventListener("click", function (e) {
+					e.preventDefault();
+					e.stopPropagation();
 					var j = parseInt(btn.getAttribute("data-i"), 10);
 					if (!isNaN(j)) attachmentList.splice(j, 1);
 					renderAttachList();
@@ -681,6 +699,13 @@
 		if (editMode && editBudgetId) {
 			applyBudgetIdToSelects(editBudgetId);
 			var itEdit = items[editBudgetId] || {};
+			try {
+				var rootEd = readRoot();
+				var plEd = rootEd.years && rootEd.years[yearKey];
+				if (plEd && plEd.items && plEd.items[editBudgetId]) {
+					itEdit = plEd.items[editBudgetId];
+				}
+			} catch (eEd) {}
 			var inpAmt = document.getElementById("inpAmount");
 			if (inpAmt) inpAmt.value = itEdit.spent != null ? String(itEdit.spent) : "";
 			var apprEl0 = document.getElementById("inpApprovalDate");
@@ -714,10 +739,10 @@
 		var inpAtt = document.getElementById("inpAttachments");
 		if (inpAtt) {
 			inpAtt.addEventListener("change", function () {
-				var files = inpAtt.files;
-				if (!files || !files.length) return;
+				// value를 먼저 비우면 FileList가 비워져 추가 첨부가 실패함 → File 복사 후에 비움
+				var list = Array.prototype.slice.call(inpAtt.files || [], 0);
+				if (!list.length) return;
 				inpAtt.value = "";
-				var list = Array.prototype.slice.call(files, 0);
 				var i = 0;
 				function appendOne(f, dataUrl) {
 					attachmentList.push({

@@ -93,21 +93,22 @@ li a {
     white-space: nowrap; /* 텍스트가 잘리지 않고 한 줄로 나오게 강제 */
 }
 
-/* 비용처리 목록: No + 항·목·세목·세부사업 + 집행액 + 결재일 + 세무담당자 + 비고 */
+/* 비용처리 목록: No + 항·목·세목·세부사업 + 집행액 + 결재일 + 세무담당자 + 첨부 + 비고 */
 #content table {
     width: 100%;
     table-layout: fixed;
 }
 
-#content table col:nth-child(1) { width: 5% !important; }
-#content table col:nth-child(2) { width: 8% !important; }
-#content table col:nth-child(3) { width: 9% !important; }
-#content table col:nth-child(4) { width: 10% !important; }
-#content table col:nth-child(5) { width: 18% !important; }
-#content table col:nth-child(6) { width: 10% !important; }
-#content table col:nth-child(7) { width: 10% !important; }
-#content table col:nth-child(8) { width: 11% !important; }
-#content table col:nth-child(9) { width: 11% !important; }
+#content table col:nth-child(1) { width: 4% !important; }
+#content table col:nth-child(2) { width: 7% !important; }
+#content table col:nth-child(3) { width: 8% !important; }
+#content table col:nth-child(4) { width: 9% !important; }
+#content table col:nth-child(5) { width: 16% !important; }
+#content table col:nth-child(6) { width: 9% !important; }
+#content table col:nth-child(7) { width: 9% !important; }
+#content table col:nth-child(8) { width: 9% !important; }
+#content table col:nth-child(9) { width: 8% !important; }
+#content table col:nth-child(10) { width: 11% !important; }
 </style>
 <body>
     <div id="wrap">
@@ -407,14 +408,15 @@ li a {
     <div class="table_list active">
         <table id="expenseDetailTable">
             <colgroup>
-                <col style="width:5%"/>
+                <col style="width:4%"/>
+                <col style="width:7%"/>
                 <col style="width:8%"/>
                 <col style="width:9%"/>
-                <col style="width:10%"/>
-                <col style="width:18%"/>
-                <col style="width:10%"/>
-                <col style="width:10%"/>
-                <col style="width:11%"/>
+                <col style="width:16%"/>
+                <col style="width:9%"/>
+                <col style="width:9%"/>
+                <col style="width:9%"/>
+                <col style="width:8%"/>
                 <col style="width:11%"/>
             </colgroup>
         <thead>
@@ -432,6 +434,7 @@ li a {
                 <th>집행액</th>
                 <th>결재일</th>
                 <th>세무담당자</th>
+                <th>첨부</th>
                 <th>비고</th>
             </tr>
         </thead>
@@ -511,7 +514,7 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 
 	function openExpenseRegPopup() {
 		var w = 450;
-		var h = 456;
+		var h = 620;
 		var sw = window.screen ? window.screen.availWidth : w;
 		var sh = window.screen ? window.screen.availHeight : h;
 		var left = Math.max(0, Math.round((sw - w) / 2));
@@ -537,7 +540,7 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 	function openExpenseEditPopup(budgetId) {
 		if (!budgetId) return;
 		var w = 450;
-		var h = 456;
+		var h = 620;
 		var sw = window.screen ? window.screen.availWidth : w;
 		var sh = window.screen ? window.screen.availHeight : h;
 		var left = Math.max(0, Math.round((sw - w) / 2));
@@ -715,7 +718,7 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 				alert("삭제할 항목을 선택하세요.");
 				return;
 			}
-			if (!confirm("선택한 비용처리 내역을 삭제할까요?\n집행액·결재일·비고·세무담당자 정보가 초기화됩니다.")) return;
+			if (!confirm("선택한 비용처리 내역을 삭제할까요?\n집행액·결재일·비고·세무담당자·첨부 정보가 초기화됩니다.")) return;
 			var pack = loadPayload();
 			var year = pack.year;
 			try {
@@ -734,6 +737,7 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 					it.approvalDate = "";
 					it.note = "";
 					it.taxManager = "";
+					it.attachments = [];
 					pl.items[bid] = it;
 				}
 				root.years[year] = pl;
@@ -765,7 +769,7 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 			if (ids.length === 0) {
 				var tr0 = document.createElement("tr");
 				var td0 = document.createElement("td");
-				td0.colSpan = 9;
+				td0.colSpan = 10;
 				td0.style.textAlign = "center";
 				td0.style.padding = "24px 8px";
 				td0.style.color = "#666";
@@ -822,6 +826,33 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 					tr.appendChild(tdSpan(it.spent != null ? String(it.spent) : "", false));
 					tr.appendChild(tdSpan(formatApprovalDate(it.approvalDate), false));
 					tr.appendChild(tdSpan(it.taxManager != null ? String(it.taxManager) : "", false));
+
+					var tdAtt = document.createElement("td");
+					tdAtt.style.textAlign = "center";
+					var attArr = it.attachments;
+					var attN = Array.isArray(attArr) ? attArr.length : 0;
+					var spAtt = document.createElement("span");
+					if (attN > 0) {
+						spAtt.textContent = attN + "건";
+						spAtt.style.fontWeight = "600";
+						spAtt.style.color = "#1e4f9e";
+						try {
+							spAtt.title = attArr
+								.map(function (a) {
+									return a && a.name != null ? String(a.name) : "";
+								})
+								.filter(Boolean)
+								.join(", ");
+						} catch (eAtt) {
+							spAtt.title = "";
+						}
+					} else {
+						spAtt.textContent = "—";
+						spAtt.style.color = "#999";
+					}
+					tdAtt.appendChild(spAtt);
+					tr.appendChild(tdAtt);
+
 					tr.appendChild(tdSpan(it.note != null ? String(it.note) : "", false));
 					tbody.appendChild(tr);
 				});

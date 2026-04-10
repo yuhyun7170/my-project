@@ -47,6 +47,18 @@
 			margin-top: 8px !important;
 			margin-bottom: 0;
 		}
+		.exp-attach-wrap { font-size: 12px; color: #333; }
+		.exp-attach-wrap input[type="file"] { width: 100%; max-width: 100%; font-size: 12px; }
+		.exp-attach-list { margin: 6px 0 0; padding: 0; list-style: none; max-height: 140px; overflow: auto; }
+		.exp-attach-list li {
+			display: flex; align-items: center; justify-content: space-between; gap: 6px;
+			padding: 4px 6px; margin-bottom: 4px; background: #f5f7fa; border: 1px solid #e0e4ea; border-radius: 2px;
+			font-size: 12px; word-break: break-all;
+		}
+		.exp-attach-list li button {
+			flex-shrink: 0; padding: 2px 8px; font-size: 11px; cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 2px;
+		}
+		.exp-attach-hint { margin-top: 4px; font-size: 11px; color: #666; }
 	</style>
 </head>
 <body class="popBody" style="width:436px;">
@@ -105,6 +117,14 @@
 									<option value="이지영">이지영</option>
 									<option value="김민규">김민규</option>
 								</select>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">첨부파일</th>
+							<td class="exp-attach-wrap">
+								<input type="file" id="inpAttachments" name="attachments" multiple />
+								<p class="exp-attach-hint">여러 파일을 한 번에 선택할 수 있습니다. (저장 시 파일명·용량만 보관)</p>
+								<ul class="exp-attach-list" id="expAttachList" aria-live="polite"></ul>
 							</td>
 						</tr>
 						<tr>
@@ -521,6 +541,40 @@
 		var editMode = urlBe.edit;
 		var editBudgetId = urlBe.budgetId || "";
 
+		var attachmentList = [];
+
+		function formatAttachSize(n) {
+			if (n == null || isNaN(n)) return "";
+			var x = Number(n);
+			if (x < 1024) return x + " B";
+			if (x < 1048576) return (x / 1024).toFixed(1) + " KB";
+			return (x / 1048576).toFixed(1) + " MB";
+		}
+
+		function renderAttachList() {
+			var ul = document.getElementById("expAttachList");
+			if (!ul) return;
+			ul.innerHTML = "";
+			attachmentList.forEach(function (meta, idx) {
+				var li = document.createElement("li");
+				var span = document.createElement("span");
+				var sz = meta.size != null ? " (" + formatAttachSize(meta.size) + ")" : "";
+				span.textContent = (meta.name || "") + sz;
+				var btn = document.createElement("button");
+				btn.type = "button";
+				btn.textContent = "제거";
+				btn.setAttribute("data-i", String(idx));
+				btn.addEventListener("click", function () {
+					var j = parseInt(btn.getAttribute("data-i"), 10);
+					if (!isNaN(j)) attachmentList.splice(j, 1);
+					renderAttachList();
+				});
+				li.appendChild(span);
+				li.appendChild(btn);
+				ul.appendChild(li);
+			});
+		}
+
 		function applyBudgetIdToSelects(bid) {
 			var p = String(bid).split("-").filter(function (x) { return x !== ""; });
 			var d = p.length;
@@ -558,6 +612,30 @@
 				btnIc.classList.remove("fa-plus");
 				btnIc.classList.add("fa-check");
 			}
+			if (itEdit.attachments && Array.isArray(itEdit.attachments) && itEdit.attachments.length) {
+				attachmentList = itEdit.attachments.map(function (a) {
+					return {
+						name: a && a.name != null ? String(a.name) : "",
+						size: a && a.size != null ? Number(a.size) : 0,
+						type: a && a.type != null ? String(a.type) : ""
+					};
+				});
+				renderAttachList();
+			}
+		}
+
+		var inpAtt = document.getElementById("inpAttachments");
+		if (inpAtt) {
+			inpAtt.addEventListener("change", function () {
+				var files = inpAtt.files;
+				if (!files || !files.length) return;
+				for (var fi = 0; fi < files.length; fi++) {
+					var f = files[fi];
+					attachmentList.push({ name: f.name, size: f.size, type: f.type || "" });
+				}
+				inpAtt.value = "";
+				renderAttachList();
+			});
 		}
 
 		function itemName(id) {
@@ -622,6 +700,7 @@
 							approvalDate: "",
 							note: "",
 							taxManager: "",
+							attachments: [],
 							active: oldIt.active !== false
 						};
 					}
@@ -632,6 +711,10 @@
 				var outAppr = editMode ? apprVal : apprVal || (it0.approvalDate != null ? String(it0.approvalDate) : "");
 				var outNote = editMode ? noteVal : noteVal !== "" ? noteVal : it0.note != null ? String(it0.note) : "";
 				var outTax = editMode ? taxVal : taxVal || (it0.taxManager != null ? String(it0.taxManager) : "");
+				var prevAtt = Array.isArray(it0.attachments) ? it0.attachments.slice() : [];
+				var outAttachments = editMode
+					? attachmentList.slice()
+					: prevAtt.concat(attachmentList);
 				pl.items[targetId] = {
 					name: it0.name != null ? it0.name : itemName(targetId),
 					alloc: it0.alloc != null ? it0.alloc : "",
@@ -639,6 +722,7 @@
 					approvalDate: outAppr,
 					note: outNote,
 					taxManager: outTax,
+					attachments: outAttachments,
 					active: it0.active !== false
 				};
 				root.years[yearKey] = pl;

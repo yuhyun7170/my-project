@@ -94,22 +94,23 @@ li a {
     white-space: nowrap; /* 텍스트가 잘리지 않고 한 줄로 나오게 강제 */
 }
 
-/* 비용처리 목록: No + 항·목·세목·세부사업 + 집행액 + 결재일 + 세무담당자 + 첨부 + 비고 */
+/* 비용처리 목록: No + 관 + 항·목·세목·세부사업 + 집행액 + 결재일 + 세무담당자 + 첨부 + 비고 */
 #content table {
     width: 100%;
     table-layout: fixed;
 }
 
 #content table col:nth-child(1) { width: 4% !important; }
-#content table col:nth-child(2) { width: 7% !important; }
-#content table col:nth-child(3) { width: 8% !important; }
-#content table col:nth-child(4) { width: 9% !important; }
-#content table col:nth-child(5) { width: 16% !important; }
-#content table col:nth-child(6) { width: 9% !important; }
+#content table col:nth-child(2) { width: 6% !important; }
+#content table col:nth-child(3) { width: 7% !important; }
+#content table col:nth-child(4) { width: 8% !important; }
+#content table col:nth-child(5) { width: 9% !important; }
+#content table col:nth-child(6) { width: 16% !important; }
 #content table col:nth-child(7) { width: 9% !important; }
 #content table col:nth-child(8) { width: 9% !important; }
-#content table col:nth-child(9) { width: 8% !important; }
-#content table col:nth-child(10) { width: 11% !important; }
+#content table col:nth-child(9) { width: 9% !important; }
+#content table col:nth-child(10) { width: 8% !important; }
+#content table col:nth-child(11) { width: 15% !important; }
 </style>
 <body>
     <div id="wrap">
@@ -410,6 +411,7 @@ li a {
         <table id="expenseDetailTable">
             <colgroup>
                 <col style="width:4%"/>
+                <col style="width:6%"/>
                 <col style="width:7%"/>
                 <col style="width:8%"/>
                 <col style="width:9%"/>
@@ -418,7 +420,7 @@ li a {
                 <col style="width:9%"/>
                 <col style="width:9%"/>
                 <col style="width:8%"/>
-                <col style="width:11%"/>
+                <col style="width:15%"/>
             </colgroup>
         <thead>
             <tr>
@@ -428,6 +430,7 @@ li a {
                         <span style="font-size:12px; font-weight:600;">No</span>
                     </div>
                 </th>
+                <th>관</th>
                 <th>항</th>
                 <th>목</th>
                 <th>세목</th>
@@ -719,7 +722,7 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 				alert("삭제할 항목을 선택하세요.");
 				return;
 			}
-			if (!confirm("선택한 비용처리 내역을 삭제할까요?\n집행액·결재일·비고·세무담당자·첨부 정보가 초기화됩니다.")) return;
+			if (!confirm("선택한 비용처리 내역을 삭제할까요?\n집행액·결재일·비고·관·세무담당자·첨부 정보가 초기화됩니다.")) return;
 			var pack = loadPayload();
 			var year = pack.year;
 			try {
@@ -737,6 +740,7 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 					it.spent = "";
 					it.approvalDate = "";
 					it.note = "";
+					it.gwan = "";
 					it.taxManager = "";
 					it.attachments = [];
 					pl.items[bid] = it;
@@ -770,7 +774,7 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 			if (ids.length === 0) {
 				var tr0 = document.createElement("tr");
 				var td0 = document.createElement("td");
-				td0.colSpan = 10;
+				td0.colSpan = 11;
 				td0.style.textAlign = "center";
 				td0.style.padding = "24px 8px";
 				td0.style.color = "#666";
@@ -820,6 +824,7 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 					tdChk.appendChild(spanW);
 					tr.appendChild(tdChk);
 
+					tr.appendChild(tdSpan(it.gwan != null ? String(it.gwan) : "", false));
 					tr.appendChild(tdSpan(pc.h, false));
 					tr.appendChild(tdSpan(pc.m, false));
 					tr.appendChild(tdSpan(pc.sem, false));

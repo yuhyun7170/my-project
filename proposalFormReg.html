@@ -120,6 +120,16 @@
 					</colgroup>
 					<tbody>
 						<tr>
+							<th scope="row">관</th>
+							<td>
+								<select id="selGwan" name="gwan" class="select01 exp-select" aria-label="관">
+									<option value="">선택</option>
+									<option value="자체조달">자체조달</option>
+									<option value="보조금">보조금</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
 							<th scope="row">항</th>
 							<td>
 								<select id="selHang" name="hangId" class="select01 exp-select" aria-label="항"></select>
@@ -714,6 +724,8 @@
 			if (noteEl0) noteEl0.value = itEdit.note != null ? String(itEdit.note) : "";
 			var taxEl0 = document.getElementById("selTaxManager");
 			if (taxEl0 && itEdit.taxManager) taxEl0.value = String(itEdit.taxManager);
+			var gwanEl0 = document.getElementById("selGwan");
+			if (gwanEl0 && itEdit.gwan) gwanEl0.value = String(itEdit.gwan).trim();
 			var ttl = document.getElementById("expRegTitle");
 			if (ttl) ttl.innerHTML = '<i class="fa-solid fa-circle-dot"></i> 비용처리 수정';
 			var btnLb = document.getElementById("btnSubmitLabel");
@@ -798,6 +810,10 @@
 		}
 
 		function trySubmit() {
+			if (!document.getElementById("selGwan").value) {
+				alert("관을 선택하세요.");
+				return;
+			}
 			if (!selHang.value) {
 				alert("항을 선택하세요.");
 				return;
@@ -830,6 +846,7 @@
 			var apprVal = apprEl && apprEl.value ? String(apprEl.value).trim() : "";
 			var noteVal = document.getElementById("inpNote") ? String(document.getElementById("inpNote").value || "").trim() : "";
 			var taxVal = document.getElementById("selTaxManager") ? String(document.getElementById("selTaxManager").value || "") : "";
+			var gwanVal = document.getElementById("selGwan") ? String(document.getElementById("selGwan").value || "").trim() : "";
 
 			try {
 				var root = readRoot();
@@ -846,6 +863,7 @@
 							approvalDate: "",
 							note: "",
 							taxManager: "",
+							gwan: "",
 							attachments: [],
 							active: oldIt.active !== false
 						};
@@ -857,6 +875,7 @@
 				var outAppr = editMode ? apprVal : apprVal || (it0.approvalDate != null ? String(it0.approvalDate) : "");
 				var outNote = editMode ? noteVal : noteVal !== "" ? noteVal : it0.note != null ? String(it0.note) : "";
 				var outTax = editMode ? taxVal : taxVal || (it0.taxManager != null ? String(it0.taxManager) : "");
+				var outGwan = editMode ? gwanVal : gwanVal || (it0.gwan != null ? String(it0.gwan) : "");
 				var prevAtt = Array.isArray(it0.attachments) ? it0.attachments.slice() : [];
 				var outAttachments = editMode
 					? attachmentList.slice()
@@ -868,6 +887,7 @@
 					approvalDate: outAppr,
 					note: outNote,
 					taxManager: outTax,
+					gwan: outGwan,
 					attachments: outAttachments,
 					active: it0.active !== false
 				};

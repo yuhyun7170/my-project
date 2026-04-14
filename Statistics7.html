@@ -394,6 +394,7 @@ li a {
 						vertical-align: middle;
 					}
 					#budgetStatsMatrixLikeTable thead th { background: #ffffff; font-weight: 600; border-bottom: 1px solid #324c6c; border-top: 1px solid #324c6c;}
+					#budgetStatsMatrixLikeTable thead tr.subhead-matrix th { font-size: 11px; font-weight: 600; padding: 4px 2px; }
 					#budgetStatsMatrixLikeTable .left { text-align: center; }
 					#budgetStatsMatrixLikeTable td.matrix-hang-cell { background-color: #ececec; }
 				</style>
@@ -463,26 +464,47 @@ li a {
 							return y || String(new Date().getFullYear());
 						}
 
-						/** 지출계획에 입력된 줄별 합계(자체조달+보조금). 키가 있으면 계획 예산에 우선 사용 */
-						function loadExpensePlanAllocByLineId(yearStr) {
-							var out = Object.create(null);
+						/** 지출계획(Statistics5) 줄별 자체조달·보조금 — 사업계획 cells[id].self / .sub */
+						function loadExpensePlanSelfSubByLineId(yearStr) {
+							var selfMap = Object.create(null);
+							var subMap = Object.create(null);
 							var raw = localStorage.getItem(EXPENSE_PLAN_KEY);
-							if (!raw) return out;
+							if (!raw) return { self: selfMap, sub: subMap };
 							var root;
 							try {
 								root = JSON.parse(raw);
 							} catch (e1) {
-								return out;
+								return { self: selfMap, sub: subMap };
 							}
 							var ys = String(yearStr);
 							var pl = root.years && (root.years[ys] != null ? root.years[ys] : root.years[yearStr]);
-							if (!pl) return out;
+							if (!pl) return { self: selfMap, sub: subMap };
 							var cells = pl.cells || {};
 							Object.keys(cells).forEach(function (id) {
 								var c = cells[id] || {};
-								out[id] = parseMoney(c.self) + parseMoney(c.sub);
+								selfMap[id] = parseMoney(c.self);
+								subMap[id] = parseMoney(c.sub);
 							});
-							return out;
+							return { self: selfMap, sub: subMap };
+						}
+
+						function plannedSelf(lid, planSelf) {
+							if (planSelf && Object.prototype.hasOwnProperty.call(planSelf, lid)) return planSelf[lid];
+							return 0;
+						}
+						function plannedSub(lid, planSub) {
+							if (planSub && Object.prototype.hasOwnProperty.call(planSub, lid)) return planSub[lid];
+							return 0;
+						}
+
+						/** 지출내역 비용처리: items[lid].spent + 관(gwan)으로 자체/보조 분리. 관 없으면 합계만 집행액 반영 */
+						function spentSplit(lid, items) {
+							var sp = parseMoney((items[lid] || {}).spent);
+							var gw = (items[lid] || {}).gwan;
+							var g = gw != null ? String(gw).trim() : "";
+							if (g === "자체조달") return { self: sp, sub: 0, tot: sp };
+							if (g === "보조금") return { self: 0, sub: sp, tot: sp };
+							return { self: 0, sub: 0, tot: sp };
 						}
 
 						/** Statistics5 sumBlock 과 동일: 같은 블록 lineIds 안에 하위 줄이 있으면 상위 id는 제외 */
@@ -530,26 +552,46 @@ li a {
 							return ordered;
 						}
 
-						/** 계획 예산: 지출계획(Statistics5) cells 자체조달+보조금만. 없으면 0 — 항목 alloc 미사용 */
-						function plannedBudgetFromExpensePlan(lid, planAlloc) {
-							if (planAlloc && Object.prototype.hasOwnProperty.call(planAlloc, lid)) return planAlloc[lid];
-							return 0;
-						}
-
-						/** 집행: 지출내역 비용처리등록(budgetTreeItems_v2 items[].spent)만 */
-						function spentFromExpenseDetail(lid, items) {
-							return parseMoney((items[lid] || {}).spent);
-						}
-
 						function formatMoney(n) {
 							if (!isFinite(n)) return "";
 							return Math.round(n).toLocaleString("ko-KR");
 						}
-						function moneyCells(alloc, spent) {
-							var a = parseMoney(alloc);
-							var sp = parseMoney(spent);
-							var bal = a - sp;
-							return { a: formatMoney(a), s: formatMoney(sp), b: formatMoney(bal) };
+
+						function sumLeavesMoney(items, leafIds, planSelf, planSub) {
+							var saS = 0;
+							var saB = 0;
+							var ssS = 0;
+							var ssB = 0;
+							var ssTot = 0;
+							leafIds.forEach(function (lid) {
+								saS += plannedSelf(lid, planSelf);
+								saB += plannedSub(lid, planSub);
+								var spl = spentSplit(lid, items);
+								ssS += spl.self;
+								ssB += spl.sub;
+								ssTot += spl.tot;
+							});
+							var saTot = saS + saB;
+							return {
+								saS: saS,
+								saB: saB,
+								saTot: saTot,
+								ssS: ssS,
+								ssB: ssB,
+								ssTot: ssTot
+							};
+						}
+
+						function appendAggMoneyCells(tr, sm) {
+							tr.appendChild(tdNum(formatMoney(sm.saS)));
+							tr.appendChild(tdNum(formatMoney(sm.saB)));
+							tr.appendChild(tdNum(formatMoney(sm.saTot)));
+							tr.appendChild(tdNum(formatMoney(sm.ssS)));
+							tr.appendChild(tdNum(formatMoney(sm.ssB)));
+							tr.appendChild(tdNum(formatMoney(sm.ssTot)));
+							tr.appendChild(tdNum(formatMoney(sm.saS - sm.ssS)));
+							tr.appendChild(tdNum(formatMoney(sm.saB - sm.ssB)));
+							tr.appendChild(tdNum(formatMoney(sm.saTot - sm.ssTot)));
 						}
 						function tdNum(txt, cls) {
 							var td = document.createElement("td");
@@ -723,16 +765,6 @@ li a {
 							return { items: items, deleted: new Set(deleted) };
 						}
 
-						function sumLeavesMoney(items, leafIds, planAlloc) {
-							var sa = 0;
-							var ss = 0;
-							leafIds.forEach(function (lid) {
-								sa += plannedBudgetFromExpensePlan(lid, planAlloc);
-								ss += spentFromExpenseDetail(lid, items);
-							});
-							return { sa: sa, ss: ss };
-						}
-
 						function rebuildTableChrome(maxD) {
 							var table = document.getElementById("budgetStatsMatrixLikeTable");
 							if (!table) return;
@@ -744,7 +776,8 @@ li a {
 							if (maxD >= 2) widths.push("14%");
 							if (maxD >= 3) widths.push("15%");
 							if (maxD >= 4) widths.push("22%");
-							widths.push("15%", "15%", "15%");
+							var ni;
+							for (ni = 0; ni < 9; ni++) widths.push("5%");
 							colgroup.innerHTML = widths.map(function (w) {
 								return '<col style="width:' + w + ';" />';
 							}).join("");
@@ -753,10 +786,17 @@ li a {
 							if (maxD >= 2) labels.push("목");
 							if (maxD >= 3) labels.push("세목");
 							if (maxD >= 4) labels.push("세부사업");
-							labels.push("계획 예산", "집행", "잔액");
-							var n = labels.length;
-							thead.innerHTML =
-								"<tr>" + labels.map(function (t) { return "<th>" + t + "</th>"; }).join("") + "</tr>" ;
+							var sub3 =
+								'<th class="subhead-matrix">자체조달</th><th class="subhead-matrix">보조금</th><th class="subhead-matrix">합계</th>';
+							var row1 = "<tr>";
+							var li;
+							for (li = 0; li < labels.length; li++) {
+								row1 += '<th rowspan="2">' + labels[li] + "</th>";
+							}
+							row1 +=
+								'<th colspan="3">계획 예산</th><th colspan="3">집행</th><th colspan="3">잔액</th></tr>';
+							var row2 = "<tr class=\"subhead-matrix\">" + sub3 + sub3 + sub3 + "</tr>";
+							thead.innerHTML = row1 + row2;
 						}
 
 						function renderMatrix() {
@@ -764,7 +804,9 @@ li a {
 							var items = pack.items;
 							var deletedSet = pack.deleted;
 							var yearStr = getMatrixYearStr();
-							var planAlloc = loadExpensePlanAllocByLineId(yearStr);
+							var planMaps = loadExpensePlanSelfSubByLineId(yearStr);
+							var planSelf = planMaps.self;
+							var planSub = planMaps.sub;
 							var maxD = Math.min(4, Math.max(1, parseInt(window.__expenseMatrixMaxDepth, 10) || 4));
 							var labelCols = maxD;
 
@@ -779,27 +821,30 @@ li a {
 								return !!items[id];
 							});
 
-							var grandA = 0;
-							var grandS = 0;
+							var grand = { saS: 0, saB: 0, ssS: 0, ssB: 0, ssTot: 0 };
 
 							function matrixItemLabel(id) {
 								var it = items[id] || {};
 								return it.name != null ? String(it.name).trim() : "";
 							}
 
-							function subtotalRow(label, sa, ss, hangRowspan) {
+							function subtotalRow(label, g, hangRowspan) {
 								var tr = document.createElement("tr");
 								tr.className = "row-matrix-subtotal";
 								var tdL = document.createElement("td");
-								/* 항 열이 rowspan으로 비어 있을 때는 라벨이 목~세부 열만 덮어야 함 (숫자 3열과 겹치면 안 됨) */
 								tdL.colSpan = hangRowspan ? Math.max(1, labelCols - 1) : labelCols;
 								tdL.textContent = label;
 								tdL.style.textAlign = "center";
 								tdL.style.fontWeight = "600";
 								tr.appendChild(tdL);
-								tr.appendChild(tdNum(formatMoney(sa)));
-								tr.appendChild(tdNum(formatMoney(ss)));
-								tr.appendChild(tdNum(formatMoney(sa - ss)));
+								appendAggMoneyCells(tr, {
+									saS: g.saS,
+									saB: g.saB,
+									saTot: g.saS + g.saB,
+									ssS: g.ssS,
+									ssB: g.ssB,
+									ssTot: g.ssTot
+								});
 								tbody.appendChild(tr);
 							}
 
@@ -811,9 +856,14 @@ li a {
 								tdGx.textContent = "합계";
 								tdGx.style.textAlign = "center";
 								trG.appendChild(tdGx);
-								trG.appendChild(tdNum(formatMoney(grandA)));
-								trG.appendChild(tdNum(formatMoney(grandS)));
-								trG.appendChild(tdNum(formatMoney(grandA - grandS)));
+								appendAggMoneyCells(trG, {
+									saS: grand.saS,
+									saB: grand.saB,
+									saTot: grand.saS + grand.saB,
+									ssS: grand.ssS,
+									ssB: grand.ssB,
+									ssTot: grand.ssTot
+								});
 								tbody.appendChild(trG);
 							}
 
@@ -844,17 +894,18 @@ li a {
 							if (maxD === 1) {
 								p1Ids.forEach(function (p1) {
 									var ids = idsUnderP1(p1);
-									var sm = sumLeavesMoney(items, ids, planAlloc);
-									grandA += sm.sa;
-									grandS += sm.ss;
+									var sm = sumLeavesMoney(items, ids, planSelf, planSub);
+									grand.saS += sm.saS;
+									grand.saB += sm.saB;
+									grand.ssS += sm.ssS;
+									grand.ssB += sm.ssB;
+									grand.ssTot += sm.ssTot;
 									var tr = document.createElement("tr");
 									var td1 = document.createElement("td");
 									td1.className = "left matrix-hang-cell";
 									td1.textContent = matrixItemLabel(p1) || "";
 									tr.appendChild(td1);
-									tr.appendChild(tdNum(formatMoney(sm.sa)));
-									tr.appendChild(tdNum(formatMoney(sm.ss)));
-									tr.appendChild(tdNum(formatMoney(sm.sa - sm.ss)));
+									appendAggMoneyCells(tr, sm);
 									tbody.appendChild(tr);
 								});
 								appendGrandRow();
@@ -884,15 +935,20 @@ li a {
 									});
 									var p1RowSpan = p2Keys.length + 1;
 									var p1Done = false;
-									var subA = 0;
-									var subS = 0;
+									var subG = { saS: 0, saB: 0, ssS: 0, ssB: 0, ssTot: 0 };
 									var hangName = matrixItemLabel(p1);
 									p2Keys.forEach(function (p2k) {
-										var sm = sumLeavesMoney(items, buckets[p2k], planAlloc);
-										subA += sm.sa;
-										subS += sm.ss;
-										grandA += sm.sa;
-										grandS += sm.ss;
+										var sm = sumLeavesMoney(items, buckets[p2k], planSelf, planSub);
+										subG.saS += sm.saS;
+										subG.saB += sm.saB;
+										subG.ssS += sm.ssS;
+										subG.ssB += sm.ssB;
+										subG.ssTot += sm.ssTot;
+										grand.saS += sm.saS;
+										grand.saB += sm.saB;
+										grand.ssS += sm.ssS;
+										grand.ssB += sm.ssB;
+										grand.ssTot += sm.ssTot;
 										var tr = document.createElement("tr");
 										if (!p1Done) {
 											var td1 = document.createElement("td");
@@ -906,12 +962,10 @@ li a {
 										td2.className = "left";
 										td2.textContent = p2k === "__h" ? "" : matrixItemLabel(p2k);
 										tr.appendChild(td2);
-										tr.appendChild(tdNum(formatMoney(sm.sa)));
-										tr.appendChild(tdNum(formatMoney(sm.ss)));
-										tr.appendChild(tdNum(formatMoney(sm.sa - sm.ss)));
+										appendAggMoneyCells(tr, sm);
 										tbody.appendChild(tr);
 									});
-									subtotalRow("소계", subA, subS, true);
+									subtotalRow("소계", subG, true);
 								});
 								appendGrandRow();
 								updateDepthButtons();
@@ -942,8 +996,7 @@ li a {
 									});
 									var p1RowSpan = specs.length + 1;
 									var p1Done = false;
-									var subA = 0;
-									var subS = 0;
+									var subG = { saS: 0, saB: 0, ssS: 0, ssB: 0, ssTot: 0 };
 									var hangName = matrixItemLabel(p1);
 									specs.forEach(function (sp) {
 										var tr = document.createElement("tr");
@@ -961,7 +1014,7 @@ li a {
 										if (sp.t === "g4") {
 											mok = matrixItemLabel(parentDepth2(sp.p3));
 											sem = matrixItemLabel(sp.p3);
-											sm = sumLeavesMoney(items, sp.leaves, planAlloc);
+											sm = sumLeavesMoney(items, sp.leaves, planSelf, planSub);
 										} else {
 											var lid = sp.id;
 											var d0 = sp.d;
@@ -975,12 +1028,18 @@ li a {
 												mok = matrixItemLabel(parentDepth2(lid));
 												sem = matrixItemLabel(lid);
 											}
-											sm = sumLeavesMoney(items, [lid], planAlloc);
+											sm = sumLeavesMoney(items, [lid], planSelf, planSub);
 										}
-										subA += sm.sa;
-										subS += sm.ss;
-										grandA += sm.sa;
-										grandS += sm.ss;
+										subG.saS += sm.saS;
+										subG.saB += sm.saB;
+										subG.ssS += sm.ssS;
+										subG.ssB += sm.ssB;
+										subG.ssTot += sm.ssTot;
+										grand.saS += sm.saS;
+										grand.saB += sm.saB;
+										grand.ssS += sm.ssS;
+										grand.ssB += sm.ssB;
+										grand.ssTot += sm.ssTot;
 										var td2 = document.createElement("td");
 										td2.className = "left";
 										td2.textContent = mok;
@@ -989,12 +1048,10 @@ li a {
 										td3.className = "left";
 										td3.textContent = sem;
 										tr.appendChild(td3);
-										tr.appendChild(tdNum(formatMoney(sm.sa)));
-										tr.appendChild(tdNum(formatMoney(sm.ss)));
-										tr.appendChild(tdNum(formatMoney(sm.sa - sm.ss)));
+										appendAggMoneyCells(tr, sm);
 										tbody.appendChild(tr);
 									});
-									subtotalRow("소계", subA, subS, true);
+									subtotalRow("소계", subG, true);
 								});
 								appendGrandRow();
 								updateDepthButtons();
@@ -1005,8 +1062,7 @@ li a {
 								var ids = idsUnderP1(p1);
 								var p1RowSpan = ids.length + 1;
 								var p1Done = false;
-								var subA = 0;
-								var subS = 0;
+								var subG = { saS: 0, saB: 0, ssS: 0, ssB: 0, ssTot: 0 };
 								var hangName = matrixItemLabel(p1);
 								ids.forEach(function (lid) {
 									var d = depthFromId(lid);
@@ -1051,19 +1107,21 @@ li a {
 									td4.className = "left";
 									td4.textContent = c4;
 									tr.appendChild(td4);
-									var pa = plannedBudgetFromExpensePlan(lid, planAlloc);
-									var sp = spentFromExpenseDetail(lid, items);
-									var m = moneyCells(pa, sp);
-									tr.appendChild(tdNum(m.a));
-									tr.appendChild(tdNum(m.s));
-									tr.appendChild(tdNum(m.b));
+									var sm = sumLeavesMoney(items, [lid], planSelf, planSub);
+									subG.saS += sm.saS;
+									subG.saB += sm.saB;
+									subG.ssS += sm.ssS;
+									subG.ssB += sm.ssB;
+									subG.ssTot += sm.ssTot;
+									grand.saS += sm.saS;
+									grand.saB += sm.saB;
+									grand.ssS += sm.ssS;
+									grand.ssB += sm.ssB;
+									grand.ssTot += sm.ssTot;
+									appendAggMoneyCells(tr, sm);
 									tbody.appendChild(tr);
-									subA += pa;
-									subS += sp;
-									grandA += pa;
-									grandS += sp;
 								});
-								subtotalRow("소계", subA, subS, true);
+								subtotalRow("소계", subG, true);
 							});
 
 							appendGrandRow();

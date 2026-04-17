@@ -113,7 +113,9 @@
 		.tableBot .tableBot_list ul:nth-child(2){margin-top:0;}
 		.mt10{margin-top:10px;}
 		.mb10{margin-bottom:10px;}
-
+		/* 퍼블: 단체관리(active)일 때도 사업관리 등 다른 메뉴 호버 시 해당 서브메뉴 표시 */
+		.nav-menu:hover > ul > li.active:not(:hover) > div.sub-menu { display: none !important; }
+		.nav-menu > ul > li:hover > div.sub-menu { display: block !important; }
 
 	</style>
 </head>
@@ -812,7 +814,7 @@ window.open(
 				        </li>
 				    
 				        <li class="">
-				            <a href="/wkwhrma/acainfo.do">사업관리</a>
+				            <a href="Statistics4.html">사업관리</a>
 				            <!-- 해당 메인 메뉴의 하위 메뉴 렌더링 -->
 				            <div class="sub-menu6 sub-menu" style="display:none">
 				                <ul>

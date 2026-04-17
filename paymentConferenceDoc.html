@@ -164,14 +164,99 @@
 		}
 		.pc-file-row {
 			display: flex;
-			align-items: center;
+			align-items: flex-start;
 			justify-content: space-between;
+			gap: 12px;
 			padding: 8px 12px;
 			border: 1px solid #222;
 			border-top: none;
 			background: #f5f5f5;
 		}
+		.pc-file-row .pc-file-label {
+			flex: 0 0 auto;
+			padding-top: 4px;
+		}
+		.pc-file-col {
+			flex: 1;
+			min-width: 0;
+			text-align: right;
+		}
+		.pc-file-addline {
+			display: flex;
+			align-items: center;
+			justify-content: flex-end;
+			gap: 8px;
+			flex-wrap: wrap;
+		}
 		.pc-file-row input[type="file"] { display: none; }
+		.pc-attach-hint {
+			margin: 6px 0 0;
+			font-size: 11px;
+			color: #555;
+			text-align: left;
+			line-height: 1.35;
+		}
+		.pc-attach-list {
+			margin: 8px 0 0;
+			padding: 0;
+			list-style: none;
+			max-height: 160px;
+			overflow: auto;
+			text-align: left;
+			border: 1px solid #ccc;
+			background: #fff;
+			border-radius: 4px;
+		}
+		.pc-attach-list li {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 8px;
+			padding: 5px 8px;
+			font-size: 12px;
+			border-bottom: 1px solid #eee;
+		}
+		.pc-attach-list li:last-child { border-bottom: none; }
+		.pc-attach-list .pc-attach-name {
+			flex: 1;
+			min-width: 0;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+		.pc-attach-actions {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			flex-shrink: 0;
+		}
+		.pc-attach-actions button {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 28px;
+			height: 28px;
+			padding: 0;
+			border: 1px solid #bbb;
+			border-radius: 4px;
+			background: #f8f8f8;
+			cursor: pointer;
+			color: #333;
+		}
+		.pc-attach-actions button:hover {
+			background: #eaeaea;
+		}
+		.pc-attach-actions button:disabled {
+			opacity: 0.45;
+			cursor: not-allowed;
+		}
+		.pc-attach-actions button.pc-attach-remove {
+			border-color: #c77;
+			color: #922;
+		}
+		.pc-attach-actions button.pc-attach-remove:hover {
+			background: #fde8e8;
+		}
 		.pc-actions-wrap {
 			max-width: 1120px;
 			margin: 10px auto 0;
@@ -334,10 +419,14 @@
 			</div>
 
 			<div class="pc-file-row">
-				<span><strong>파일첨부</strong></span>
-				<div>
-					<input type="file" id="pcFileInp" name="attachments" multiple />
-					<a href="javascript:void(0);" class="btnLink btnBlueBg" id="pcFileBtn">추가</a>
+				<span class="pc-file-label"><strong>파일첨부</strong></span>
+				<div class="pc-file-col">
+					<div class="pc-file-addline">
+						<input type="file" id="pcFileInp" name="attachments" multiple />
+						<a href="javascript:void(0);" class="btnLink btnBlueBg" id="pcFileBtn">추가</a>
+					</div>
+					<p class="pc-attach-hint">여러 파일 선택 가능합니다. 목록에서 받기·삭제할 수 있습니다. (미리보기·다시 받기용으로 파일당 약 1MB까지 브라우저에 보관합니다.)</p>
+					<ul class="pc-attach-list" id="pcAttachList" aria-live="polite"></ul>
 				</div>
 			</div>
 		</form>
@@ -587,6 +676,160 @@
 		return true;
 	}
 
+	var pcAttachmentList = [];
+	var PC_ATTACH_MAX_BYTES = 1024 * 1024;
+
+	function formatPcAttachSize(n) {
+		if (n == null || isNaN(n)) return "";
+		var x = Number(n);
+		if (x < 1024) return x + " B";
+		if (x < 1048576) return (x / 1024).toFixed(1) + " KB";
+		return (x / 1048576).toFixed(1) + " MB";
+	}
+
+	function syncPcFileInput() {
+		var inp = document.getElementById("pcFileInp");
+		if (!inp || typeof DataTransfer === "undefined") return;
+		try {
+			var dt = new DataTransfer();
+			pcAttachmentList.forEach(function (m) {
+				if (m && m._file) dt.items.add(m._file);
+			});
+			inp.files = dt.files;
+		} catch (e) {}
+	}
+
+	function triggerPcAttachmentDownload(meta) {
+		var url = meta && meta.dataUrl != null ? String(meta.dataUrl).trim() : "";
+		if (!url || url.indexOf("data:") !== 0) return;
+		try {
+			var a = document.createElement("a");
+			a.href = url;
+			a.download = (meta && meta.name) || "download";
+			a.rel = "noopener";
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+		} catch (eDl) {
+			alert("다운로드를 시작할 수 없습니다. 브라우저 설정을 확인하거나 파일을 다시 첨부해 주세요.");
+		}
+	}
+
+	function renderPcAttachList() {
+		var ul = document.getElementById("pcAttachList");
+		if (!ul) return;
+		ul.innerHTML = "";
+		pcAttachmentList.forEach(function (meta, idx) {
+			var li = document.createElement("li");
+			var span = document.createElement("span");
+			span.className = "pc-attach-name";
+			var sz = meta.size != null ? " (" + formatPcAttachSize(meta.size) + ")" : "";
+			span.textContent = (meta.name || "") + sz;
+
+			var actions = document.createElement("span");
+			actions.className = "pc-attach-actions";
+
+			var btnDl = document.createElement("button");
+			btnDl.type = "button";
+			btnDl.className = "pc-attach-dl";
+			btnDl.innerHTML = '<i class="fa-solid fa-download" aria-hidden="true"></i>';
+			btnDl.setAttribute("aria-label", "파일 받기");
+			btnDl.title = "받기";
+			var urlOk =
+				meta &&
+				String(meta.dataUrl || "")
+					.trim()
+					.indexOf("data:") === 0;
+			btnDl.disabled = !urlOk;
+			if (!urlOk) btnDl.title = "1MB 초과 등으로 미리보기·받기 데이터 없음(제출용 파일은 유지)";
+
+			btnDl.addEventListener("click", function (e) {
+				e.preventDefault();
+				var di = idx;
+				var m = pcAttachmentList[di];
+				if (m && String(m.dataUrl || "").trim().indexOf("data:") === 0) {
+					triggerPcAttachmentDownload(m);
+				}
+			});
+
+			var btnRm = document.createElement("button");
+			btnRm.type = "button";
+			btnRm.className = "pc-attach-remove";
+			btnRm.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+			btnRm.setAttribute("aria-label", "첨부 삭제");
+			btnRm.title = "삭제";
+			btnRm.addEventListener("click", function (e) {
+				e.preventDefault();
+				pcAttachmentList.splice(idx, 1);
+				renderPcAttachList();
+			});
+
+			actions.appendChild(btnDl);
+			actions.appendChild(btnRm);
+			li.appendChild(span);
+			li.appendChild(actions);
+			ul.appendChild(li);
+		});
+		syncPcFileInput();
+		try {
+			setTimeout(fitPopupWindowToContent, 60);
+		} catch (e2) {}
+	}
+
+	function wirePcAttachments() {
+		var inp = document.getElementById("pcFileInp");
+		var btn = document.getElementById("pcFileBtn");
+		if (!inp || !btn) return;
+		btn.addEventListener("click", function (e) {
+			e.preventDefault();
+			inp.click();
+		});
+		inp.addEventListener("change", function () {
+			var list = Array.prototype.slice.call(inp.files || [], 0);
+			inp.value = "";
+			if (!list.length) return;
+			var i = 0;
+			function appendOne(f, dataUrl) {
+				pcAttachmentList.push({
+					name: f.name,
+					size: f.size,
+					type: f.type || "",
+					_file: f,
+					dataUrl: dataUrl || ""
+				});
+			}
+			function next() {
+				if (i >= list.length) {
+					renderPcAttachList();
+					return;
+				}
+				var f = list[i++];
+				if (f.size > PC_ATTACH_MAX_BYTES) {
+					alert(
+						"미리보기·다시 받기용 저장은 파일당 최대 " +
+							Math.round(PC_ATTACH_MAX_BYTES / 1024 / 1024) +
+							"MB입니다.\n제출에는 포함되며, 미리보기 없이 목록에만 표시합니다:\n" +
+							f.name
+					);
+					appendOne(f, "");
+					next();
+					return;
+				}
+				var fr = new FileReader();
+				fr.onload = function () {
+					appendOne(f, fr.result || "");
+					next();
+				};
+				fr.onerror = function () {
+					appendOne(f, "");
+					next();
+				};
+				fr.readAsDataURL(f);
+			}
+			next();
+		});
+	}
+
 	function wire() {
 		yearOptions();
 		treeData = loadBudgetTree();
@@ -615,19 +858,23 @@
 		document.getElementById("pcDraftDate").value = td;
 		document.getElementById("pcCompleteDate").value = td;
 
-		document.getElementById("pcFileBtn").addEventListener("click", function () {
-			document.getElementById("pcFileInp").click();
-		});
+		wirePcAttachments();
 
 		document.getElementById("pcBtnFinal").addEventListener("click", function () {
 			if (!validateBimChain()) return;
 			if (!validateEvidence()) return;
-			alert("전결 처리는 연동 전입니다. (퍼블 확인용)");
+			var n = pcAttachmentList.length;
+			alert(
+				"전결 처리는 연동 전입니다. (퍼블 확인용)\n첨부 파일: " + n + "건 (실제 전송은 서버 연동 후 가능)"
+			);
 		});
 		document.getElementById("pcBtnDraft").addEventListener("click", function () {
 			if (!validateBimChain()) return;
 			if (!validateEvidence()) return;
-			alert("기안 등록은 연동 전입니다. (퍼블 확인용)");
+			var n = pcAttachmentList.length;
+			alert(
+				"기안 등록은 연동 전입니다. (퍼블 확인용)\n첨부 파일: " + n + "건 (실제 전송은 서버 연동 후 가능)"
+			);
 		});
 	}
 

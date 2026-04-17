@@ -65,9 +65,13 @@
 	    window.__CONTROLLER_METHOD__ = "approvalList";
 	    /* 외부 스크립트가 window.open을 덮어써 /wkwhrma/*.do 로 바꾸므로, 로드 전 원본 저장 */
 	    try { window.__nativeWindowOpen = window.open.bind(window); } catch (e) { window.__nativeWindowOpen = window.open; }
-	    window.openPaymentConferenceDocPopup = function () {
+	    window.openPaymentConferenceDocPopup = function (docId) {
 	    	try {
-	    		var url = new URL("paymentConferenceDoc.html", window.location.href).href;
+	    		var u = new URL("paymentConferenceDoc.html", window.location.href);
+	    		if (docId != null && String(docId).trim() !== "") {
+	    			u.searchParams.set("id", String(docId).trim());
+	    		}
+	    		var url = u.href;
 	    		var w = 1040;
 	    		var h = 720;
 	    		var sw = window.screen.availWidth;
@@ -1187,8 +1191,16 @@ function closeBPopup(){
 			.replace(/"/g, "&quot;");
 	}
 
-	function statusCell(kind) {
+	function statusCell(kind, cells) {
+		cells = cells || {};
 		if (kind === "progress") {
+			if (cells.docType === "지급회의서" && cells.docId != null && String(cells.docId).trim() !== "") {
+				return (
+					'<a href="javascript:void(0)" class="btnLink btnBlueBg approval-status-btn" data-pc-doc-id="' +
+					escapeHtml(String(cells.docId)) +
+					'" onclick="openPaymentConferenceDocPopup(this.getAttribute(\'data-pc-doc-id\')); return false;">진행중</a>'
+				);
+			}
 			return '<a href="javascript:void(0)" class="btnLink btnBlueBg approval-status-btn">진행중</a>';
 		}
 		if (kind === "reject") {
@@ -1207,15 +1219,21 @@ function closeBPopup(){
 		return '<td class="txtc"></td>';
 	}
 
-	function titleCell(title, href) {
+	function titleCell(title, href, docId) {
 		var t = escapeHtml(title || "");
 		if (!href || href === "") {
 			return '<td class="txtc approval-title-cell">' + t + "</td>";
 		}
 		if (href.indexOf("paymentConferenceDoc.html") !== -1) {
+			var idAttr = "";
+			if (docId != null && String(docId) !== "") {
+				idAttr = ' data-doc-id="' + escapeHtml(String(docId)) + '"';
+			}
 			return (
 				'<td class="txtc approval-title-cell">' +
-				'<a href="javascript:void(0)" class="approval-pc-title" onclick="openPaymentConferenceDocPopup(); return false;">' +
+				'<a href="javascript:void(0)" class="approval-pc-title"' +
+				idAttr +
+				' onclick="openPaymentConferenceDocPopup(this.getAttribute(\'data-doc-id\')); return false;">' +
 				t +
 				"</a></td>"
 			);
@@ -1350,7 +1368,7 @@ function closeBPopup(){
 			'<td class="txtc">' +
 			escapeHtml(cells.docType) +
 			"</td>" +
-			titleCell(cells.title, cells.titleHref) +
+			titleCell(cells.title, cells.titleHref, cells.docId) +
 			'<td class="txtc">' +
 			escapeHtml(cells.drafter) +
 			"</td>" +
@@ -1361,7 +1379,7 @@ function closeBPopup(){
 			escapeHtml(cells.next) +
 			"</td>" +
 			'<td class="txtc approval-status-cell">' +
-			(cells.status === "empty" ? "" : statusCell(cells.status)) +
+			(cells.status === "empty" ? "" : statusCell(cells.status, cells)) +
 			"</td>" +
 			attachCell(cells.attach) +
 			"</tr>"
@@ -1395,6 +1413,7 @@ function closeBPopup(){
 				docType: "지급회의서",
 				title: title,
 				titleHref: "paymentConferenceDoc.html",
+				docId: d.id != null ? String(d.id) : "",
 				drafter: drafter,
 				date: draftDate,
 				next: next,

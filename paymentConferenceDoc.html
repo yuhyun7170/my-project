@@ -284,12 +284,158 @@
 			padding: 8px 10px;
 			border-bottom: 1px solid #222;
 		}
+		#pcSeedView.pc-seed-root {
+			max-width: 1120px;
+			margin: 0 auto;
+		}
+		.pc-seed-badges-wrap {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 10px;
+			flex-wrap: wrap;
+			padding: 8px 12px 10px;
+			background: #fafafa;
+			border: 1px solid #dedede;
+			border-bottom: none;
+		}
+		.pc-seed-badge {
+			display: inline-block;
+			padding: 4px 14px;
+			font-size: 12px;
+			font-weight: 700;
+			border: 1px solid #333;
+			border-radius: 2px;
+			background: #fff;
+		}
+		.pc-seed-badge--pending { color: #444; }
+		.pc-seed-badge--progress {
+			color: #0d5a5a;
+			border-color: #0d5a5a;
+			background: #e6f7f7;
+		}
+		table.pc-form-table td.pc-seed-val {
+			text-align: center;
+			vertical-align: middle;
+			padding: 8px 6px !important;
+		}
+		table.pc-form-table td.pc-seed-val--left {
+			text-align: left;
+		}
+		table.pc-form-table td.pc-seed-title-row {
+			text-align: center !important;
+			vertical-align: middle !important;
+		}
+		.pc-seed-appr-stack {
+			line-height: 1.45;
+			font-size: 12px;
+		}
+		.pc-seed-evidence-cell .pc-seed-ev-line {
+			display: block;
+			margin: 3px 0;
+			font-weight: normal;
+		}
+		.pc-seed-evidence-cell .pc-seed-dot {
+			display: inline-block;
+			width: 1em;
+			text-align: center;
+			font-weight: 700;
+		}
+		.pc-seed-detail-wrap {
+			border: 1px solid #222;
+			border-top: none;
+			background: #fff;
+		}
+		.pc-seed-detail-block {
+			border-bottom: 1px solid #dedede;
+		}
+		.pc-seed-detail-block:last-child { border-bottom: none; }
+		.pc-seed-detail-block .pc-seed-dt-label {
+			display: block;
+			padding: 6px 10px 0;
+			font-weight: 600;
+			background: #f5f5f5;
+			border-bottom: 1px solid #ddd;
+		}
+		.pc-seed-detail-block .pc-seed-dt-body {
+			min-height: 72px;
+			padding: 10px 12px;
+			font-size: 13px;
+			color: #222;
+		}
+		.pc-seed-detail-block .pc-seed-dt-body--empty {
+			min-height: 100px;
+		}
+		.pc-seed-file-row {
+			display: flex;
+			align-items: center;
+			justify-content: flex-start;
+			gap: 12px;
+			padding: 8px 12px;
+			border: 1px solid #dedede;
+			border-top: none;
+			background: #fff;
+		}
+		.pc-seed-file-row .pc-seed-file-name {
+			flex: 1;
+			min-width: 0;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			font-size: 13px;
+		}
+		.pc-seed-actions-wrap {
+			max-width: 1120px;
+			margin: 10px auto 0;
+			padding: 2px 12px 0;
+			text-align: center;
+		}
+		.pc-seed-actions-wrap .btnList.mt20 {
+			margin-top: 8px;
+			margin-bottom: 0;
+		}
+		.pc-seed-actions-wrap .btnList {
+			display: inline-flex;
+			flex-wrap: wrap;
+			align-items: center;
+			justify-content: center;
+			gap: 0;
+		}
+		.pc-seed-actions-wrap .btnList li { list-style: none; margin-right: 5px; }
+		.pc-head-close {
+			border: none;
+			background: transparent;
+			cursor: pointer;
+			padding: 6px 10px;
+			font-size: 18px;
+			line-height: 1;
+			color: #444;
+		}
+		.pc-head-close:hover { color: #000; }
+		button.pc-seed-dl-btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 28px;
+			height: 28px;
+			padding: 0;
+			border: 1px solid #bbb;
+			border-radius: 4px;
+			background: #f8f8f8;
+			cursor: pointer;
+			color: #333;
+		}
+		button.pc-seed-dl-btn:hover { background: #eaeaea; }
 	</style>
 </head>
 <body class="pc-body">
+	<div id="pcEditRoot">
 	<div class="pc-shell">
 		<div class="pc-head">
 			<h1>지급회의서</h1>
+			<button type="button" class="pc-head-close" id="pcHeadClose" title="닫기" aria-label="닫기">
+				<i class="fa-solid fa-xmark" aria-hidden="true"></i>
+			</button>
 		</div>
 
 		<form id="pcForm" action="javascript:void(0);" method="post">
@@ -439,6 +585,162 @@
 				<a href="javascript:void(0);" class="btnLink btnBlueBg" id="pcBtnDraft">기안</a>
 			</li>
 		</ul>
+	</div>
+	</div>
+
+	<div id="pcSeedView" class="pc-seed-root" style="display: none;" aria-hidden="true">
+		<div class="pc-shell">
+			<div class="pc-head">
+				<h1>지급회의서</h1>
+				<button type="button" class="pc-head-close" id="pcSeedHeadClose" title="닫기" aria-label="닫기">
+					<i class="fa-solid fa-xmark" aria-hidden="true"></i>
+				</button>
+			</div>
+			<div class="pc-seed-badges-wrap">
+				<span class="pc-seed-badge pc-seed-badge--pending">결재전</span>
+				<span class="pc-seed-badge pc-seed-badge--progress">진행중</span>
+			</div>
+			<div class="pc-form-wrap">
+				<table class="pc-form-table">
+					<colgroup>
+						<col class="pc-col-1" style="width: 11%;" />
+						<col class="pc-col-2" style="width: 22.33%;" />
+						<col class="pc-col-3" style="width: 11%;" />
+						<col class="pc-col-4" style="width: 22.33%;" />
+						<col class="pc-col-5" style="width: 11%;" />
+						<col class="pc-col-6" style="width: 22.34%;" />
+					</colgroup>
+					<tbody>
+						<tr>
+							<th scope="row">서기</th>
+							<td class="pc-seed-val">서기 2026 년도</td>
+							<th scope="row">결재자4</th>
+							<td class="pc-seed-val pc-seed-val--left">
+								<div class="pc-seed-appr-stack">최기현 사무국장</div>
+							</td>
+							<th scope="row">주소</th>
+							<td class="pc-seed-val pc-seed-val--left">증빙서 참조</td>
+						</tr>
+						<tr>
+							<th scope="row">회계별</th>
+							<td class="pc-seed-val">포도자조금</td>
+							<th scope="row">결재자3</th>
+							<td class="pc-seed-val pc-seed-val--left">
+								<div class="pc-seed-appr-stack">박진수 부장</div>
+							</td>
+							<th scope="row">청구자</th>
+							<td class="pc-seed-val pc-seed-val--left">증빙서 참조</td>
+						</tr>
+						<tr>
+							<th scope="row">과목</th>
+							<td class="pc-seed-val">보조금</td>
+							<th scope="row">결재자2</th>
+							<td class="pc-seed-val pc-seed-val--left">
+								<div class="pc-seed-appr-stack">김민정 사원</div>
+							</td>
+							<td colspan="2" class="pc-static-td">본서의 금액을 정히 영수함</td>
+						</tr>
+						<tr>
+							<th scope="row">관</th>
+							<td class="pc-seed-val">소비홍보</td>
+							<th scope="row">결재자1</th>
+							<td class="pc-seed-val"></td>
+							<th scope="row">영수자</th>
+							<td class="pc-seed-val"></td>
+						</tr>
+						<tr>
+							<th scope="row">항</th>
+							<td class="pc-seed-val">광고</td>
+							<th scope="row">기안자</th>
+							<td class="pc-seed-val">김민정</td>
+							<td colspan="2" rowspan="3" class="pc-evidence-outer">
+								<table class="pc-evidence-inner">
+									<colgroup>
+										<col style="width: 11%;" />
+										<col style="width: 22%;" />
+										<col style="width: 67%;" />
+									</colgroup>
+									<tbody>
+										<tr>
+											<th scope="rowgroup" rowspan="2" class="pc-th-evidence-main">증빙<br />서류</th>
+											<th scope="row" class="pc-ev-sub">법정증빙</th>
+											<td class="pc-evidence-cell pc-seed-evidence-cell">
+												<span class="pc-seed-ev-line"><span class="pc-seed-dot">●</span> 1. 카드매출전표</span>
+												<span class="pc-seed-ev-line"><span class="pc-seed-dot">○</span> 2. 세금계산서</span>
+												<span class="pc-seed-ev-line"><span class="pc-seed-dot">○</span> 3. 계산서</span>
+											</td>
+										</tr>
+										<tr>
+											<th scope="row" class="pc-ev-sub">일반증빙</th>
+											<td class="pc-evidence-cell pc-seed-evidence-cell">
+												<span class="pc-seed-ev-line"><span class="pc-seed-dot">○</span> 4. 영수증</span>
+												<span class="pc-seed-ev-line"><span class="pc-seed-dot">○</span> 5. 기타</span>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">목</th>
+							<td class="pc-seed-val">소비촉진</td>
+							<th scope="row">발의(기안)일</th>
+							<td class="pc-seed-val">2026년 5월 1일</td>
+						</tr>
+						<tr>
+							<th scope="row">세목</th>
+							<td class="pc-seed-val">—</td>
+							<th scope="row">결재(완료)일</th>
+							<td class="pc-seed-val">2026년 5월 1일</td>
+						</tr>
+						<tr>
+							<th scope="row">세부사업</th>
+							<td class="pc-seed-val">TV광고(PPL)</td>
+							<th scope="row">발의부서명</th>
+							<td class="pc-seed-val"></td>
+							<th scope="row">세무담당자확인</th>
+							<td class="pc-seed-val">오지혜 (인)</td>
+						</tr>
+						<tr>
+							<th scope="row">제목</th>
+							<td colspan="3" class="pc-seed-title-row" id="pcSeedDocTitle">대전 행사 출장경비</td>
+							<th scope="row">금액</th>
+							<td class="pc-seed-val">1,000,000</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="pc-seed-detail-wrap">
+				<div class="pc-seed-detail-block">
+					<span class="pc-seed-dt-label">지출내용</span>
+					<div class="pc-seed-dt-body pc-seed-dt-body--empty"></div>
+				</div>
+				<div class="pc-seed-detail-block">
+					<span class="pc-seed-dt-label">지급방법</span>
+					<div class="pc-seed-dt-body">****-****-****-****(법인카드)</div>
+				</div>
+			</div>
+			<div class="pc-seed-file-row">
+				<span><strong>파일첨부</strong></span>
+				<span class="pc-seed-file-name" id="pcSeedFileName">1.djlshgdjhsd.jpg</span>
+				<button type="button" class="pc-seed-dl-btn" id="pcSeedFileDl" title="받기" aria-label="파일 받기">
+					<i class="fa-solid fa-download" aria-hidden="true"></i>
+				</button>
+			</div>
+		</div>
+		<div class="pc-seed-actions-wrap">
+			<ul class="btnList mt20">
+				<li class="mr5">
+					<a href="javascript:void(0);" class="btnLink btnChaBg" id="pcSeedBtnFinal">전결</a>
+				</li>
+				<li class="mr5">
+					<a href="javascript:void(0);" class="btnLink btnBlueBg" id="pcSeedBtnApprove"><i class="fa-solid fa-plus" aria-hidden="true"></i> 결재</a>
+				</li>
+				<li>
+					<a href="javascript:void(0);" class="btnLink btnRedBg" id="pcSeedBtnReject"><i class="fa-solid fa-xmark" aria-hidden="true"></i> 반려</a>
+				</li>
+			</ul>
+		</div>
 	</div>
 
 	<script>
@@ -678,6 +980,128 @@
 	var PC_ATTACH_MAX_BYTES = 1024 * 1024;
 	var APPROVAL_PC_STORAGE_KEY = "approval_payment_conference_list_v1";
 
+	function getQueryParam(name) {
+		var q = window.location.search;
+		if (!q || q.length < 2) return "";
+		var parts = q.substring(1).split("&");
+		for (var i = 0; i < parts.length; i++) {
+			var kv = parts[i].split("=");
+			var k = decodeURIComponent((kv[0] || "").replace(/\+/g, " "));
+			if (k === name) {
+				return decodeURIComponent((kv.slice(1).join("=") || "").replace(/\+/g, " "));
+			}
+		}
+		return "";
+	}
+
+	function loadPcApprovalList() {
+		try {
+			var list = JSON.parse(localStorage.getItem(APPROVAL_PC_STORAGE_KEY) || "[]");
+			return Array.isArray(list) ? list : [];
+		} catch (e) {
+			return [];
+		}
+	}
+
+	function loadPcItemById(docId) {
+		var list = loadPcApprovalList();
+		for (var j = 0; j < list.length; j++) {
+			if (list[j] && String(list[j].id) === docId) return list[j];
+		}
+		return null;
+	}
+
+	function showPcProgressPreview(meta) {
+		meta = meta || {};
+		var editRoot = document.getElementById("pcEditRoot");
+		var seedRoot = document.getElementById("pcSeedView");
+		if (!editRoot || !seedRoot) return false;
+
+		editRoot.style.display = "none";
+		editRoot.setAttribute("aria-hidden", "true");
+		seedRoot.style.display = "block";
+		seedRoot.removeAttribute("aria-hidden");
+
+		var titleEl = document.getElementById("pcSeedDocTitle");
+		if (titleEl) {
+			var t =
+				meta.title != null && String(meta.title).trim() !== ""
+					? String(meta.title).trim()
+					: "대전 행사 출장경비";
+			titleEl.textContent = t;
+		}
+
+		var sc = document.getElementById("pcSeedHeadClose");
+		if (sc) {
+			sc.addEventListener("click", function () {
+				try {
+					window.close();
+				} catch (e) {}
+			});
+		}
+
+		function stub(msg) {
+			alert(msg || "연동 전입니다. (퍼블 확인용)");
+		}
+		var b1 = document.getElementById("pcSeedBtnFinal");
+		var b2 = document.getElementById("pcSeedBtnApprove");
+		var b3 = document.getElementById("pcSeedBtnReject");
+		var bdl = document.getElementById("pcSeedFileDl");
+		if (b1) {
+			b1.addEventListener("click", function () {
+				stub("전결 처리는 연동 전입니다.");
+			});
+		}
+		if (b2) {
+			b2.addEventListener("click", function () {
+				stub("결재 처리는 연동 전입니다.");
+			});
+		}
+		if (b3) {
+			b3.addEventListener("click", function () {
+				stub("반려 처리는 연동 전입니다.");
+			});
+		}
+		if (bdl) {
+			bdl.addEventListener("click", function () {
+				stub("예시 첨부 파일 다운로드는 서버 연동 후 가능합니다.");
+			});
+		}
+
+		setTimeout(fitPopupWindowToContent, 0);
+		setTimeout(fitPopupWindowToContent, 120);
+		return true;
+	}
+
+	function tryOpenSeedProgressView() {
+		if (getQueryParam("demo") === "progress" || getQueryParam("view") === "progress") {
+			var demoTitle = getQueryParam("title");
+			return showPcProgressPreview({ title: demoTitle || undefined });
+		}
+
+		var docId = getQueryParam("id");
+		if (!docId) return false;
+
+		if (/^pc_seed_/.test(docId)) {
+			var item = loadPcItemById(docId);
+			if (item) {
+				if (String(item.status || "") !== "progress") return false;
+				return showPcProgressPreview({ title: item.title });
+			}
+			if (docId === "pc_seed_1") {
+				return showPcProgressPreview({ title: "대전 행사 출장경비" });
+			}
+			return false;
+		}
+
+		var itemProgress = loadPcItemById(docId);
+		if (itemProgress && String(itemProgress.status || "") === "progress") {
+			return showPcProgressPreview({ title: itemProgress.title });
+		}
+
+		return false;
+	}
+
 	function getSelectText(id) {
 		var el = document.getElementById(id);
 		if (!el || el.selectedIndex < 0) return "";
@@ -893,6 +1317,14 @@
 	}
 
 	function wire() {
+		var headClose = document.getElementById("pcHeadClose");
+		if (headClose) {
+			headClose.addEventListener("click", function () {
+				try {
+					window.close();
+				} catch (e) {}
+			});
+		}
 		yearOptions();
 		treeData = loadBudgetTree();
 		var hintRow = document.getElementById("pcBimHintRow");
@@ -943,17 +1375,28 @@
 		});
 	}
 
-	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", wire);
-	} else {
+	function init() {
+		if (tryOpenSeedProgressView()) {
+			window.addEventListener("load", function () {
+				requestAnimationFrame(function () {
+					requestAnimationFrame(fitPopupWindowToContent);
+				});
+			});
+			return;
+		}
 		wire();
+		window.addEventListener("load", function () {
+			requestAnimationFrame(function () {
+				requestAnimationFrame(fitPopupWindowToContent);
+			});
+		});
 	}
 
-	window.addEventListener("load", function () {
-		requestAnimationFrame(function () {
-			requestAnimationFrame(fitPopupWindowToContent);
-		});
-	});
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", init);
+	} else {
+		init();
+	}
 })();
 	</script>
 </body>

@@ -63,6 +63,8 @@
 	    window.__JSP_FILE_PATH__ = "/WEB-INF/jsp/content/acadm/approve_list.jsp";
 	    window.__CONTROLLER_CLASS__ = "ApprovalController";
 	    window.__CONTROLLER_METHOD__ = "approvalList";
+	    /* 외부 스크립트가 window.open을 덮어써 /wkwhrma/*.do 로 바꾸므로, 로드 전 원본 저장 */
+	    try { window.__nativeWindowOpen = window.open.bind(window); } catch (e) { window.__nativeWindowOpen = window.open; }
 	</script>
 	<script src="http://자조금.kr/js/jquery-3.7.1.js"></script>
 	<script src="http://자조금.kr/js/jquery.form.min.js"></script>
@@ -147,8 +149,11 @@ function FnWinOpen()
 
 function FnWinOpenModify()
 {
-	openPopWindowBySubmit('documentSelectModify', '/wkwhrma/documentSelectModify.do', 'width=480,height=330', {
-	});
+	var url = new URL('documentSelectModify.html', window.location.href).href;
+	var opts = 'scrollbars=yes,resizable=yes,width=480,height=330';
+	var wopen = window.__nativeWindowOpen || window.open;
+	wopen(url, 'documentSelectModify', opts);
+	return false;
 }
 //팝업창 닫기
 function closeBPopup(){
@@ -1230,7 +1235,7 @@ window.open(
 							<li><a href="#;" class="btnLink btnRedBg"><i class="fa-solid fa-up-right-from-square"></i> 퇴직처리</a></li>//-->
 						</ul>
 						<ul class="btnList">
-							<li><a href="#" class="btnLink btnBlueBg" onClick="FnWinOpenModify();"><i class="fa fa-plus"></i> 문서함</a></li>
+							<li><a href="documentSelectModify.html" class="btnLink btnBlueBg" target="documentSelectModify" onclick="FnWinOpenModify(); return false;"><i class="fa fa-plus"></i> 문서함</a></li>
 							<!--<li><a href="javascript:openApproval();" class="btnLink btnBlueBg"><i class="fa fa-plus"></i> 결재선 지정</a></li>//-->
 							<li><a href="#" class="btnLink btnGrBg" onClick="FnWinOpen();"><i class="fa fa-times"></i> 등 록</a></li>
 						</ul>

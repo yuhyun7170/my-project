@@ -63,6 +63,7 @@
 	    window.__JSP_FILE_PATH__ = "/WEB-INF/jsp/content/acadm/document_select_modify.jsp";
 	    window.__CONTROLLER_CLASS__ = "ApprovalController";
 	    window.__CONTROLLER_METHOD__ = "documentSelectModify";
+	    try { window.__nativeWindowOpen = window.open.bind(window); } catch (e) { window.__nativeWindowOpen = window.open; }
 	</script>
 	<script src="https://자조금.kr/js/jquery-3.7.1.js"></script>
 	<script src="https://자조금.kr/js/jquery.form.min.js"></script>
@@ -163,13 +164,20 @@
 
 </head>
 <script>
+  function openPaymentConferenceDoc() {
+    var url = new URL('paymentConferenceDoc.html', window.location.href).href;
+    var wopen = window.__nativeWindowOpen || window.open;
+    var w = wopen(url, 'paymentConferenceDoc', 'scrollbars=yes,resizable=yes,width=1040,height=940');
+    try {
+      if (w) { window.close(); }
+    } catch (e) {}
+  }
+
   function openProposal(documentTypeCode) {
-    // 현재 팝업창 닫기
     window.close();
-    
-	openPopWindowBySubmit('proposalFormModify', '/wkwhrma/proposalFormModify.do', 'width=650,height=545', {
-		documentTypeCode : documentTypeCode
-	});
+    openPopWindowBySubmit('proposalFormModify', '/wkwhrma/proposalFormModify.do', 'width=650,height=545', {
+      documentTypeCode: documentTypeCode
+    });
   }
 </script>
 <body class="">
@@ -182,7 +190,7 @@
 				
 					
 						<div class="doc-btn"
-							 onclick="openProposal('DT008', '지급회의서')">
+							 onclick="openPaymentConferenceDoc();">
 							지급회의서
 						</div>
 					

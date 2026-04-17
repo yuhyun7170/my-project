@@ -120,6 +120,13 @@
 		.table_list{margin-top:20px;}
 		.table_list:nth-child(5).active{display:flex;}
 		.table_list table{border-top:none;}
+		/* 공통 CSS·스크립트가 탭 전환 시 .table_list만 숨기거나 .active를 빼는 경우 대비 */
+		#content .tableListWrap > .table_list,
+		#approvalMainListPanel {
+			display: block !important;
+			visibility: visible !important;
+			opacity: 1 !important;
+		}
 		.approval-attach-icon { color: #2f5597; font-size: 15px; }
 		.approval-status-done { color: #222 !important; background: #e0e0e0 !important; border-color: #bbb !important; cursor: default; }
 		.approval-main-table { table-layout: fixed; width: 100%; }
@@ -918,22 +925,22 @@ window.open(
 <div class="pageTabMenu">
     <ul class="tabMenuList">
         <li class="active">
-            <a href="javascript:setStatus('');">전체</a>
+            <a href="javascript:void(0)" onclick="approvalListSetTab(''); return false;">전체</a>
         </li>
         <li class="">
-            <a href="javascript:setStatus('미결');">진행중</a>
+            <a href="javascript:void(0)" onclick="approvalListSetTab('미결'); return false;">진행중</a>
         </li>
         <li class="">
-            <a href="javascript:setStatus('반려');">반려</a>
+            <a href="javascript:void(0)" onclick="approvalListSetTab('반려'); return false;">반려</a>
         </li>
         <li class="">
-            <a href="javascript:setStatus('완료');">결재</a>
+            <a href="javascript:void(0)" onclick="approvalListSetTab('완료'); return false;">결재</a>
         </li>
     </ul>
 </div>
         <div class="tableListWrap">
 
-			<div class="table_list active">
+			<div id="approvalMainListPanel" class="table_list active">
 				<div class="searchWrap">
 					<form class="mr20">
 						<input type="date" id="date" value="">
@@ -1418,13 +1425,29 @@ function closeBPopup(){
 		}
 	}
 
-	window.setStatus = function (_status) {
+	function approvalListSetTab(_status) {
 		window.__approvalListTab = _status != null ? String(_status) : "";
 		syncTabActiveClass(window.__approvalListTab);
-		if (typeof window.renderApprovalListFromStorage === "function") {
-			window.renderApprovalListFromStorage();
+		function ensureListVisibleAndRender() {
+			try {
+				var wrap = document.getElementById("approvalMainListPanel");
+				if (wrap) wrap.classList.add("active");
+			} catch (eWrap) {}
+			if (typeof window.renderApprovalListFromStorage === "function") {
+				window.renderApprovalListFromStorage();
+			}
 		}
-	};
+		ensureListVisibleAndRender();
+		setTimeout(ensureListVisibleAndRender, 0);
+	}
+
+	window.approvalListSetTab = approvalListSetTab;
+	window.setStatus = approvalListSetTab;
+	try {
+		if (typeof setStatus !== "undefined") {
+			setStatus = approvalListSetTab;
+		}
+	} catch (eIgnore) {}
 
 	syncTabActiveClass(window.__approvalListTab || "");
 })();

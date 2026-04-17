@@ -132,21 +132,61 @@
 		.approval-main-table { table-layout: fixed; width: 100%; }
 		.approval-main-table > thead > tr > th,
 		.approval-main-table > tbody > tr > td { padding: 8px 6px; vertical-align: middle; }
+		.approval-main-table > thead > tr > th:nth-child(3) {
+			text-align: center !important;
+			padding-left: 6px;
+			padding-right: 6px;
+		}
 		.approval-main-table .approval-title-cell {
-			text-align: left !important;
+			text-align: center !important;
 			max-width: 0;
 			overflow: hidden;
+			padding-left: 6px;
+			padding-right: 6px;
 		}
 		.approval-main-table .approval-title-cell a {
-			display: block;
+			display: inline-block;
+			max-width: 100%;
 			overflow: hidden;
 			text-overflow: ellipsis;
 			white-space: nowrap;
+			text-align: center;
+			vertical-align: middle;
 			color: #0d47a1;
 			text-decoration: underline;
 		}
+		.approval-main-table .approval-title-cell a.approval-title-other {
+			color: #222;
+		}
 		.approval-main-table .approval-title-cell a:hover { color: #1565c0; }
 		.approval-main-table .approval-pc-title { cursor: pointer; }
+		.approval-main-table > thead > tr > th:nth-child(7) {
+			text-align: center !important;
+		}
+		.approval-main-table td.approval-status-cell {
+			text-align: center !important;
+			vertical-align: middle !important;
+			padding-left: 4px !important;
+			padding-right: 4px !important;
+		}
+		.approval-main-table td.approval-status-cell > a.btnLink,
+		.approval-main-table td.approval-status-cell > span.btnLink {
+			float: none !important;
+			margin: 0 !important;
+		}
+		.approval-main-table td.approval-status-cell > .btnLink,
+		.approval-main-table td.approval-status-cell > .approval-status-done,
+		.approval-main-table td.approval-status-cell > .approval-status-btn {
+			display: inline-block !important;
+			min-width: 4.25rem;
+			width: 4.25rem;
+			max-width: 4.25rem;
+			text-align: center !important;
+			box-sizing: border-box;
+			padding: 4px 6px;
+			line-height: 1.25;
+			vertical-align: middle;
+		}
 		.table_write table td{text-align:left;}
 		.table_write table td.txtc{text-align:center;}
 		.fa-question{background:#ffdddd;width:16px;height:16px;line-height:16px;border-radius:50%;text-align:center;cursor:pointer}
@@ -960,7 +1000,7 @@ window.open(
 		<col style="width: 88px;">
 		<col style="width: 100px;">
 		<col style="width: 88px;">
-		<col style="width: 88px;">
+		<col style="width: 100px;">
 		<col style="width: 52px;">
 	</colgroup>
 	<thead>
@@ -1149,13 +1189,13 @@ function closeBPopup(){
 
 	function statusCell(kind) {
 		if (kind === "progress") {
-			return '<a href="javascript:void(0)" class="btnLink btnBlueBg">진행중</a>';
+			return '<a href="javascript:void(0)" class="btnLink btnBlueBg approval-status-btn">진행중</a>';
 		}
 		if (kind === "reject") {
-			return '<a href="javascript:void(0)" class="btnLink btnRedBg">반려</a>';
+			return '<a href="javascript:void(0)" class="btnLink btnRedBg approval-status-btn">반려</a>';
 		}
 		if (kind === "done") {
-			return '<span class="btnLink btnGyBg approval-status-done">결재</span>';
+			return '<span class="btnLink btnGyBg approval-status-done approval-status-btn">결재</span>';
 		}
 		return "";
 	}
@@ -1170,7 +1210,7 @@ function closeBPopup(){
 	function titleCell(title, href) {
 		var t = escapeHtml(title || "");
 		if (!href || href === "") {
-			return '<td class="txtc">' + t + "</td>";
+			return '<td class="txtc approval-title-cell">' + t + "</td>";
 		}
 		if (href.indexOf("paymentConferenceDoc.html") !== -1) {
 			return (
@@ -1180,7 +1220,14 @@ function closeBPopup(){
 				"</a></td>"
 			);
 		}
-		return '<td class="txtc"><a href="' + href + '">' + t + "</a></td>";
+		return (
+			'<td class="txtc approval-title-cell">' +
+			'<a href="' +
+			href +
+			'" class="approval-title-other">' +
+			t +
+			"</a></td>"
+		);
 	}
 
 	function loadPcDocs() {
@@ -1289,36 +1336,6 @@ function closeBPopup(){
 			next: "박소윤",
 			status: "progress",
 			attach: true
-		},
-		{
-			docType: "연차휴가원",
-			title: "",
-			titleHref: "",
-			drafter: "",
-			date: "",
-			next: "",
-			status: "empty",
-			attach: false
-		},
-		{
-			docType: "(데이터 없음)",
-			title: "",
-			titleHref: "",
-			drafter: "",
-			date: "",
-			next: "",
-			status: "empty",
-			attach: false
-		},
-		{
-			docType: "(데이터 없음)",
-			title: "",
-			titleHref: "",
-			drafter: "",
-			date: "",
-			next: "",
-			status: "empty",
-			attach: false
 		}
 	];
 
@@ -1343,7 +1360,7 @@ function closeBPopup(){
 			'<td class="txtc">' +
 			escapeHtml(cells.next) +
 			"</td>" +
-			'<td class="txtc">' +
+			'<td class="txtc approval-status-cell">' +
 			(cells.status === "empty" ? "" : statusCell(cells.status)) +
 			"</td>" +
 			attachCell(cells.attach) +

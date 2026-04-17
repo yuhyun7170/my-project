@@ -1,0 +1,246 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+		
+    
+
+
+    
+    
+    
+
+
+<!doctype html>
+<html lang="kr">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>자조금통합지원센터</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta content="" name="description" />
+	<meta content="Coderthemes" name="" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+	
+
+
+
+
+
+
+
+
+
+
+
+	<script>
+	    var BASE_URL_ADMIN = '/wkwhrma';
+	    window.__JSP_FILE_PATH__ = "/WEB-INF/jsp/content/acadm/document_select_modify.jsp";
+	    window.__CONTROLLER_CLASS__ = "ApprovalController";
+	    window.__CONTROLLER_METHOD__ = "documentSelectModify";
+	</script>
+	<script src="https://자조금.kr/js/jquery-3.7.1.js"></script>
+	<script src="https://자조금.kr/js/jquery.form.min.js"></script>
+	<script src="https://자조금.kr/js/ajax.js?v=1.0.4"></script>
+	<script src="https://자조금.kr/js/fn.common.js?v=1.0.11"></script>
+	<script src="https://자조금.kr/js/fn.print_path.js?v=1.0.3"></script>
+	<script src="https://자조금.kr/js/common.js?v=1.0.2"></script>
+	<script src="https://자조금.kr/js/jquery.bpopup.min.js" type="text/javascript"></script>
+	<script src="https://자조금.kr/js/jquery-confirm.min.js"></script>   <!-- confirm js-->
+	<script src="https://자조금.kr/js/jquery.toast.js" type="text/javascript"></script>
+	<script type="text/javascript" src="/js/jquery.cookie.js"></script>		
+	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+	
+	
+        
+        
+            <!-- DEBUG 환경일 경우 -->
+            <script src="https://자조금.kr/js/fn.console.log.dev.js?v=1.0.3"></script>
+        
+    
+	
+
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+	
+
+<link href="https://자조금.kr/css/common.css?ver=1.0.2" rel="stylesheet" type="text/css" />
+<link href="https://자조금.kr/css/premium.css?ver=1.0.3" rel="stylesheet" type="text/css" />
+<link href="https://자조금.kr/css/menu.css?ver=1.0.5" rel="stylesheet" type="text/css" />
+<link href="https://자조금.kr/css/alert.css?ver=1.0.0" rel="stylesheet" type="text/css" />
+
+<script src="https://자조금.kr/js/fn.menu.js?v=1.0.2"></script>
+<script src="https://자조금.kr/Library/js/premiun_Script.js?v=1.0.2"></script>
+
+
+<div id="layer" style="display:none;position:fixed;overflow:hidden;z-index:1;-webkit-overflow-scrolling:touch;">
+	<img src="//t1.daumcdn.net/localimg/localimages/07/postcode/320/close.png" id="btnCloseLayer" style="cursor:pointer;position:absolute;right:-3px;top:-3px;z-index:1" onclick="closeDaumPostcode()" alt="닫기 버튼">
+</div>
+
+
+	<style>
+		.table_list table{border-top:0;}
+		label{vertical-align:inherit;}
+		input[type="radio"],input[type="checkbox"]{vertical-align:text-top;}
+		.fa, .fa-solid.mr0{margin-right:0;}
+
+		.authoSet iframe{border:1px solid #dedede;}
+
+		body {
+		  overflow-y: auto !important;   /* 세로 스크롤은 필요할 때 표시 */
+		  overflow-x: hidden !important; /* 가로 스크롤은 숨김 */
+		}
+
+		.doc-menu {
+		  display: grid;
+		  grid-template-columns: repeat(3, 1fr); /* 3열 */
+		  gap: 10px;
+		  width: 390px;
+		  margin: 20px auto;
+		}
+
+		.doc-btn {
+		  background: #f0f0f0;
+		  border: 1px solid #aaa;
+		  border-radius: 6px;
+		  padding: 15px;
+		  text-align: center;
+		  font-size: 14px;
+		  cursor: pointer;
+		}
+
+		.doc-btn:hover {
+		  background: #d9e2f3;
+		}
+
+		/* 선택된 버튼 */
+		.active {
+		  background: #2f5597;
+		  color: white;
+		  font-weight: bold;
+		}
+
+
+		.doc-add-wrap {
+		  text-align: center;
+		  background: #fff;
+		  padding-bottom: 20px;
+		}
+
+		.doc-add-btn {
+		  background-color: #007bff; /* 파란색 */
+		  color: white;
+		  border: none;
+		  padding: 8px 20px;
+		  border-radius: 5px;
+		  cursor: pointer;
+		}
+	</style>
+
+</head>
+<script>
+  function openProposal(documentTypeCode) {
+    // 현재 팝업창 닫기
+    window.close();
+    
+	openPopWindowBySubmit('proposalFormModify', '/wkwhrma/proposalFormModify.do', 'width=650,height=545', {
+		documentTypeCode : documentTypeCode
+	});
+  }
+</script>
+<body class="">
+    <h2 class="popTitle"><i class="fa fa-dot-circle-o"></i> 문서선택</h2>
+    <!-- popCon -->
+    <div class="popCon">
+	<div class="flx">
+		<div class="doc-menu">
+			
+				
+					
+						<div class="doc-btn"
+							 onclick="openProposal('DT008', '품의서')">
+							품의서
+						</div>
+					
+						<div class="doc-btn"
+							 onclick="openProposal('DT003', '보고서')">
+							보고서
+						</div>
+					
+						<div class="doc-btn"
+							 onclick="openProposal('DT007', '출장신청서')">
+							출장신청서
+						</div>
+					
+						<div class="doc-btn"
+							 onclick="openProposal('DT005', '출장여비청구서')">
+							출장여비청구서
+						</div>
+					
+						<div class="doc-btn"
+							 onclick="openProposal('DT009', '연차휴가원')">
+							연차휴가원
+						</div>
+					
+						<div class="doc-btn"
+							 onclick="openProposal('DT004', '지각사유서')">
+							지각사유서
+						</div>
+					
+						<div class="doc-btn"
+							 onclick="openProposal('DT010', '조퇴신청서')">
+							조퇴신청서
+						</div>
+					
+						<div class="doc-btn"
+							 onclick="openProposal('DT006', '퇴직서')">
+							퇴직서
+						</div>
+					
+						<div class="doc-btn"
+							 onclick="openProposal('DT001', '사직서')">
+							사직서
+						</div>
+					
+						<div class="doc-btn"
+							 onclick="openProposal('DT002', '시말서')">
+							시말서
+						</div>
+					
+				
+				
+			
+		</div>
+	</div>
+</div>
+
+<script>
+
+</script>
+
+</body>
+</html>

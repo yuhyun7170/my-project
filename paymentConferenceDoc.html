@@ -426,6 +426,13 @@
 			color: #333;
 		}
 		button.pc-seed-dl-btn:hover { background: #eaeaea; }
+		td.pc-seed-appr-status {
+			text-align: center !important;
+			font-size: 12px;
+			line-height: 1.5;
+			white-space: pre-line;
+			vertical-align: middle !important;
+		}
 	</style>
 </head>
 <body class="pc-body">
@@ -615,9 +622,7 @@
 							<th scope="row">서기</th>
 							<td class="pc-seed-val">서기 2026 년도</td>
 							<th scope="row">결재자4</th>
-							<td class="pc-seed-val pc-seed-val--left">
-								<div class="pc-seed-appr-stack">최기현 사무국장</div>
-							</td>
+							<td class="pc-seed-val pc-seed-appr-status" id="pcSeedAppr4Status"></td>
 							<th scope="row">주소</th>
 							<td class="pc-seed-val pc-seed-val--left">증빙서 참조</td>
 						</tr>
@@ -625,9 +630,7 @@
 							<th scope="row">회계별</th>
 							<td class="pc-seed-val">포도자조금</td>
 							<th scope="row">결재자3</th>
-							<td class="pc-seed-val pc-seed-val--left">
-								<div class="pc-seed-appr-stack">박진수 부장</div>
-							</td>
+							<td class="pc-seed-val" id="pcSeedAppr3Name"></td>
 							<th scope="row">청구자</th>
 							<td class="pc-seed-val pc-seed-val--left">증빙서 참조</td>
 						</tr>
@@ -635,16 +638,14 @@
 							<th scope="row">과목</th>
 							<td class="pc-seed-val">보조금</td>
 							<th scope="row">결재자2</th>
-							<td class="pc-seed-val pc-seed-val--left">
-								<div class="pc-seed-appr-stack">김민정 사원</div>
-							</td>
+							<td class="pc-seed-val" id="pcSeedAppr2Name"></td>
 							<td colspan="2" class="pc-static-td">본서의 금액을 정히 영수함</td>
 						</tr>
 						<tr>
 							<th scope="row">관</th>
 							<td class="pc-seed-val">소비홍보</td>
 							<th scope="row">결재자1</th>
-							<td class="pc-seed-val"></td>
+							<td class="pc-seed-val" id="pcSeedAppr1Name"></td>
 							<th scope="row">영수자</th>
 							<td class="pc-seed-val"></td>
 						</tr>
@@ -652,7 +653,7 @@
 							<th scope="row">항</th>
 							<td class="pc-seed-val">광고</td>
 							<th scope="row">기안자</th>
-							<td class="pc-seed-val">김민정</td>
+							<td class="pc-seed-val" id="pcSeedDrafterName"></td>
 							<td colspan="2" rowspan="3" class="pc-evidence-outer">
 								<table class="pc-evidence-inner">
 									<colgroup>
@@ -685,13 +686,13 @@
 							<th scope="row">목</th>
 							<td class="pc-seed-val">소비촉진</td>
 							<th scope="row">발의(기안)일</th>
-							<td class="pc-seed-val">2026년 5월 1일</td>
+							<td class="pc-seed-val" id="pcSeedDraftDateCell"></td>
 						</tr>
 						<tr>
 							<th scope="row">세목</th>
 							<td class="pc-seed-val">—</td>
 							<th scope="row">결재(완료)일</th>
-							<td class="pc-seed-val">2026년 5월 1일</td>
+							<td class="pc-seed-val" id="pcSeedCompleteDateCell"></td>
 						</tr>
 						<tr>
 							<th scope="row">세부사업</th>
@@ -1011,8 +1012,113 @@
 		return null;
 	}
 
+	function shortDateToKorean(short) {
+		var m = String(short || "")
+			.trim()
+			.match(/^(\d{2})\/(\d{2})\/(\d{2})$/);
+		if (!m) return String(short || "").trim();
+		var yy = parseInt(m[1], 10);
+		var year = yy >= 50 ? 1900 + yy : 2000 + yy;
+		var mo = parseInt(m[2], 10);
+		var da = parseInt(m[3], 10);
+		return year + "년 " + mo + "월 " + da + "일";
+	}
+
+	function normalizeProgressItem(item) {
+		var DEF_TITLE = "대전 행사 출장경비";
+		var DEF = {
+			drafter: "김민정",
+			approver1: "박진수",
+			approver2: "이영희",
+			approver3: "최기현",
+			draftDateDisplay: "25/04/01"
+		};
+		if (!item) {
+			return {
+				title: DEF_TITLE,
+				drafter: DEF.drafter,
+				approver1: DEF.approver1,
+				approver2: DEF.approver2,
+				approver3: DEF.approver3,
+				draftDateDisplay: DEF.draftDateDisplay,
+				nextApprover: DEF.approver1
+			};
+		}
+		var t =
+			item.title != null && String(item.title).trim() !== ""
+				? String(item.title).trim()
+				: DEF_TITLE;
+		var dr = item.drafter != null ? String(item.drafter).trim() : "";
+		var a1 = item.approver1 != null ? String(item.approver1).trim() : "";
+		var a2 = item.approver2 != null ? String(item.approver2).trim() : "";
+		var a3 = item.approver3 != null ? String(item.approver3).trim() : "";
+		if (!a1 && item.nextApprover != null) a1 = String(item.nextApprover).trim();
+		var dd =
+			item.draftDateDisplay != null && String(item.draftDateDisplay).trim() !== ""
+				? String(item.draftDateDisplay).trim()
+				: DEF.draftDateDisplay;
+		var nextApr = item.nextApprover != null ? String(item.nextApprover).trim() : "";
+		if (!nextApr && a1) nextApr = a1;
+		return {
+			title: t,
+			drafter: dr,
+			approver1: a1,
+			approver2: a2,
+			approver3: a3,
+			draftDateDisplay: dd,
+			nextApprover: nextApr
+		};
+	}
+
+	function formatDrafterWithDraft(drafter, draftDateDisplay) {
+		var d = String(drafter || "").trim();
+		var dd = String(draftDateDisplay || "").trim();
+		if (!d) return "";
+		if (!dd) return d;
+		return d + "(기안 " + dd + ")";
+	}
+
+	function formatApproverWithProgress(name, inProgress) {
+		var n = String(name || "").trim();
+		if (!n) return "";
+		if (inProgress) return n + "(진행중)";
+		return n;
+	}
+
+	function resolveCurrentApproverSlot(m) {
+		var next = m.nextApprover != null ? String(m.nextApprover).trim() : "";
+		var a1 = String(m.approver1 || "").trim();
+		var a2 = String(m.approver2 || "").trim();
+		var a3 = String(m.approver3 || "").trim();
+		if (next) {
+			if (next === a1) return 1;
+			if (next === a2) return 2;
+			if (next === a3) return 3;
+		}
+		if (a1) return 1;
+		if (a2) return 2;
+		if (a3) return 3;
+		return 0;
+	}
+
+	function applyPcProgressPreviewFields(m) {
+		var dd = m.draftDateDisplay || "25/04/01";
+		var slot = resolveCurrentApproverSlot(m);
+		function setId(id, txt) {
+			var el = document.getElementById(id);
+			if (el) el.textContent = txt != null ? String(txt) : "";
+		}
+		setId("pcSeedAppr4Status", "");
+		setId("pcSeedDrafterName", formatDrafterWithDraft(m.drafter, dd));
+		setId("pcSeedAppr1Name", formatApproverWithProgress(m.approver1, slot === 1));
+		setId("pcSeedAppr2Name", formatApproverWithProgress(m.approver2, slot === 2));
+		setId("pcSeedAppr3Name", formatApproverWithProgress(m.approver3, slot === 3));
+		setId("pcSeedDraftDateCell", shortDateToKorean(dd));
+		setId("pcSeedCompleteDateCell", "");
+	}
+
 	function showPcProgressPreview(meta) {
-		meta = meta || {};
+		var m = normalizeProgressItem(meta);
 		var editRoot = document.getElementById("pcEditRoot");
 		var seedRoot = document.getElementById("pcSeedView");
 		if (!editRoot || !seedRoot) return false;
@@ -1024,12 +1130,9 @@
 
 		var titleEl = document.getElementById("pcSeedDocTitle");
 		if (titleEl) {
-			var t =
-				meta.title != null && String(meta.title).trim() !== ""
-					? String(meta.title).trim()
-					: "대전 행사 출장경비";
-			titleEl.textContent = t;
+			titleEl.textContent = m.title || "대전 행사 출장경비";
 		}
+		applyPcProgressPreviewFields(m);
 
 		var sc = document.getElementById("pcSeedHeadClose");
 		if (sc) {
@@ -1076,7 +1179,9 @@
 	function tryOpenSeedProgressView() {
 		if (getQueryParam("demo") === "progress" || getQueryParam("view") === "progress") {
 			var demoTitle = getQueryParam("title");
-			return showPcProgressPreview({ title: demoTitle || undefined });
+			var dm = normalizeProgressItem(null);
+			if (demoTitle) dm.title = demoTitle;
+			return showPcProgressPreview(dm);
 		}
 
 		var docId = getQueryParam("id");
@@ -1086,17 +1191,17 @@
 			var item = loadPcItemById(docId);
 			if (item) {
 				if (String(item.status || "") !== "progress") return false;
-				return showPcProgressPreview({ title: item.title });
+				return showPcProgressPreview(item);
 			}
 			if (docId === "pc_seed_1") {
-				return showPcProgressPreview({ title: "대전 행사 출장경비" });
+				return showPcProgressPreview(null);
 			}
 			return false;
 		}
 
 		var itemProgress = loadPcItemById(docId);
 		if (itemProgress && String(itemProgress.status || "") === "progress") {
-			return showPcProgressPreview({ title: itemProgress.title });
+			return showPcProgressPreview(itemProgress);
 		}
 
 		return false;
@@ -1123,13 +1228,19 @@
 		var titleEl = document.getElementById("pcDocTitle");
 		var title = titleEl && titleEl.value ? String(titleEl.value).trim() : "";
 		if (!title) title = "(제목 없음)";
+		var ddRaw =
+			document.getElementById("pcDraftDate") && document.getElementById("pcDraftDate").value;
+		var cdRaw =
+			document.getElementById("pcCompleteDate") && document.getElementById("pcCompleteDate").value;
 		var item = {
 			id: "pc_" + Date.now(),
 			title: title,
 			drafter: getSelectText("pcDrafter"),
-			draftDateDisplay: formatDraftDateDisplay(
-				document.getElementById("pcDraftDate") && document.getElementById("pcDraftDate").value
-			),
+			approver1: getSelectText("pcAppr1"),
+			approver2: getSelectText("pcAppr2"),
+			approver3: getSelectText("pcAppr3"),
+			draftDateDisplay: formatDraftDateDisplay(ddRaw),
+			completeDateDisplay: formatDraftDateDisplay(cdRaw),
 			nextApprover: getSelectText("pcAppr1"),
 			attachCount: pcAttachmentList.length,
 			status: "progress",

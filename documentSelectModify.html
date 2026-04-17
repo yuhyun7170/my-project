@@ -164,12 +164,26 @@
 
 </head>
 <script>
+  function openCenteredWindow(url, name, width, height, extraFeatures) {
+    var w = width || 800;
+    var h = height || 600;
+    var sw = window.screen.availWidth;
+    var sh = window.screen.availHeight;
+    var sl = window.screen.availLeft || 0;
+    var st = window.screen.availTop || 0;
+    var left = sl + Math.max(0, Math.round((sw - w) / 2));
+    var top = st + Math.max(0, Math.round((sh - h) / 2));
+    var opts = 'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top;
+    if (extraFeatures) opts += ',' + extraFeatures;
+    var openerFn = window.__nativeWindowOpen || window.open;
+    return openerFn(url, name, opts);
+  }
+
   function openPaymentConferenceDoc() {
     var url = new URL('paymentConferenceDoc.html', window.location.href).href;
-    var wopen = window.__nativeWindowOpen || window.open;
-    var w = wopen(url, 'paymentConferenceDoc', 'scrollbars=yes,resizable=yes,width=1040,height=940');
+    var win = openCenteredWindow(url, 'paymentConferenceDoc', 1040, 940, 'scrollbars=yes,resizable=yes');
     try {
-      if (w) { window.close(); }
+      if (win) { window.close(); }
     } catch (e) {}
   }
 

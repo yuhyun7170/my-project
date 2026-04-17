@@ -147,12 +147,26 @@ function FnWinOpen()
 	});
 }
 
+/** 퍼블 팝업을 모니터 작업 영역 기준 가운데에 띄움 */
+function openCenteredWindow(url, name, width, height, extraFeatures) {
+	var w = width || 800;
+	var h = height || 600;
+	var sw = window.screen.availWidth;
+	var sh = window.screen.availHeight;
+	var sl = window.screen.availLeft || 0;
+	var st = window.screen.availTop || 0;
+	var left = sl + Math.max(0, Math.round((sw - w) / 2));
+	var top = st + Math.max(0, Math.round((sh - h) / 2));
+	var opts = 'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top;
+	if (extraFeatures) opts += ',' + extraFeatures;
+	var openerFn = window.__nativeWindowOpen || window.open;
+	return openerFn(url, name, opts);
+}
+
 function FnWinOpenModify()
 {
 	var url = new URL('documentSelectModify.html', window.location.href).href;
-	var opts = 'scrollbars=yes,resizable=yes,width=480,height=330';
-	var wopen = window.__nativeWindowOpen || window.open;
-	wopen(url, 'documentSelectModify', opts);
+	openCenteredWindow(url, 'documentSelectModify', 480, 330, 'scrollbars=yes,resizable=yes');
 	return false;
 }
 //팝업창 닫기

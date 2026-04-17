@@ -73,11 +73,6 @@
 			background: #fff;
 			vertical-align: middle;
 		}
-		table.pc-form-table .pc-cell-mid-empty {
-			background: #fafafa;
-			width: 9%;
-			min-width: 72px;
-		}
 		table.pc-form-table input[type="text"],
 		table.pc-form-table input[type="date"],
 		table.pc-form-table select,
@@ -193,7 +188,7 @@
 				<table class="pc-form-table">
 					<tbody>
 						<tr id="pcBimHintRow" style="display: none;">
-							<td colspan="7" class="pc-hint-bim" id="pcBimHint">항목관리에 등록된 예산 항목이 없습니다. 「항목관리」에서 트리를 등록한 뒤 이용하세요.</td>
+							<td colspan="6" class="pc-hint-bim" id="pcBimHint">항목관리에 등록된 예산 항목이 없습니다. 「항목관리」에서 트리를 등록한 뒤 이용하세요.</td>
 						</tr>
 						<tr>
 							<th scope="row">서기</th>
@@ -205,7 +200,6 @@
 							</td>
 							<th scope="row">결재자4</th>
 							<td><select id="pcAppr4" name="approver4" class="pc-staff-sel"></select></td>
-							<td class="pc-cell-mid-empty" aria-label="결재일시"></td>
 							<th scope="row">주소</th>
 							<td><input type="text" name="address" id="pcAddr" autocomplete="off" /></td>
 						</tr>
@@ -214,7 +208,6 @@
 							<td><input type="text" name="accountingType" id="pcAccounting" autocomplete="off" /></td>
 							<th scope="row">결재자3</th>
 							<td><select id="pcAppr3" name="approver3" class="pc-staff-sel"></select></td>
-							<td class="pc-cell-mid-empty" aria-label="결재일시"></td>
 							<th scope="row">청구자</th>
 							<td><input type="text" name="claimant" id="pcClaimant" autocomplete="off" /></td>
 						</tr>
@@ -223,7 +216,6 @@
 							<td><input type="text" name="subjectTitle" id="pcSubject" placeholder="예: 포도자조금" autocomplete="off" /></td>
 							<th scope="row">결재자2</th>
 							<td><select id="pcAppr2" name="approver2" class="pc-staff-sel"></select></td>
-							<td class="pc-cell-mid-empty" aria-label="결재일시"></td>
 							<td colspan="2" class="pc-static-td">본서의 금액을 정히 영수함</td>
 						</tr>
 						<tr>
@@ -237,7 +229,6 @@
 							</td>
 							<th scope="row">결재자1</th>
 							<td><select id="pcAppr1" name="approver1" class="pc-staff-sel"></select></td>
-							<td class="pc-cell-mid-empty" aria-label="결재일시"></td>
 							<th scope="row">영수자</th>
 							<td><input type="text" name="receiver" id="pcReceiver" autocomplete="off" /></td>
 						</tr>
@@ -246,7 +237,6 @@
 							<td><select id="pcHang" name="hangId" aria-label="항"></select></td>
 							<th scope="row">기안자</th>
 							<td><select id="pcDrafter" name="drafter" class="pc-staff-sel"></select></td>
-							<td class="pc-cell-mid-empty"></td>
 							<th scope="row" rowspan="3" class="pc-th-evidence-vertical">증빙서류</th>
 							<td rowspan="2" class="pc-evidence-cell">
 								<div class="pc-ev-block-title">법정증빙</div>
@@ -260,14 +250,12 @@
 							<td><select id="pcMok" name="mokId" aria-label="목" disabled></select></td>
 							<th scope="row">발의(기안)일</th>
 							<td><input type="date" name="draftDate" id="pcDraftDate" /></td>
-							<td class="pc-cell-mid-empty"></td>
 						</tr>
 						<tr>
 							<th scope="row">세목</th>
 							<td><select id="pcSemok" name="semokId" aria-label="세목" disabled></select></td>
 							<th scope="row">결재(완료)일</th>
 							<td><input type="date" name="completeDate" id="pcCompleteDate" /></td>
-							<td class="pc-cell-mid-empty"></td>
 							<td class="pc-evidence-cell">
 								<div class="pc-ev-block-title">일반증빙</div>
 								<label><input type="radio" name="pc_evidence" value="4" /> 4. 영수증</label>
@@ -279,13 +267,12 @@
 							<td><select id="pcDetail" name="detailId" aria-label="세부사업" disabled></select></td>
 							<th scope="row">발의부서명</th>
 							<td><input type="text" name="deptName" id="pcDept" autocomplete="off" /></td>
-							<td class="pc-cell-mid-empty"></td>
 							<th scope="row">세무담당자확인</th>
 							<td><select id="pcTax" name="taxManager"></select></td>
 						</tr>
 						<tr>
 							<th scope="row">제목</th>
-							<td colspan="4"><input type="text" name="docTitle" id="pcDocTitle" placeholder="예: 대전 행사 출장경비" autocomplete="off" /></td>
+							<td colspan="3"><input type="text" name="docTitle" id="pcDocTitle" placeholder="예: 대전 행사 출장경비" autocomplete="off" /></td>
 							<th scope="row">금액</th>
 							<td><input type="text" name="amount" id="pcAmount" placeholder="예: 1,000,000" inputmode="numeric" autocomplete="off" /></td>
 						</tr>

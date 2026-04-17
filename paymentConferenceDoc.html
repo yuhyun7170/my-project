@@ -676,6 +676,70 @@
 
 	var pcAttachmentList = [];
 	var PC_ATTACH_MAX_BYTES = 1024 * 1024;
+	var APPROVAL_PC_STORAGE_KEY = "approval_payment_conference_list_v1";
+
+	function getSelectText(id) {
+		var el = document.getElementById(id);
+		if (!el || el.selectedIndex < 0) return "";
+		var t = el.options[el.selectedIndex].textContent || "";
+		t = String(t).replace(/\s/g, " ").trim();
+		if (t === "선택") return "";
+		return t;
+	}
+
+	function formatDraftDateDisplay(ymd) {
+		var s = String(ymd || "").trim();
+		var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+		if (!m) return s;
+		var y = parseInt(m[1], 10) % 100;
+		return ("0" + y).slice(-2) + "/" + m[2] + "/" + m[3];
+	}
+
+	function savePcDraftToApprovalList() {
+		var titleEl = document.getElementById("pcDocTitle");
+		var title = titleEl && titleEl.value ? String(titleEl.value).trim() : "";
+		if (!title) title = "(제목 없음)";
+		var item = {
+			id: "pc_" + Date.now(),
+			title: title,
+			drafter: getSelectText("pcDrafter"),
+			draftDateDisplay: formatDraftDateDisplay(
+				document.getElementById("pcDraftDate") && document.getElementById("pcDraftDate").value
+			),
+			nextApprover: getSelectText("pcAppr1"),
+			attachCount: pcAttachmentList.length,
+			status: "progress",
+			createdAt: new Date().toISOString()
+		};
+		var list = [];
+		try {
+			list = JSON.parse(localStorage.getItem(APPROVAL_PC_STORAGE_KEY) || "[]");
+			if (!Array.isArray(list)) list = [];
+		} catch (e) {
+			list = [];
+		}
+		list.unshift(item);
+		try {
+			localStorage.setItem(APPROVAL_PC_STORAGE_KEY, JSON.stringify(list));
+		} catch (e2) {
+			alert("저장 공간이 부족합니다. 첨부를 줄이거나 브라우저 저장소를 정리한 뒤 다시 시도하세요.");
+			return false;
+		}
+		try {
+			var w = window;
+			for (var oi = 0; oi < 6 && w; oi++) {
+				if (typeof w.renderApprovalListFromStorage === "function") {
+					w.renderApprovalListFromStorage();
+					break;
+				}
+				w = w.opener;
+			}
+			if (typeof window.top !== "undefined" && window.top && typeof window.top.renderApprovalListFromStorage === "function") {
+				window.top.renderApprovalListFromStorage();
+			}
+		} catch (e3) {}
+		return true;
+	}
 
 	function formatPcAttachSize(n) {
 		if (n == null || isNaN(n)) return "";
@@ -869,9 +933,12 @@
 		document.getElementById("pcBtnDraft").addEventListener("click", function () {
 			if (!validateBimChain()) return;
 			if (!validateEvidence()) return;
+			if (!savePcDraftToApprovalList()) return;
 			var n = pcAttachmentList.length;
 			alert(
-				"기안 등록은 연동 전입니다. (퍼블 확인용)\n첨부 파일: " + n + "건 (실제 전송은 서버 연동 후 가능)"
+				"기안이 결재관리 목록에 등록되었습니다.\n첨부 파일: " +
+					n +
+					"건\n\n※ 서버 저장·연동은 추후 적용 예정입니다."
 			);
 		});
 	}

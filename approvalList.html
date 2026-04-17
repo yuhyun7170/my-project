@@ -65,6 +65,22 @@
 	    window.__CONTROLLER_METHOD__ = "approvalList";
 	    /* 외부 스크립트가 window.open을 덮어써 /wkwhrma/*.do 로 바꾸므로, 로드 전 원본 저장 */
 	    try { window.__nativeWindowOpen = window.open.bind(window); } catch (e) { window.__nativeWindowOpen = window.open; }
+	    window.openPaymentConferenceDocPopup = function () {
+	    	try {
+	    		var url = new URL("paymentConferenceDoc.html", window.location.href).href;
+	    		var w = 1040;
+	    		var h = 720;
+	    		var sw = window.screen.availWidth;
+	    		var sh = window.screen.availHeight;
+	    		var sl = window.screen.availLeft || 0;
+	    		var st = window.screen.availTop || 0;
+	    		var left = sl + Math.max(0, Math.round((sw - w) / 2));
+	    		var top = st + Math.max(0, Math.round((sh - h) / 2));
+	    		var opts = "width=" + w + ",height=" + h + ",left=" + left + ",top=" + top + ",scrollbars=yes,resizable=yes";
+	    		var openerFn = window.__nativeWindowOpen || window.open;
+	    		openerFn(url, "paymentConferenceDoc", opts);
+	    	} catch (e) {}
+	    };
 	</script>
 	<script src="http://자조금.kr/js/jquery-3.7.1.js"></script>
 	<script src="http://자조금.kr/js/jquery.form.min.js"></script>
@@ -104,6 +120,26 @@
 		.table_list{margin-top:20px;}
 		.table_list:nth-child(5).active{display:flex;}
 		.table_list table{border-top:none;}
+		.approval-attach-icon { color: #2f5597; font-size: 15px; }
+		.approval-status-done { color: #222 !important; background: #e0e0e0 !important; border-color: #bbb !important; cursor: default; }
+		.approval-main-table { table-layout: fixed; width: 100%; }
+		.approval-main-table > thead > tr > th,
+		.approval-main-table > tbody > tr > td { padding: 8px 6px; vertical-align: middle; }
+		.approval-main-table .approval-title-cell {
+			text-align: left !important;
+			max-width: 0;
+			overflow: hidden;
+		}
+		.approval-main-table .approval-title-cell a {
+			display: block;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			color: #0d47a1;
+			text-decoration: underline;
+		}
+		.approval-main-table .approval-title-cell a:hover { color: #1565c0; }
+		.approval-main-table .approval-pc-title { cursor: pointer; }
 		.table_write table td{text-align:left;}
 		.table_write table td.txtc{text-align:center;}
 		.fa-question{background:#ffdddd;width:16px;height:16px;line-height:16px;border-radius:50%;text-align:center;cursor:pointer}
@@ -909,15 +945,16 @@ window.open(
 				        <a href="javascript:" class="btnLink btnChaBg" id="goSearchBtn">검색</a>
 					</form>
 				</div>
-<table>
+<table class="approval-main-table">
 	<colgroup>
-		<col width="80px">
-		<col width="120px">
-		<col width="auto">
-		<col width="110px">
-		<col width="110px">
-		<col width="110px">
-		<col width="110px">
+		<col style="width: 72px;">
+		<col style="width: 104px;">
+		<col style="width: 24%;">
+		<col style="width: 88px;">
+		<col style="width: 100px;">
+		<col style="width: 88px;">
+		<col style="width: 88px;">
+		<col style="width: 52px;">
 	</colgroup>
 	<thead>
 		<tr>
@@ -925,320 +962,14 @@ window.open(
 			<th>문서종류</th>
 			<th>제목</th>
 			<th>기안자</th>
-			<th>기안일</th>
+			<th>발의(기안)일</th>
 			<th>다음결재자</th>
 			<th>진행사항</th>
+			<th>첨부파일</th>
 		</tr>
 	</thead>
 
-	<tbody>
-		
-			
-				
-					<tr>
-						<td class="txtc">
-							10 
-						</td>
-						<td class="txtc">보고서</td>
-
-						<!-- 제목 클릭 시 상세 팝업 이동 -->
-						<td class="txtc">
-							<a href="javascript:proposalForm('22')">
-								기안문
-							</a>
-						</td>
-
-						<td class="txtc">테스트002</td>
-						<td class="txtc">
-							2026-02-19
-						</td>
-						<td class="txtc">테스트001</td>
-
-						<td class="txtc">
-							
-								
-									<a class="btnLink btnBlueBg">진행중</a>
-								
-								
-								
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td class="txtc">
-							9 
-						</td>
-						<td class="txtc">품의서</td>
-
-						<!-- 제목 클릭 시 상세 팝업 이동 -->
-						<td class="txtc">
-							<a href="javascript:proposalForm('21')">
-								testest
-							</a>
-						</td>
-
-						<td class="txtc">테스트002</td>
-						<td class="txtc">
-							2025-12-06
-						</td>
-						<td class="txtc">고주짠</td>
-
-						<td class="txtc">
-							
-								
-									<a class="btnLink btnBlueBg">진행중</a>
-								
-								
-								
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td class="txtc">
-							8 
-						</td>
-						<td class="txtc">품의서</td>
-
-						<!-- 제목 클릭 시 상세 팝업 이동 -->
-						<td class="txtc">
-							<a href="javascript:proposalForm('20')">
-								ㅅㄷㄴㅅ
-							</a>
-						</td>
-
-						<td class="txtc">테스트002</td>
-						<td class="txtc">
-							2025-12-06
-						</td>
-						<td class="txtc">020202</td>
-
-						<td class="txtc">
-							
-								
-									<a class="btnLink btnBlueBg">진행중</a>
-								
-								
-								
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td class="txtc">
-							7 
-						</td>
-						<td class="txtc">품의서</td>
-
-						<!-- 제목 클릭 시 상세 팝업 이동 -->
-						<td class="txtc">
-							<a href="javascript:proposalForm('19')">
-								test
-							</a>
-						</td>
-
-						<td class="txtc">테스트002</td>
-						<td class="txtc">
-							2025-12-06
-						</td>
-						<td class="txtc">020202</td>
-
-						<td class="txtc">
-							
-								
-									<a class="btnLink btnBlueBg">진행중</a>
-								
-								
-								
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td class="txtc">
-							6 
-						</td>
-						<td class="txtc">보고서</td>
-
-						<!-- 제목 클릭 시 상세 팝업 이동 -->
-						<td class="txtc">
-							<a href="javascript:proposalForm('18')">
-								ㅅㄷㄴㅅ
-							</a>
-						</td>
-
-						<td class="txtc">테스트002</td>
-						<td class="txtc">
-							2025-11-24
-						</td>
-						<td class="txtc">테스트이름_34</td>
-
-						<td class="txtc">
-							
-								
-									<a class="btnLink btnBlueBg">진행중</a>
-								
-								
-								
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td class="txtc">
-							5 
-						</td>
-						<td class="txtc">품의서</td>
-
-						<!-- 제목 클릭 시 상세 팝업 이동 -->
-						<td class="txtc">
-							<a href="javascript:proposalForm('17')">
-								33333
-							</a>
-						</td>
-
-						<td class="txtc">테스트002</td>
-						<td class="txtc">
-							2025-11-22
-						</td>
-						<td class="txtc">테스트002</td>
-
-						<td class="txtc">
-							
-								
-									<a class="btnLink btnBlueBg">진행중</a>
-								
-								
-								
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td class="txtc">
-							4 
-						</td>
-						<td class="txtc">보고서</td>
-
-						<!-- 제목 클릭 시 상세 팝업 이동 -->
-						<td class="txtc">
-							<a href="javascript:proposalForm('16')">
-								ㅣㅓㅏ 테스트
-							</a>
-						</td>
-
-						<td class="txtc">테스트002</td>
-						<td class="txtc">
-							2025-11-14
-						</td>
-						<td class="txtc">테스트002</td>
-
-						<td class="txtc">
-							
-								
-									<a class="btnLink btnBlueBg">진행중</a>
-								
-								
-								
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td class="txtc">
-							3 
-						</td>
-						<td class="txtc">품의서</td>
-
-						<!-- 제목 클릭 시 상세 팝업 이동 -->
-						<td class="txtc">
-							<a href="javascript:proposalForm('15')">
-								테스트
-							</a>
-						</td>
-
-						<td class="txtc">테스트002</td>
-						<td class="txtc">
-							2025-11-06
-						</td>
-						<td class="txtc">양재봉</td>
-
-						<td class="txtc">
-							
-								
-									<a class="btnLink btnBlueBg">진행중</a>
-								
-								
-								
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td class="txtc">
-							2 
-						</td>
-						<td class="txtc">품의서</td>
-
-						<!-- 제목 클릭 시 상세 팝업 이동 -->
-						<td class="txtc">
-							<a href="javascript:proposalForm('12')">
-								품의서
-							</a>
-						</td>
-
-						<td class="txtc">테스트002</td>
-						<td class="txtc">
-							2025-10-29
-						</td>
-						<td class="txtc">테스트001</td>
-
-						<td class="txtc">
-							
-								
-									<a class="btnLink btnBlueBg">진행중</a>
-								
-								
-								
-							
-						</td>
-					</tr>
-				
-					<tr>
-						<td class="txtc">
-							1 
-						</td>
-						<td class="txtc">보고서</td>
-
-						<!-- 제목 클릭 시 상세 팝업 이동 -->
-						<td class="txtc">
-							<a href="javascript:proposalForm('11')">
-								보고서 테스트입니다
-							</a>
-						</td>
-
-						<td class="txtc">테스트002</td>
-						<td class="txtc">
-							2025-10-28
-						</td>
-						<td class="txtc"></td>
-
-						<td class="txtc">
-							
-								
-								
-								
-									<span class="btnLink btnGyBg">완료</span>
-								
-							
-						</td>
-					</tr>
-				
-			
-			
-		
-	</tbody>
+	<tbody id="approvalListTbody"></tbody>
 </table>
 				<div class="tableBot">
 					<div class="tableBot_list">
@@ -1393,10 +1124,311 @@ function closeBPopup(){
 	$('#pop_up_layer').bPopup().close();
 }
 
-
 </script>
 
+<script>
+(function () {
+	var STORAGE_KEY = "approval_payment_conference_list_v1";
+	var SEED_FLAG_KEY = "approval_pc_examples_seeded_v1";
 
+	function escapeHtml(s) {
+		if (s == null) return "";
+		return String(s)
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;")
+			.replace(/"/g, "&quot;");
+	}
+
+	function statusCell(kind) {
+		if (kind === "progress") {
+			return '<a href="javascript:void(0)" class="btnLink btnBlueBg">진행중</a>';
+		}
+		if (kind === "reject") {
+			return '<a href="javascript:void(0)" class="btnLink btnRedBg">반려</a>';
+		}
+		if (kind === "done") {
+			return '<span class="btnLink btnGyBg approval-status-done">결재</span>';
+		}
+		return "";
+	}
+
+	function attachCell(has) {
+		if (has) {
+			return '<td class="txtc"><i class="fa-regular fa-file-lines approval-attach-icon" title="첨부" aria-label="첨부파일 있음"></i></td>';
+		}
+		return '<td class="txtc"></td>';
+	}
+
+	function titleCell(title, href) {
+		var t = escapeHtml(title || "");
+		if (!href || href === "") {
+			return '<td class="txtc">' + t + "</td>";
+		}
+		if (href.indexOf("paymentConferenceDoc.html") !== -1) {
+			return (
+				'<td class="txtc approval-title-cell">' +
+				'<a href="javascript:void(0)" class="approval-pc-title" onclick="openPaymentConferenceDocPopup(); return false;">' +
+				t +
+				"</a></td>"
+			);
+		}
+		return '<td class="txtc"><a href="' + href + '">' + t + "</a></td>";
+	}
+
+	function loadPcDocs() {
+		try {
+			var raw = localStorage.getItem(STORAGE_KEY);
+			if (!raw) return [];
+			var arr = JSON.parse(raw);
+			return Array.isArray(arr) ? arr : [];
+		} catch (e) {
+			return [];
+		}
+	}
+
+	function ensureSeedPcExamples() {
+		try {
+			if (localStorage.getItem(SEED_FLAG_KEY) === "1") return;
+			var arr = loadPcDocs();
+			if (arr.length > 0) {
+				localStorage.setItem(SEED_FLAG_KEY, "1");
+				return;
+			}
+			var seed = [
+				{
+					id: "pc_seed_1",
+					title: "대전 행사 출장경비",
+					drafter: "김민정",
+					draftDateDisplay: "26/05/01",
+					nextApprover: "박진수",
+					attachCount: 1,
+					status: "progress",
+					createdAt: new Date().toISOString()
+				},
+				{
+					id: "pc_seed_2",
+					title: "소모품 구입 품의",
+					drafter: "박소윤",
+					draftDateDisplay: "26/04/18",
+					nextApprover: "최민석",
+					attachCount: 0,
+					status: "reject",
+					createdAt: new Date().toISOString()
+				},
+				{
+					id: "pc_seed_3",
+					title: "1분기 정산 자료",
+					drafter: "최민석",
+					draftDateDisplay: "26/03/15",
+					nextApprover: "",
+					attachCount: 2,
+					status: "done",
+					createdAt: new Date().toISOString()
+				}
+			];
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(seed));
+			localStorage.setItem(SEED_FLAG_KEY, "1");
+		} catch (e) {}
+	}
+
+	function rowMatchesTab(rowStatus, tab) {
+		var t = tab != null ? String(tab) : "";
+		if (t === "") return true;
+		if (rowStatus === "empty") return false;
+		if (t === "미결") return rowStatus === "progress";
+		if (t === "반려") return rowStatus === "reject";
+		if (t === "완료") return rowStatus === "done";
+		return true;
+	}
+
+	var staticRows = [
+		{
+			docType: "연차휴가원",
+			title: "연차신청",
+			titleHref: "javascript:proposalForm('vac7')",
+			drafter: "박진수",
+			date: "26/04/30",
+			next: "",
+			status: "done",
+			attach: false
+		},
+		{
+			docType: "보고서",
+			title: "소비촉진 보고서",
+			titleHref: "javascript:proposalForm('rep6')",
+			drafter: "박소윤",
+			date: "26/04/25",
+			next: "",
+			status: "reject",
+			attach: false
+		},
+		{
+			docType: "사직서",
+			title: "사직서",
+			titleHref: "javascript:proposalForm('res5')",
+			drafter: "강한나",
+			date: "26/04/01",
+			next: "",
+			status: "done",
+			attach: true
+		},
+		{
+			docType: "보고서",
+			title: "TV홍보 기획안",
+			titleHref: "javascript:proposalForm('rep4')",
+			drafter: "최민석",
+			date: "26/03/31",
+			next: "박소윤",
+			status: "progress",
+			attach: true
+		},
+		{
+			docType: "연차휴가원",
+			title: "",
+			titleHref: "",
+			drafter: "",
+			date: "",
+			next: "",
+			status: "empty",
+			attach: false
+		},
+		{
+			docType: "(데이터 없음)",
+			title: "",
+			titleHref: "",
+			drafter: "",
+			date: "",
+			next: "",
+			status: "empty",
+			attach: false
+		},
+		{
+			docType: "(데이터 없음)",
+			title: "",
+			titleHref: "",
+			drafter: "",
+			date: "",
+			next: "",
+			status: "empty",
+			attach: false
+		}
+	];
+
+	function renderRow(no, cells) {
+		var cb =
+			'<td class="txtc"><input type="checkbox" title="선택" /> ' +
+			no +
+			"</td>";
+		return (
+			"<tr>" +
+			cb +
+			'<td class="txtc">' +
+			escapeHtml(cells.docType) +
+			"</td>" +
+			titleCell(cells.title, cells.titleHref) +
+			'<td class="txtc">' +
+			escapeHtml(cells.drafter) +
+			"</td>" +
+			'<td class="txtc">' +
+			escapeHtml(cells.date) +
+			"</td>" +
+			'<td class="txtc">' +
+			escapeHtml(cells.next) +
+			"</td>" +
+			'<td class="txtc">' +
+			(cells.status === "empty" ? "" : statusCell(cells.status)) +
+			"</td>" +
+			attachCell(cells.attach) +
+			"</tr>"
+		);
+	}
+
+	function renderApprovalTable() {
+		var tbody = document.getElementById("approvalListTbody");
+		if (!tbody) return;
+
+		ensureSeedPcExamples();
+
+		var tab =
+			typeof window.__approvalListTab !== "undefined" && window.__approvalListTab != null
+				? String(window.__approvalListTab)
+				: "";
+
+		var pcDocs = loadPcDocs();
+		var rows = [];
+
+		for (var i = 0; i < pcDocs.length; i++) {
+			var d = pcDocs[i];
+			var title = d.title != null ? String(d.title) : "";
+			var drafter = d.drafter != null ? String(d.drafter) : "";
+			var draftDate = d.draftDateDisplay != null ? String(d.draftDateDisplay) : "";
+			var next = d.nextApprover != null ? String(d.nextApprover) : "";
+			var attach = !!(d.attachCount && Number(d.attachCount) > 0);
+			var st = d.status != null ? String(d.status) : "progress";
+			if (st !== "progress" && st !== "reject" && st !== "done") st = "progress";
+			rows.push({
+				docType: "지급회의서",
+				title: title,
+				titleHref: "paymentConferenceDoc.html",
+				drafter: drafter,
+				date: draftDate,
+				next: next,
+				status: st,
+				attach: attach
+			});
+		}
+
+		for (var j = 0; j < staticRows.length; j++) {
+			rows.push(staticRows[j]);
+		}
+
+		var filtered = [];
+		for (var f = 0; f < rows.length; f++) {
+			if (rowMatchesTab(rows[f].status, tab)) filtered.push(rows[f]);
+		}
+
+		var total = filtered.length;
+		var html = "";
+		for (var k = 0; k < total; k++) {
+			var no = total - k;
+			html += renderRow(no, filtered[k]);
+		}
+		tbody.innerHTML = html;
+	}
+
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", renderApprovalTable);
+	} else {
+		renderApprovalTable();
+	}
+	window.renderApprovalListFromStorage = renderApprovalTable;
+})();
+
+(function () {
+	if (typeof window.__approvalListTab === "undefined") window.__approvalListTab = "";
+
+	function syncTabActiveClass(tab) {
+		var map = { "": 0, 미결: 1, 반려: 2, 완료: 3 };
+		var idx = Object.prototype.hasOwnProperty.call(map, tab) ? map[tab] : 0;
+		var lis = document.querySelectorAll(".pageTabMenu .tabMenuList li");
+		for (var i = 0; i < lis.length; i++) {
+			if (i === idx) lis[i].classList.add("active");
+			else lis[i].classList.remove("active");
+		}
+	}
+
+	window.setStatus = function (_status) {
+		window.__approvalListTab = _status != null ? String(_status) : "";
+		syncTabActiveClass(window.__approvalListTab);
+		if (typeof window.renderApprovalListFromStorage === "function") {
+			window.renderApprovalListFromStorage();
+		}
+	};
+
+	syncTabActiveClass(window.__approvalListTab || "");
+})();
+</script>
 
 <iframe name="Process" width="0" height="0" frameborder="0" scrolling="no"></iframe>
 </body>

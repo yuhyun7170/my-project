@@ -96,16 +96,28 @@
 		}
 		.pc-year-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 		.pc-year-row select#pcYear { width: auto; min-width: 80px; }
-		.pc-draft-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-		.pc-draft-row .pc-staff-sel { flex: 1; min-width: 120px; max-width: 100%; }
-		.pc-draft-hint { font-size: 12px; color: #444; white-space: nowrap; }
 		.pc-static-td { text-align: center; font-size: 13px; padding: 10px 8px !important; }
+		th.pc-th-evidence-vertical {
+			width: 2rem;
+			min-width: 34px;
+			max-width: 42px;
+			padding: 6px 4px !important;
+			writing-mode: vertical-rl;
+			text-orientation: mixed;
+			letter-spacing: 0.12em;
+			line-height: 1.35;
+		}
 		.pc-evidence-cell {
 			vertical-align: top !important;
-			padding: 8px 10px !important;
-			background: #fafafa !important;
+			padding: 6px 8px !important;
+			background: #fff !important;
 		}
-		.pc-evidence-cell .pc-ev-title { font-weight: 700; margin-bottom: 6px; font-size: 12px; }
+		.pc-ev-block-title {
+			font-weight: 700;
+			font-size: 12px;
+			margin-bottom: 6px;
+			color: #222;
+		}
 		.pc-evidence-cell label {
 			display: block;
 			margin: 3px 0;
@@ -114,24 +126,6 @@
 		}
 		.pc-evidence-cell input[type="radio"] { margin-right: 6px; vertical-align: middle; }
 		.btnBlue .fa, .btnRed .fa, .btnLink .fa-solid { margin-right: 0; }
-		table.pc-bottom-table {
-			width: 100%;
-			border-collapse: collapse;
-			border: none;
-			table-layout: fixed;
-		}
-		table.pc-bottom-table > tbody > tr > th {
-			background: #e8e8e8;
-			border: 1px solid #222;
-			padding: 6px 8px;
-			font-weight: 600;
-			width: 11%;
-		}
-		table.pc-bottom-table > tbody > tr > td {
-			border: 1px solid #222;
-			padding: 4px 6px;
-			background: #fff;
-		}
 		.pc-body-text {
 			padding: 0;
 			border: 1px solid #222;
@@ -251,26 +245,14 @@
 							<th scope="row">항</th>
 							<td><select id="pcHang" name="hangId" aria-label="항"></select></td>
 							<th scope="row">기안자</th>
-							<td>
-								<div class="pc-draft-row">
-									<select id="pcDrafter" name="drafter" class="pc-staff-sel"></select>
-									<span class="pc-draft-hint" id="pcDraftHint">기안 <span id="pcDraftDateStr"></span></span>
-								</div>
-							</td>
+							<td><select id="pcDrafter" name="drafter" class="pc-staff-sel"></select></td>
 							<td class="pc-cell-mid-empty"></td>
-							<td colspan="2" rowspan="4" class="pc-evidence-cell">
-								<div class="pc-ev-title">증빙서류 (택 1)</div>
-								<div>
-									<span class="pc-ev-title">법정증빙</span>
-									<label><input type="radio" name="pc_evidence" value="1" /> 1. 카드매출전표</label>
-									<label><input type="radio" name="pc_evidence" value="2" /> 2. 세금계산서</label>
-									<label><input type="radio" name="pc_evidence" value="3" /> 3. 계산서</label>
-								</div>
-								<div style="margin-top:8px;">
-									<span class="pc-ev-title">일반증빙</span>
-									<label><input type="radio" name="pc_evidence" value="4" /> 4. 영수증</label>
-									<label><input type="radio" name="pc_evidence" value="5" /> 5. 기타</label>
-								</div>
+							<th scope="row" rowspan="3" class="pc-th-evidence-vertical">증빙서류</th>
+							<td rowspan="2" class="pc-evidence-cell">
+								<div class="pc-ev-block-title">법정증빙</div>
+								<label><input type="radio" name="pc_evidence" value="1" /> 1. 카드매출전표</label>
+								<label><input type="radio" name="pc_evidence" value="2" /> 2. 세금계산서</label>
+								<label><input type="radio" name="pc_evidence" value="3" /> 3. 계산서</label>
 							</td>
 						</tr>
 						<tr>
@@ -286,6 +268,11 @@
 							<th scope="row">결재(완료)일</th>
 							<td><input type="date" name="completeDate" id="pcCompleteDate" /></td>
 							<td class="pc-cell-mid-empty"></td>
+							<td class="pc-evidence-cell">
+								<div class="pc-ev-block-title">일반증빙</div>
+								<label><input type="radio" name="pc_evidence" value="4" /> 4. 영수증</label>
+								<label><input type="radio" name="pc_evidence" value="5" /> 5. 기타</label>
+							</td>
 						</tr>
 						<tr>
 							<th scope="row">세부사업</th>
@@ -293,16 +280,9 @@
 							<th scope="row">발의부서명</th>
 							<td><input type="text" name="deptName" id="pcDept" autocomplete="off" /></td>
 							<td class="pc-cell-mid-empty"></td>
-						</tr>
-						<tr>
 							<th scope="row">세무담당자확인</th>
-							<td colspan="6"><select id="pcTax" name="taxManager"></select></td>
+							<td><select id="pcTax" name="taxManager"></select></td>
 						</tr>
-					</tbody>
-				</table>
-
-				<table class="pc-bottom-table">
-					<tbody>
 						<tr>
 							<th scope="row">제목</th>
 							<td colspan="4"><input type="text" name="docTitle" id="pcDocTitle" placeholder="예: 대전 행사 출장경비" autocomplete="off" /></td>
@@ -504,18 +484,6 @@
 		return d.getFullYear() + "-" + m + "-" + day;
 	}
 
-	function formatDraftStr(iso) {
-		if (!iso) return "";
-		var p = iso.split("-");
-		if (p.length !== 3) return iso;
-		return p[0] + "/" + p[1] + "/" + p[2];
-	}
-
-	function updateDraftHint() {
-		var iso = document.getElementById("pcDraftDate").value || todayISO();
-		document.getElementById("pcDraftDateStr").textContent = formatDraftStr(iso);
-	}
-
 	function yearOptions() {
 		var sel = document.getElementById("pcYear");
 		var y = new Date().getFullYear();
@@ -597,8 +565,6 @@
 		var td = todayISO();
 		document.getElementById("pcDraftDate").value = td;
 		document.getElementById("pcCompleteDate").value = td;
-		document.getElementById("pcDraftDate").addEventListener("change", updateDraftHint);
-		updateDraftHint();
 
 		document.getElementById("pcFileBtn").addEventListener("click", function () {
 			document.getElementById("pcFileInp").click();
